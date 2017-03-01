@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class Graph<V extends SequenceElement, E extends Number> implements IGraph<V,E> {
     private boolean allowMultipleEdges;
-    private List<Edge<E>>[] edges;  //edge[i].get(j).to = k, then edge from i -> k
+    private List<List<Edge<E>>> edges;  //edge[i].get(j).to = k, then edge from i -> k
     private List<Vertex<V>> vertices;
 
 
@@ -38,7 +38,9 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
         vertices = new ArrayList<>(numVertices);
         for( int i=0; i<numVertices; i++ ) vertices.add(vertexFactory.create(i));
 
-        edges = (List<Edge<E>>[]) Array.newInstance(List.class,numVertices);
+        edges = new ArrayList<>(numVertices);
+        for (int i = 0; i < numVertices; i++)
+            edges.add(new ArrayList<Edge<E>>());
     }
 
 
@@ -46,7 +48,10 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
     public Graph(List<Vertex<V>> vertices, boolean allowMultipleEdges){
         this.vertices = new ArrayList<>(vertices);
         this.allowMultipleEdges = allowMultipleEdges;
-        edges = (List<Edge<E>>[]) Array.newInstance(List.class,vertices.size());
+
+        edges = new ArrayList<>(vertices.size());
+        for (int i = 0; i < vertices.size(); i++)
+            edges.add(new ArrayList<Edge<E>>());
     }
 
     @SuppressWarnings("unchecked")
@@ -59,7 +64,9 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
             vertices.add(vertex);
             idx++;
         }
-        edges = (List<Edge<E>>[]) Array.newInstance(List.class,vertices.size());
+        edges = new ArrayList<>(vertices.size());
+        for (int i = 0; i < vertices.size(); i++)
+            edges.add(new ArrayList<Edge<E>>());
     }
 
     public Graph(List<Vertex<V>> vertices){
@@ -70,11 +77,14 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
     }
 
     public void addVertex(Vertex<V> vertex, Edge<E> edge) {
+        vertices.add(vertex);
+        edges.add(new ArrayList<Edge<E>>());
         this.addEdge(edge);
     }
 
     public void addVertex(Vertex<V> vertex, Collection<Edge<E>> edges ) {
-
+        vertices.add(vertex);
+        this.edges.add(new ArrayList<Edge<E>>());
         for (Edge<E> edge: edges) {
             this.addEdge(edge);
         }
@@ -112,20 +122,20 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
         if(edge.getFrom() < 0 || edge.getTo() >= vertices.size() )
             throw new IllegalArgumentException("Invalid edge: " + edge + ", from/to indexes out of range");
 
-        List<Edge<E>> fromList = edges[edge.getFrom()];
+        List<Edge<E>> fromList = edges.get(edge.getFrom());
         if(fromList == null){
             fromList = new ArrayList<>();
-            edges[edge.getFrom()] = fromList;
+            edges.set(edge.getFrom(), fromList);
         }
         addEdgeHelper(edge,fromList);
 
         if(edge.isDirected()) return;
 
         //Add other way too (to allow easy lookup for undirected edges)
-        List<Edge<E>> toList = edges[edge.getTo()];
+        List<Edge<E>> toList = edges.get(edge.getTo());
         if(toList == null){
             toList = new ArrayList<>();
-            edges[edge.getTo()] = toList;
+            edges.set(edge.getTo(), toList);
         }
         addEdgeHelper(edge,toList);
     }
@@ -146,23 +156,23 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
     @Override
     @SuppressWarnings("unchecked")
     public List<Edge<E>> getEdgesOut(int vertex) {
-        if(edges[vertex] == null ) return Collections.emptyList();
-        return new ArrayList<>(edges[vertex]);
+        if(edges.get(vertex) == null ) return Collections.emptyList();
+        return edges.get(vertex);
     }
 
     @Override
     public int getVertexDegree(int vertex){
-        if(edges[vertex] == null) return 0;
-        return edges[vertex].size();
+        if(edges.get(vertex) == null) return 0;
+        return edges.get(vertex).size();
     }
 
     @Override
     public Vertex<V> getRandomConnectedVertex(int vertex, Random rng) throws NoEdgesException {
         if(vertex < 0 || vertex >= vertices.size() ) throw new IllegalArgumentException("Invalid vertex index: " + vertex);
-        if(edges[vertex] == null || edges[vertex].isEmpty())
+        if(edges.get(vertex) == null || edges.get(vertex).isEmpty())
             throw new NoEdgesException("Cannot generate random connected vertex: vertex " + vertex + " has no outgoing/undirected edges");
-        int connectedVertexNum = rng.nextInt(edges[vertex].size());
-        Edge<E> edge = edges[vertex].get(connectedVertexNum);
+        int connectedVertexNum = rng.nextInt(edges.get(vertex).size());
+        Edge<E> edge = edges.get(vertex).get(connectedVertexNum);
         if(edge.getFrom() == vertex ) return vertices.get(edge.getTo());    //directed or undirected, vertex -> x
         else return vertices.get(edge.getFrom());   //Undirected edge, x -> vertex
     }
@@ -171,9 +181,9 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
     public List<Vertex<V>> getConnectedVertices(int vertex) {
         if(vertex < 0 || vertex >= vertices.size()) throw new IllegalArgumentException("Invalid vertex index: " + vertex);
 
-        if(edges[vertex] == null) return Collections.emptyList();
-        List<Vertex<V>> list = new ArrayList<>(edges[vertex].size());
-        for(Edge<E> edge : edges[vertex]){
+        if(edges.get(vertex) == null) return Collections.emptyList();
+        List<Vertex<V>> list = new ArrayList<>(edges.get(vertex).size());
+        for(Edge<E> edge : edges.get(vertex)){
             list.add(vertices.get(edge.getTo()));
         }
         return list;
@@ -181,10 +191,10 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
 
     @Override
     public int[] getConnectedVertexIndices(int vertex){
-        int[] out = new int[(edges[vertex] == null ? 0 : edges[vertex].size())];
+        int[] out = new int[(edges.get(vertex) == null ? 0 : edges.get(vertex).size())];
         if(out.length == 0 ) return out;
         for(int i=0; i<out.length; i++ ){
-            Edge<E> e = edges[vertex].get(i);
+            Edge<E> e = edges.get(vertex).get(i);
             out[i] = (e.getFrom() == vertex ? e.getTo() : e.getFrom() );
         }
         return out;
@@ -232,11 +242,11 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
         }
         sb.append("\n}");
         sb.append("\nEdges {");
-        for( int i=0; i<edges.length; i++ ){
+        for( int i=0; i<edges.size(); i++ ){
             sb.append("\n\t");
-            if(edges[i] == null) continue;
+            if(edges.get(i) == null) continue;
             sb.append(i).append(":");
-            for(Edge<E> e : edges[i]){
+            for(Edge<E> e : edges.get(i)){
                 sb.append(" ").append(e);
             }
         }
@@ -250,10 +260,10 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
         if(!(o instanceof Graph)) return false;
         Graph g = (Graph)o;
         if(allowMultipleEdges != g.allowMultipleEdges) return false;
-        if(edges.length != g.edges.length) return false;
+        if(edges.size() != g.edges.size()) return false;
         if(vertices.size() != g.vertices.size()) return false;
-        for( int i=0; i<edges.length; i++ ){
-            if(!edges[i].equals(g.edges[i])) return false;
+        for( int i=0; i<edges.size(); i++ ){
+            if(!edges.get(i).equals(g.edges.get(i))) return false;
         }
         return vertices.equals(g.vertices);
     }
@@ -262,7 +272,7 @@ public class Graph<V extends SequenceElement, E extends Number> implements IGrap
     public int hashCode() {
         int result = 23;
         result = 31 * result + (allowMultipleEdges? 1 : 0);
-        result = 31 * result + Arrays.hashCode(edges);
+        result = 31 * result + edges.hashCode();
         result = 31 * result + vertices.hashCode();
         return result;
     }

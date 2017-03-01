@@ -41,7 +41,8 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
         if (!configuration.isTrainSequenceVectors())
             throw new DL4JInvalidConfigException("Walker used for this Node2Vec instance isn't suitable for inference");
 
-        return Nd4j.create(lookupTable.layerSize());
+        //TODO: implement inference
+        throw new UnsupportedOperationException();
     }
 
     public static class Builder<V extends SequenceElement, E extends Number> extends SequenceVectors.Builder<V> {
@@ -60,6 +61,9 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
                     .setGraphWalker(walker)
                     .shuffleOnReset(true)
                     .build();
+
+            // if walker provides labels -
+            super.trainSequencesRepresentation(walker.isLabelEnabled());
 
             this.iterator = new AbstractSequenceIterator.Builder<V>(transformer).build();
         }

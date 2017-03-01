@@ -178,7 +178,7 @@ public class NearestVertexWalker<V extends SequenceElement> implements GraphWalk
             this.sourceGraph = graph;
         }
 
-        public Builder setSeed(long seed) {
+        public Builder<V> setSeed(long seed) {
             this.seed = seed;
             return this;
         }
@@ -192,7 +192,7 @@ public class NearestVertexWalker<V extends SequenceElement> implements GraphWalk
          * @param length
          * @return
          */
-        public Builder setWalkLength(int length){
+        public Builder<V> setWalkLength(int length){
             walkLength = length;
             return this;
         }
@@ -204,7 +204,7 @@ public class NearestVertexWalker<V extends SequenceElement> implements GraphWalk
          * @param depth
          * @return
          */
-        public Builder setDepth(int depth) {
+        public Builder<V> setDepth(int depth) {
             this.depth = depth;
             return this;
         }
@@ -217,7 +217,7 @@ public class NearestVertexWalker<V extends SequenceElement> implements GraphWalk
          * @param mode
          * @return
          */
-        public Builder setSamplingMode(@NonNull SamplingMode mode) {
+        public Builder<V> setSamplingMode(@NonNull SamplingMode mode) {
             this.samplingMode = mode;
             return this;
         }
