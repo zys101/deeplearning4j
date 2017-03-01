@@ -2,6 +2,7 @@ package org.deeplearning4j.models.node2vec;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.deeplearning4j.exception.DL4JInvalidConfigException;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.learning.ElementsLearningAlgorithm;
 import org.deeplearning4j.models.embeddings.learning.SequenceLearningAlgorithm;
@@ -19,6 +20,7 @@ import org.deeplearning4j.models.sequencevectors.transformers.impl.GraphTransfor
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,13 +35,21 @@ import java.util.List;
 @Slf4j
 @Deprecated
 public class Node2Vec<V extends SequenceElement, E extends Number> extends SequenceVectors<V> {
+    private transient GraphWalker<V> walker;
 
     public INDArray inferVector(@NonNull Collection<Vertex<V>> vertices) {
-        return null;
+        if (!configuration.isTrainSequenceVectors())
+            throw new DL4JInvalidConfigException("Walker used for this Node2Vec instance isn't suitable for inference");
+
+        return Nd4j.create(lookupTable.layerSize());
     }
 
     public static class Builder<V extends SequenceElement, E extends Number> extends SequenceVectors.Builder<V> {
         private GraphWalker<V> walker;
+
+        public Builder(@NonNull GraphWalker<V> walker) {
+            this(walker, new VectorsConfiguration());
+        }
 
         public Builder(@NonNull GraphWalker<V> walker, @NonNull VectorsConfiguration configuration) {
             this.walker = walker;
@@ -177,19 +187,22 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
 
         @Override
         public Builder<V,E> stopWords(@NonNull List<String> stopList) {
-            super.stopWords(stopList);
+            // this method has no effect
+            // super.stopWords(stopList);
             return this;
         }
 
         @Override
         public Builder<V,E> trainElementsRepresentation(boolean trainElements) {
-            super.trainElementsRepresentation(trainElements);
+            // this method has no effect
+            //super.trainElementsRepresentation(trainElements);
             return this;
         }
 
         @Override
         public Builder<V,E> trainSequencesRepresentation(boolean trainSequences) {
-            super.trainSequencesRepresentation(trainSequences);
+            // this method has no effect
+            //super.trainSequencesRepresentation(trainSequences);
             return this;
         }
 
@@ -259,8 +272,12 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
         }
 
         public Node2Vec<V,E> build() {
+            presetTables();
+
             Node2Vec<V,E> node2vec = new Node2Vec<>();
             node2vec.iterator = this.iterator;
+            node2vec.walker = this.walker;
+            node2vec.configuration = this.configuration;
 
             return node2vec;
         }
