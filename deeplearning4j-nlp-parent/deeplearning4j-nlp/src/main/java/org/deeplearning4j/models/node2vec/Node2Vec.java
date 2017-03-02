@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.exception.DL4JInvalidConfigException;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.learning.ElementsLearningAlgorithm;
 import org.deeplearning4j.models.embeddings.learning.SequenceLearningAlgorithm;
 import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
@@ -20,6 +21,7 @@ import org.deeplearning4j.models.sequencevectors.sequence.SequenceElement;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.GraphTransformer;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -299,10 +301,33 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
         public Node2Vec<V,E> build() {
             presetTables();
 
+            if (vocabCache == null)
+                vocabCache = new AbstractCache.Builder<V>().minElementFrequency(1).build();
+
+            if (lookupTable == null)
+                lookupTable = new InMemoryLookupTable.Builder<V>()
+                        .vectorLength(layerSize)
+                        .useHierarchicSoftmax(true)
+                        .cache(vocabCache)
+                        .seed(seed)
+                        .build();
+
             Node2Vec<V,E> node2vec = new Node2Vec<>();
             node2vec.iterator = this.iterator;
             node2vec.walker = this.walker;
             node2vec.configuration = this.configuration;
+            node2vec.vocab = this.vocabCache;
+            node2vec.seed = this.seed;
+            node2vec.lookupTable = this.lookupTable;
+            node2vec.workers = this.workers;
+            node2vec.batchSize = this.batchSize;
+            node2vec.elementsLearningAlgorithm = this.elementsLearningAlgorithm;
+            node2vec.sequenceLearningAlgorithm = this.sequenceLearningAlgorithm;
+            node2vec.trainElementsVectors = this.trainElementsVectors;
+            node2vec.trainSequenceVectors = this.trainSequenceVectors;
+            node2vec.numIterations = this.iterations;
+            node2vec.numEpochs = this.numEpochs;
+            node2vec.modelUtils = this.modelUtils;
 
             return node2vec;
         }

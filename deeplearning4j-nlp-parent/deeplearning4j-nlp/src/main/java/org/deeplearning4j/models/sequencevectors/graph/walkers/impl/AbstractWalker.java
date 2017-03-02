@@ -22,7 +22,7 @@ public abstract class AbstractWalker<T extends SequenceElement> implements Graph
         log.info("Building graph nodes vocabulary...");
 
         for (int n = 0; n < sourceGraph.numVertices(); n++) {
-            T element = sourceGraph.getVertex(0).getValue();
+            T element = sourceGraph.getVertex(n).getValue();
             element.setElementFrequency(sourceGraph.getVertexDegree(n));
 
             vocabCache.addToken(element);
@@ -32,6 +32,8 @@ public abstract class AbstractWalker<T extends SequenceElement> implements Graph
         Huffman huffman = new Huffman(vocabCache.vocabWords());
         huffman.build();
         huffman.applyIndexes(vocabCache);
+
+        log.info("Number of entries in vocab: {}", vocabCache.numWords());
     }
 
 

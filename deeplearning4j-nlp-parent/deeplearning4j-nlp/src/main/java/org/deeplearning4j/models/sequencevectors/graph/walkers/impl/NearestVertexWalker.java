@@ -27,8 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author raver119@gmail.com
  */
 @Slf4j
-public class NearestVertexWalker<V extends SequenceElement> implements GraphWalker<V> {
-    @Getter protected IGraph<V, ?> sourceGraph;
+public class NearestVertexWalker<V extends SequenceElement> extends AbstractWalker<V> implements GraphWalker<V> {
     protected int walkLength = 0;
     protected long seed = 0;
     protected SamplingMode samplingMode = SamplingMode.RANDOM;
