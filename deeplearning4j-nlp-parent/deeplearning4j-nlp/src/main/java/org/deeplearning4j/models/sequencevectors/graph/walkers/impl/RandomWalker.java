@@ -28,10 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * Based on Alex Black RandomWalkIterator implementation
  */
-public class RandomWalker<T extends SequenceElement> implements GraphWalker<T> {
+public class RandomWalker<T extends SequenceElement> extends AbstractWalker<T>  {
     protected int walkLength = 5;
     protected NoEdgeHandling noEdgeHandling = NoEdgeHandling.EXCEPTION_ON_DISCONNECTED;
-    @Getter protected IGraph<T, ?> sourceGraph;
     protected AtomicInteger position = new AtomicInteger(0);
     protected Random rng = new Random(System.currentTimeMillis());
     protected long seed;

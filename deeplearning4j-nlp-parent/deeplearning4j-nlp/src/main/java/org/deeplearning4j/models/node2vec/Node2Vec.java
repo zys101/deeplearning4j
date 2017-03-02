@@ -10,6 +10,7 @@ import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.embeddings.reader.ModelUtils;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.sequencevectors.graph.primitives.Graph;
 import org.deeplearning4j.models.sequencevectors.graph.primitives.Vertex;
 import org.deeplearning4j.models.sequencevectors.graph.walkers.GraphWalker;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
@@ -36,6 +37,26 @@ import java.util.List;
 @Deprecated
 public class Node2Vec<V extends SequenceElement, E extends Number> extends SequenceVectors<V> {
     private transient GraphWalker<V> walker;
+
+    public void buildVocab() {
+
+        walker.buildVocabulary(vocab);
+
+        log.info("Building Huffman tree for graph nodes...");
+    }
+
+    public void fit() {
+        /**
+         * we need special vocabulary built here:
+         *  as frequency we use vertex degree, which is just number of connections for this vertex
+         */
+        buildVocab();
+
+        // since vocab was already built here, we don't want it to be rebuilt at SeqVec
+        this.resetModel = false;
+
+        super.fit();
+    }
 
     public INDArray inferVector(@NonNull Collection<Vertex<V>> vertices) {
         if (!configuration.isTrainSequenceVectors())
