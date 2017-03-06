@@ -63,11 +63,6 @@ public class BasicModelUtils<T extends SequenceElement> implements ModelUtils<T>
      */
     @Override
     public double similarity(@NonNull String label1, @NonNull String label2) {
-        if (label1 == null || label2 == null) {
-            log.debug("LABELS: " + label1 + ": " + (label1 == null ? "null": EXISTS)+ ";" + label2 +" vec2:" + (label2 == null ? "null": EXISTS));
-            return Double.NaN;
-        }
-
         if (!vocabCache.hasToken(label1)) {
             log.debug("Unknown token 1 requested: [{}]", label1);
             return Double.NaN;
@@ -78,16 +73,10 @@ public class BasicModelUtils<T extends SequenceElement> implements ModelUtils<T>
             return Double.NaN;
         }
 
-        INDArray vec1 = lookupTable.vector(label1).dup();
-        INDArray vec2 = lookupTable.vector(label2).dup();
-
-
-        if (vec1 == null || vec2 == null) {
-            log.debug(label1 + ": " + (vec1 == null ? "null": EXISTS)+ ";" + label2 +" vec2:" + (vec2 == null ? "null": EXISTS));
-            return Double.NaN;
-        }
-
         if (label1.equals(label2)) return 1.0;
+
+        INDArray vec1 = Transforms.unitVec(lookupTable.vector(label1).dup());
+        INDArray vec2 = Transforms.unitVec(lookupTable.vector(label2).dup());
 
         return Transforms.cosineSim(vec1, vec2);
     }
