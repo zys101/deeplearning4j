@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import org.deeplearning4j.berkeley.Counter;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.reader.ModelUtils;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Basic implementation for ModelUtils interface, suited for standalone use.
@@ -87,6 +89,16 @@ public class BasicModelUtils<T extends SequenceElement> implements ModelUtils<T>
         Collection<String> collection = wordsNearest(Arrays.asList(label),new ArrayList<String>(),n + 1);
         if (collection.contains(label)) collection.remove(label);
         return collection;
+    }
+
+    public Collection<Pair<String, Double>> similarity(String label, Collection<String> labels) {
+        List<Pair<String, Double>> results = new ArrayList<>();
+        AtomicInteger cnt = new AtomicInteger(0);
+        for (String label2: labels) {
+            results.add(Pair.makePair(label2, similarity(label, label2)));
+        }
+
+        return results;
     }
 
     /**

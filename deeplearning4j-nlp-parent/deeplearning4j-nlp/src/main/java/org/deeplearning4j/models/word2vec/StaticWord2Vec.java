@@ -1,6 +1,8 @@
 package org.deeplearning4j.models.word2vec;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.reader.ModelUtils;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
@@ -15,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is special limited Word2Vec implementation, suited for serving as lookup table in concurrent multi-gpu environment
@@ -263,26 +266,34 @@ public class StaticWord2Vec implements WordVectors {
      * @return a normalized similarity (cosine similarity)
      */
     @Override
-    public double similarity(String label1, String label2) {
-        if (label1 == null || label2 == null) {
-            log.debug("LABELS: " + label1 + ": " + (label1 == null ? "null": "exists")+ ";" + label2 +" vec2:" + (label2 == null ? "null": "exists"));
+    public double similarity(@NonNull String label1, @NonNull String label2) {
+
+        if (!vocabCache.hasToken(label1)) {
+            log.debug("Unknown token 1 requested: [{}]", label1);
             return Double.NaN;
         }
 
-        INDArray vec1 = getWordVectorMatrix(label1).dup();
-        INDArray vec2 = getWordVectorMatrix(label2).dup();
-
-        if (vec1 == null || vec2 == null) {
-            log.debug(label1 + ": " + (vec1 == null ? "null": "exists")+ ";" + label2 +" vec2:" + (vec2 == null ? "null": "exists"));
+        if (!vocabCache.hasToken(label2)) {
+            log.debug("Unknown token 2 requested: [{}]", label2);
             return Double.NaN;
         }
 
         if (label1.equals(label2)) return 1.0;
 
-        vec1 = Transforms.unitVec(vec1);
-        vec2 = Transforms.unitVec(vec2);
+        INDArray vec1 = Transforms.unitVec(getWordVectorMatrix(label1).dup());
+        INDArray vec2 = Transforms.unitVec(getWordVectorMatrix(label2).dup());
 
         return Transforms.cosineSim(vec1, vec2);
+    }
+
+    public Collection<Pair<String, Double>> similarity(String label, Collection<String> labels) {
+        List<Pair<String, Double>> results = new ArrayList<>();
+        AtomicInteger cnt = new AtomicInteger(0);
+        for (String label2: labels) {
+            results.add(Pair.makePair(label2, similarity(label, label2)));
+        }
+
+        return results;
     }
 
     /**

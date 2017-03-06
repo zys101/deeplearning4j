@@ -312,10 +312,13 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
             if (vocabCache == null)
                 vocabCache = new AbstractCache.Builder<V>().minElementFrequency(1).build();
 
+            log.info("HS: {}; NS: {}", useHierarchicSoftmax, negative);
+
             if (lookupTable == null)
                 lookupTable = new InMemoryLookupTable.Builder<V>()
                         .vectorLength(layerSize)
-                        .useHierarchicSoftmax(true)
+                        .useHierarchicSoftmax(useHierarchicSoftmax)
+                        .negative(negative)
                         .cache(vocabCache)
                         .seed(seed)
                         .build();
@@ -337,6 +340,16 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
             node2vec.numEpochs = this.numEpochs;
             node2vec.modelUtils = this.modelUtils;
             node2vec.batchSize = this.batchSize;
+            node2vec.negative = this.negative;
+
+            node2vec.learningRate.set(this.learningRate);
+            node2vec.minLearningRate = this.minLearningRate;
+
+
+            this.configuration.setNegative(this.negative);
+            this.configuration.setUseHierarchicSoftmax(this.useHierarchicSoftmax);
+            this.configuration.setLearningRate(this.learningRate);
+            this.configuration.setMinLearningRate(this.minLearningRate);
 
             return node2vec;
         }

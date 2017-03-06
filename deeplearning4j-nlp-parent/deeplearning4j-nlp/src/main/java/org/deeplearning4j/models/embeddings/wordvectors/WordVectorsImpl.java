@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.apache.commons.lang.ArrayUtils;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.reader.ModelUtils;
 import org.deeplearning4j.models.embeddings.reader.impl.BasicModelUtils;
@@ -107,6 +108,17 @@ public class WordVectorsImpl<T extends SequenceElement> implements WordVectors {
      */
     public Collection<String> wordsNearestSum(Collection<String> positive,Collection<String> negative,int top) {
         return modelUtils.wordsNearestSum(positive, negative, top);
+    }
+
+    /**
+     * This method returns similarity score for a given label vs collection of labels
+     *
+     * @param label
+     * @param labels
+     * @return
+     */
+    public Collection<Pair<String, Double>> similarity(String label, Collection<String> labels) {
+        return modelUtils.similarity(label, labels);
     }
 
     /**

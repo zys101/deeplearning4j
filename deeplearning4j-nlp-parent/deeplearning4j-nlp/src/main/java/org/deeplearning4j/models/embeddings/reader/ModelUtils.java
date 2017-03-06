@@ -1,5 +1,6 @@
 package org.deeplearning4j.models.embeddings.reader;
 
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.sequencevectors.sequence.SequenceElement;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -31,6 +32,14 @@ public interface ModelUtils<T extends SequenceElement> {
      */
     double similarity(String label1, String label2);
 
+    /**
+     * This method returns similarity score for a given label vs collection of labels
+     *
+     * @param label
+     * @param labels
+     * @return
+     */
+    Collection<Pair<String, Double>> similarity(String label, Collection<String> labels);
 
     /**
      * Accuracy based on questions which are a space separated list of strings

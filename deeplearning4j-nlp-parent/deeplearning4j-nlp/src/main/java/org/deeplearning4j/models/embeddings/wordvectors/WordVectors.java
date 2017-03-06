@@ -18,6 +18,7 @@
 
 package org.deeplearning4j.models.embeddings.wordvectors;
 
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.reader.ModelUtils;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
@@ -39,6 +40,15 @@ public interface WordVectors extends Serializable {
     String getUNK();
 
     void setUNK(String newUNK);
+
+    /**
+     * This method returns similarity score for a given label vs collection of labels
+     *
+     * @param label
+     * @param labels
+     * @return
+     */
+    Collection<Pair<String, Double>> similarity(String label, Collection<String> labels);
 
     /**
      * Returns true if the model has this word in the vocab
