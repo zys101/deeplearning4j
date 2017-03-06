@@ -48,7 +48,8 @@ public class NearestVertexWalker<V extends SequenceElement> extends AbstractWalk
 
     @Override
     public Sequence<V> next() {
-        return walk(sourceGraph.getVertex(order[position.getAndIncrement()]),1);
+        Sequence<V> sequence = walk(sourceGraph.getVertex(order[position.getAndIncrement()]),1);
+        return sequence;
     }
 
     @Override
@@ -76,8 +77,16 @@ public class NearestVertexWalker<V extends SequenceElement> extends AbstractWalk
 
         if (walkLength == 0) {
             // if walk is unlimited - we use all connected vertices as is
-            for (Vertex<V> vertex: vertices)
+            for (Vertex<V> vertex: vertices) {
                 sequence.addElement(vertex.getValue());
+                if (depth > 1 && cDepth < depth) {
+                    Sequence<V> nextDepth = walk(vertex, ++cDepth);
+                    for (V element: nextDepth.getElements()){
+                        if (sequence.getElementByLabel(element.getLabel()) == null && !node.getValue().getLabel().equals(element.getLabel()))
+                            sequence.addElement(element);
+                    }
+                }
+            }
         } else {
             // if walks are limited, we care about sampling mode
             switch (samplingMode) {
@@ -90,7 +99,7 @@ public class NearestVertexWalker<V extends SequenceElement> extends AbstractWalk
                         if (depth > 1 && cDepth < depth) {
                             Sequence<V> nextDepth = walk(vertices.get(i), ++cDepth);
                             for (V element: nextDepth.getElements()){
-                                if (sequence.getElementByLabel(element.getLabel()) == null)
+                                if (sequence.getElementByLabel(element.getLabel()) == null && !node.getValue().getLabel().equals(element.getLabel()))
                                     sequence.addElement(element);
                             }
                         }
@@ -238,6 +247,7 @@ public class NearestVertexWalker<V extends SequenceElement> extends AbstractWalk
                 walker.order[i] = i;
             }
 
+            walker.seed = this.seed;
             walker.rng = new Random(seed);
 
             walker.reset(true);

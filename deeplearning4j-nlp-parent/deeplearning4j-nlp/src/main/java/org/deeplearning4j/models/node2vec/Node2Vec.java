@@ -76,8 +76,8 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
         }
 
         public Builder(@NonNull GraphWalker<V> walker, @NonNull VectorsConfiguration configuration) {
+            super(configuration);
             this.walker = walker;
-            this.configuration = configuration;
 
             // FIXME: this will cause transformer initialization
             GraphTransformer<V> transformer = new GraphTransformer.Builder<>(walker.getSourceGraph())
@@ -85,7 +85,7 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
                     .shuffleOnReset(true)
                     .build();
 
-            // if walker provides labels -
+            // if walker provides labels -use them
             super.trainSequencesRepresentation(walker.isLabelEnabled());
 
             this.iterator = new AbstractSequenceIterator.Builder<V>(transformer).build();
@@ -298,6 +298,14 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
             return this;
         }
 
+
+
+        @Override
+        public Builder<V,E> batchSize(int size) {
+            super.batchSize(size);
+            return this;
+        }
+
         public Node2Vec<V,E> build() {
             presetTables();
 
@@ -328,6 +336,7 @@ public class Node2Vec<V extends SequenceElement, E extends Number> extends Seque
             node2vec.numIterations = this.iterations;
             node2vec.numEpochs = this.numEpochs;
             node2vec.modelUtils = this.modelUtils;
+            node2vec.batchSize = this.batchSize;
 
             return node2vec;
         }

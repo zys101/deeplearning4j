@@ -45,25 +45,30 @@ public class Node2VecTest {
         GraphWalker<VocabWord> walker = new NearestVertexWalker.Builder<VocabWord>(graph)
                 .setSamplingMode(SamplingMode.MAX_POPULARITY)
                 .setDepth(2)
+                .setSeed(119)
                 .build();
 
         Node2Vec<VocabWord, Integer> node2Vec = new Node2Vec.Builder<VocabWord, Integer>(walker)
-//                .elementsLearningAlgorithm(new CBOW<VocabWord>())
                 .sequenceLearningAlgorithm(new DM<VocabWord>())
                 .seed(119)
                 .learningRate(0.025)
-//                .iterations(100)
-                .epochs(5)
-                .trainElementsRepresentation(true)
+                .epochs(3)
+                .workers(1)
+                .trainElementsRepresentation(false)
                 .build();
 
         node2Vec.fit();
 
-        double simAZ = node2Vec.similarity("1","10000");
-        double simAB = node2Vec.similarity("1","2");
+        assertEquals(10001, node2Vec.getVocab().numWords());
+        assertEquals(node2Vec.getVocab().tokenFor("0").getElementFrequency(), node2Vec.getVocab().tokenFor("10000").getElementFrequency(), 1e-3);
 
-        log.info("1 -> 10000 similarity: {}", simAZ);
-        log.info("1 -> 2 similarity: {}", simAB);
+        double simAZ = node2Vec.similarity("0","10000");
+        double simAB = node2Vec.similarity("0","2");
+
+        log.info("0 -> 10000 similarity: {}", simAZ);
+        log.info("0 -> 2 similarity: {}", simAB);
+
+        assertTrue(simAZ > simAB);
     }
 
     /**
