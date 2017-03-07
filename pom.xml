@@ -36,7 +36,7 @@
     </parent>
 
 
-    <distributionManagement>
+<!--    <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus snapshot repository</name>
@@ -49,12 +49,12 @@
         </repository>
 
 
-        <!-- Necessary for mvn site commands to work (see runWindowsTest.cmd); url isn't actually used -->
+        &lt;!&ndash; Necessary for mvn site commands to work (see runWindowsTest.cmd); url isn't actually used &ndash;&gt;
         <site>
             <id>ID</id>
             <url>file:///</url>
         </site>
-    </distributionManagement>
+    </distributionManagement>-->
 
     <prerequisites>
         <maven>3.0</maven>
@@ -166,17 +166,6 @@
                     <value>jfrog</value>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven-deploy-plugin.version}</version>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
             <distributionManagement>
                 <snapshotRepository>
                     <id>local-jfrog</id>
@@ -200,17 +189,6 @@
                     <value>bintray</value>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven-deploy-plugin.version}</version>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
             <distributionManagement>
                 <snapshotRepository>
                     <id>bintray-deeplearning4j-maven</id>
@@ -565,7 +543,7 @@
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
-            <plugin>
+<!--            <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven-deploy-plugin.version}</version>
                 <configuration>
@@ -589,10 +567,10 @@
                 <configuration>
                     <serverId>sonatype-nexus-snapshots</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <!--<skipStagingRepositoryClose>true</skipStagingRepositoryClose>-->
-                    <!--<stagingProfileId>13036484d8827</stagingProfileId>-->
+                    &lt;!&ndash;<skipStagingRepositoryClose>true</skipStagingRepositoryClose>&ndash;&gt;
+                    &lt;!&ndash;<stagingProfileId>13036484d8827</stagingProfileId>&ndash;&gt;
                 </configuration>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>com.lewisd</groupId>
                 <artifactId>lint-maven-plugin</artifactId>
