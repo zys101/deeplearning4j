@@ -353,8 +353,8 @@ public class AsyncMultiDataSetIterator implements MultiDataSetIterator {
                     if (smth != null)
                         queue.put(smth);
 
-//                    if (internalCounter.incrementAndGet() % 100 == 0)
-//                        Nd4j.getWorkspaceManager().printAllocationStatisticsForCurrentThread();
+                    if (internalCounter.incrementAndGet() % 5 == 0)
+                        Nd4j.getWorkspaceManager().printAllocationStatisticsForCurrentThread();
                 }
                 queue.put(terminator);
             } catch (InterruptedException e) {
