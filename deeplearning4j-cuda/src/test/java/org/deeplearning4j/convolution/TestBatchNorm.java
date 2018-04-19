@@ -14,6 +14,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.junit.Test;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -25,6 +26,7 @@ public class TestBatchNorm {
 
     @Test
     public void testCompareMLN() throws Exception {
+//        Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(12345)
@@ -73,6 +75,7 @@ public class TestBatchNorm {
 
     @Test
     public void testCompareCG() throws Exception {
+//        Nd4j.setDataType(DataBuffer.Type.FLOAT);
 
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(12345)
