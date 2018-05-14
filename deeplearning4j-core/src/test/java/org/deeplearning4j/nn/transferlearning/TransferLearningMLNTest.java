@@ -2,6 +2,8 @@ package org.deeplearning4j.nn.transferlearning;
 
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.BaseDL4JTest;
+import org.deeplearning4j.datasets.iterator.EarlyTerminationDataSetIterator;
+import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.GradientNormalization;
@@ -21,6 +23,7 @@ import org.junit.Test;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.*;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -613,6 +616,40 @@ public class TransferLearningMLNTest extends BaseDL4JTest {
         assertNull(l.getWeightNoise());
         assertNull(l.getConstraints());
         assertEquals(0.0, l.getL2(), 0.0);
+    }
+
+
+    @Test
+    public void testBatchNorm() throws Exception {
+
+        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+                .seed(12345)
+                .updater(new Adam(1e-3))
+                .activation(Activation.TANH)
+                .list()
+                .layer(new ConvolutionLayer.Builder().nOut(5).kernelSize(2,2).build())
+                .layer(new BatchNormalization())
+                .layer(new ConvolutionLayer.Builder().nOut(5).kernelSize(2,2).build())
+                .layer(new OutputLayer.Builder().activation(Activation.SOFTMAX).lossFunction(LossFunctions.LossFunction.MCXENT).nOut(10).build())
+                .setInputType(InputType.convolutionalFlat(28, 28, 1))
+                .build();
+
+        MultiLayerNetwork net = new MultiLayerNetwork(conf);
+        net.init();
+
+        DataSetIterator iter = new EarlyTerminationDataSetIterator(new MnistDataSetIterator(32, true, 12345), 10);
+
+        net.fit(iter);
+
+        MultiLayerNetwork net2 = new TransferLearning.Builder(net)
+                .fineTuneConfiguration(FineTuneConfiguration.builder()
+                        .updater(new AdaDelta())
+                        .build())
+                .removeOutputLayer()
+                .addLayer(new OutputLayer.Builder().activation(Activation.SOFTMAX).lossFunction(LossFunctions.LossFunction.MCXENT).nIn(3380).nOut(10).build())
+                .build();
+
+        net2.fit(iter);
     }
 
 }

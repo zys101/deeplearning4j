@@ -264,6 +264,17 @@ public class TransferLearning {
         }
 
         /**
+         * Set the input type for the network - and also set any nIns etc for each layers as required.
+         * Also adds preprocessors to handle transitions between (for example) CNN and dense layers.
+         *
+         * @param inputType Input type for the network
+         */
+        public Builder setInputType(InputType inputType){
+            this.inputType = inputType;
+            return this;
+        }
+
+        /**
          * Returns a model with the fine tune configuration and specified architecture changes.
          * .init() need not be called. Can be directly fit.
          *
