@@ -126,6 +126,8 @@ public class VPTree implements Serializable {
         // just stack them out with concat :)
         this.items = Nd4j.pile(list);
 
+        log.info("Piled...");
+
         this.invert = invert;
         this.similarityFunction = similarityFunction;
         root = buildFromPoints(this.items);

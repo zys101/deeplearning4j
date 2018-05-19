@@ -6,11 +6,14 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.deeplearning4j.clustering.sptree.DataPoint;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -86,14 +89,43 @@ public class VPTreeSerializationTests {
     }
 
     @Test
-    @Ignore
+    //@Ignore
     public void testBigTrees_1() throws Exception {
+        int testSize = 3200000;
+        val testShape = new long[] {1, 300};
+
         val list = new ArrayList<DataPoint>();
+        val list2 = new ArrayList<INDArray>(testSize);
+        val array = new INDArray[testSize];
 
-        for (int e = 0; e < 3200000; e++) {
-            val dp = new DataPoint(e, Nd4j.rand(new long[] {1, 300}));
-        }
 
+        IntStream.range(0, testSize).sequential().forEach(e -> {
+            list.add(null);
+        });
+
+        IntStream.range(0, testSize).parallel().forEach(e -> {
+            list.set(e, new DataPoint(e, Nd4j.rand(testShape)));
+            //list2.add(Nd4j.create(testShape));
+        });
+
+
+/*
+        IntStream.range(0, testSize).parallel().forEach(e -> {
+            array[e] = Nd4j.rand(testShape);
+        });
+
+
+        val timeStart = System.currentTimeMillis();
+        val concat = Nd4j.concat(0, array);
+        val timeEnd = System.currentTimeMillis();
+*/
         log.info("DataPoints created");
+        //log.info("Result shape: {}; Time: {} ms;", concat.shape(), (timeEnd - timeStart));
+
+        val timeStart = System.currentTimeMillis();
+        val tree = new VPTree(list, "euclidean", 6, false);
+        val timeEnd = System.currentTimeMillis();
+
+        log.info("Result shape: {}; Time: {} ms;", tree.getItems().shape(), (timeEnd - timeStart));
     }
 }
