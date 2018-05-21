@@ -307,17 +307,17 @@ template <typename T>
 
         if (second == nullptr) {
             nd4j_printf("applyTriplewiseLambda requires three operands to be valid NDArrays, but Second is NULL\n","");
-            throw "second is null";
+            throw std::runtime_error("second is null");
         }
 
         if (third == nullptr) {
             nd4j_printf("applyTriplewiseLambda requires three operands to be valid NDArrays, but Third is NULL\n","");
-            throw "third is null";
+            throw std::runtime_error("third is null");
         }
 
         if (this->lengthOf() != second->lengthOf() || this->lengthOf() != third->lengthOf() || !this->isSameShape(second) || !this->isSameShape(third)) {
             nd4j_printf("applyPairwiseLambda requires both operands to have the same shape\n","");
-            throw "Shapes mismach";
+            throw std::runtime_error("Shapes mismach");
         }        
 
         if (this->ordering() == second->ordering() && this->ordering() == third->ordering()  && this->ordering() == target->ordering() && (this->ews() == 1 && target->ews() == 1) && this->ews() == second->ews() && this->ews() == third->ews()) {
@@ -354,12 +354,12 @@ template <typename T>
 
         if (other == nullptr) {
             nd4j_printf("applyPairwiseLambda requires both operands to be valid NDArrays, but Y is NULL\n","");
-            throw "Other is null";
+            throw std::runtime_error("Other is null");
         }
 
         if (this->lengthOf() != other->lengthOf()) {
             nd4j_printf("applyPairwiseLambda requires both operands to have the same shape\n","");
-            throw "Shapes mismach";
+            throw std::runtime_error("Shapes mismach");
         }
 
         if (this->ordering() == other->ordering() && this->ordering() == target->ordering() && (this->ews() == 1 && target->ews() == 1) && this->ews() == other->ews()) {
@@ -445,12 +445,12 @@ template <typename T>
 
         if (other == nullptr) {
             nd4j_printf("applyIndexedPairwiseLambda requires both operands to be valid NDArrays, but Y is NULL\n","");
-            throw "Other is null";
+            throw std::runtime_error("Other is null");
         }
 
         if (this->lengthOf() != other->lengthOf()) {
             nd4j_printf("applyIndexedPairwiseLambda requires both operands to have the same shape\n","");
-            throw "Shapes mismach";
+            throw std::runtime_error("Shapes mismach");
         }
 
         if (this->ordering() == other->ordering() && this->ordering() == target->ordering() && (this->ews() == 1 && target->ews() == 1) && this->ews() == other->ews()) {
@@ -736,13 +736,16 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
 
         }
 
-        if (shape::length(_shapeInfo) != data.size()) {
-            nd4j_printf("Data size [%i] doesn't match shape length [%i]\n", data.size(), shape::length(_shapeInfo));
-            throw "Data size doesn't match shape";
-        }
+        if (data.size() > 0) {
+            if (shape::length(_shapeInfo) != data.size()) {
+                nd4j_printf("Data size [%i] doesn't match shape length [%i]\n", data.size(), shape::length(_shapeInfo));
+                throw std::runtime_error("Data size doesn't match shape");
+            }
 
-        //memset(_buffer, 0, sizeOfT() * shape::length(_shapeInfo));
-        memcpy(_buffer, data.data(), sizeOfT() * shape::length(_shapeInfo));
+            memcpy(_buffer, data.data(), sizeOfT() * shape::length(_shapeInfo));
+        } else {
+            memset(_buffer, 0, sizeOfT() * shape::length(_shapeInfo));
+        }
 
 		_isBuffAlloc = true;
 		_isShapeAlloc = true;
@@ -850,7 +853,7 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
             auto shapeThis = ShapeUtils<T>::shapeAsString(this);
             auto shapeThat = ShapeUtils<T>::shapeAsString(other);
             nd4j_printf("Can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
-            throw "Lengths of arrays are mismatched";
+            throw std::runtime_error("Lengths of arrays are mismatched");
         }
 
         // memcpy is allowed only for same order && same ews (being equal to 1)
@@ -879,7 +882,7 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
             auto shapeThis = ShapeUtils<T>::shapeAsString(this);
             auto shapeThat = ShapeUtils<T>::shapeAsString(&other);
             nd4j_printf("Can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
-            throw "Lengths of arrays are mismatched";
+            throw std::runtime_error("Lengths of arrays are mismatched");
         }
 
         // memcpy is allowed only for same order && same ews (being equal to 1)
@@ -1081,7 +1084,7 @@ template <typename T>
         auto newShape = ShapeUtils<T>::evalReduceShapeInfo('c', copy, *this, keepDims, supportOldShapes, _workspace);
         if(!shape::shapeEquals(newShape, target->getShapeInfo())) {
             nd4j_printf("NDArray::reduceAlongDimension method: wrong target shape!\n", "");
-            throw "NDArray::reduceAlongDimension method: wrong target shape!";
+            throw std::runtime_error("NDArray::reduceAlongDimension method: wrong target shape!");
         }
         RELEASE(newShape, _workspace);
 
@@ -1275,7 +1278,7 @@ template <typename T>
         Nd4jLong numTads = this->lengthOf() / tadLength;
 
         if (index >= numTads)
-            throw "Can't get index higher than total number of TADs";
+            throw std::runtime_error("Can't get index higher than total number of TADs");
 
         shape::TAD tad(this->_shapeInfo, copy.data(), copy.size());
         tad.createTadOnlyShapeInfo();
@@ -1360,7 +1363,7 @@ template <typename T>
         
         auto correctShape = ShapeUtils<T>::evalTranspShapeInfo(*this, _workspace);
         if(!shape::equalsStrict(correctShape, target.getShapeInfo()))
-            throw "NDArray::transpose method: the shapeInfo of target array is wrong !";
+            throw std::runtime_error("NDArray::transpose method: the shapeInfo of target array is wrong !");
 
     // check whether target has allocated (its own) buffer
     if (target._isBuffAlloc) 
@@ -1611,7 +1614,7 @@ template<typename T>
 
     void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) {
         if (!scalar.isScalar()) {
-            throw "Operand is not a scalar!";
+            throw std::runtime_error("Operand is not a scalar!");
         }
 
         applyScalar<OpName>(scalar.getScalar(0), target, extraParams);
@@ -1662,7 +1665,7 @@ bool NDArray<T>::reshapei(const std::vector<Nd4jLong>& shape) {
             std::string current = ShapeUtils<T>::shapeAsString(this);
             std::string enforced = ShapeUtils<T>::shapeAsString(dimensions);
             nd4j_printf("Can't enforce new shape, lengths mismatch. Original shape: %s; Requested shape: %s\n", current.c_str(), enforced.c_str());
-            throw "Incompatible shape";
+            throw std::runtime_error("Incompatible shape");
         }
 
         Nd4jLong *newShape;
@@ -1710,7 +1713,7 @@ template <typename T>
     for (int i = 0; i < (int) shape.size(); i++) {
         if (shape[i] < 0) {
             if (numberNegativesOnes >= 1)
-                throw "Only one dimension can be negative at once";
+                throw std::runtime_error("Only one dimension can be negative at once");
 
             numberNegativesOnes++;
 
@@ -1719,7 +1722,7 @@ template <typename T>
                 if (i != j)
                     shapeLength *= shape_[j];
 
-            Nd4jLong realShape = nd4j::math::nd4j_abs<int>(lengthOf() / shapeLength);
+            auto realShape = nd4j::math::nd4j_abs<Nd4jLong>(lengthOf() / shapeLength);
             auto thisNewShape = new Nd4jLong[shape.size()];
 
             for (int j = 0; j < (int) shape.size(); j++) 
@@ -1746,7 +1749,7 @@ template <typename T>
         this->printShapeInfo("Mismatched shape");
         nd4j::Logger::printv("Shape requested: ", shape);
         nd4j_debug("Requested length in reshape: %i; Existing length: %i;\n", arrLength, this->lengthOf());
-        throw "Bad shape!";
+        throw std::runtime_error("Bad shape for reshapei()!");
     }
 
     int shapeLength = shape::shapeInfoLength(rank);
@@ -1811,7 +1814,7 @@ template <typename T>
 
             return max;
         } else
-            throw "Not implemented yet";
+            throw std::runtime_error("Not implemented yet");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1852,7 +1855,7 @@ NDArray<T> NDArray<T>::tile(const std::vector<Nd4jLong>& reps) const {
     for(const auto& item : reps)
         product *= item;
     if(product == 0)
-        throw "NDArray::tile method: one of the elements in reps array is zero !";
+        throw std::runtime_error("NDArray::tile method: one of the elements in reps array is zero !");
 
     int rankOld = rankOf();
     int diff = rankOld - dim;
@@ -1908,7 +1911,7 @@ void NDArray<T>::tile(const std::vector<Nd4jLong>& reps, NDArray<T>& target) con
     auto newShapeInfo = ShapeUtils<T>::evalTileShapeInfo(*this, reps, _workspace);
     if(!shape::equalsSoft(newShapeInfo, target.getShapeInfo()))  {
         delete []newShapeInfo;    
-        throw "NDArray::tile method - shapeInfo of target array is not suitable for tile operation !";
+        throw std::runtime_error("NDArray::tile method - shapeInfo of target array is not suitable for tile operation !");
     }
     delete[] newShapeInfo;
 
@@ -1945,10 +1948,10 @@ template <typename T>
 void NDArray<T>::tile(NDArray<T>& target) const {
         
     if(rankOf() > target.rankOf())
-        throw "NDArray::tile method - rank of target array must be bigger or equal to the rank of this array !";
+        throw std::runtime_error("NDArray::tile method - rank of target array must be bigger or equal to the rank of this array !");
     
     if(!ShapeUtils<T>::areShapesBroadcastable(*this, target))         
-        throw "NDArray::tile method - shapeInfo of target array is not suitable for tile operation !";
+        throw std::runtime_error("NDArray::tile method - shapeInfo of target array is not suitable for tile operation !");
 
     // fill newBuff, loop through all elements of newBuff 
     // looping through _buffer goes automatically by means of getSubArrayIndex applying
@@ -1982,7 +1985,7 @@ void NDArray<T>::tile(NDArray<T>& target) const {
     template<typename T>
     Nd4jLong NDArray<T>::sizeAt(int dim) const {
         if (dim >= this->rankOf() || dim < -this->rankOf())
-            throw "Bad size index requested";
+            throw std::runtime_error("Bad size index requested");
 
         if (dim >= 0)
             return this->_shapeInfo[1+dim];
@@ -2005,7 +2008,7 @@ template<typename T>
     for (int i = 0; i < rank; i++)
         newShape[i] = outShape[i];
 
-    NDArray<T>* ret = new NDArray<T>('c', outShape, _workspace);
+    auto ret = new NDArray<T>('c', outShape, _workspace);
 
     auto repeatDelta = shape::prodLong(newShape, rank) / this->lengthOf();
     auto numTads = this->tensorsAlongDimension({dimension});
@@ -2037,8 +2040,8 @@ template<typename T>
     Nd4jLong repeatDelta = shape::prodLong(target.shapeOf(), rankOf()) / this->lengthOf();
     Nd4jLong numTads = this->tensorsAlongDimension({dimension});
     for (int i = 0; i < numTads; i++) {
-        NDArray<T>* thisTensor = this->tensorAlongDimension(i, {dimension});
-        NDArray<T>* retTensor = target.tensorAlongDimension(i, {dimension});
+        auto thisTensor = this->tensorAlongDimension(i, {dimension});
+        auto retTensor = target.tensorAlongDimension(i, {dimension});
         int retIdx = 0;
         for (int k = 0; k < thisTensor->lengthOf(); k++) {
             T s = thisTensor->getIndexedScalar(k);
@@ -2063,7 +2066,7 @@ bool NDArray<T>::permutei(const int* dimensions, const int rank) {
         _isShapeAlloc = true;
     } else {
         if (!nonNull() || rank != rankOf())
-            throw "NDArray::permutei method: wrong arguments in permutei method: either array is nullptr or rank is not suitable!";
+            throw std::runtime_error("NDArray::permutei method: wrong arguments in permutei method: either array is nullptr or rank is not suitable!");
         shape::doPermuteShapeInfo(_shapeInfo, dimensions);
     }
 
@@ -2079,7 +2082,7 @@ bool NDArray<T>::permutei(const int* dimensions, const int rank) {
             _isShapeAlloc = true;
         } else {
             if (!nonNull() || rank != rankOf())
-                throw "NDArray::permutei method: wrong arguments in permutei method: either array is nullptr or rank is not suitable!";
+                throw std::runtime_error("NDArray::permutei method: wrong arguments in permutei method: either array is nullptr or rank is not suitable!");
             shape::doPermuteShapeInfo(_shapeInfo, dimensions);
         }
 
@@ -2106,7 +2109,7 @@ bool NDArray<T>::permutei(const std::initializer_list<Nd4jLong>& dimensions) {
     std::vector<int> ivec(dimensions.size());
 
     for (int e = 0; e < vec.size(); e++)
-        ivec[e] = vec[e];
+        ivec[e] = static_cast<int>(vec[e]);
 
     return permutei(ivec);
 }
@@ -2117,7 +2120,7 @@ bool NDArray<T>::permutei(const std::vector<Nd4jLong>& dimensions) {
     std::vector<int> ivec(dimensions.size());
 
     for (int e = 0; e < dimensions.size(); e++)
-        ivec[e] = dimensions[e];
+        ivec[e] = static_cast<int>(dimensions[e]);
 
     return permutei(ivec.data(), ivec.size());
 }
@@ -2129,7 +2132,7 @@ NDArray<T>* NDArray<T>::permute(const int* dimensions, const int rank) const {
     // evaluate shapeInfo for output (permuted) array ret
     auto shapeInfoNew = ShapeUtils<T>::evalPermShapeInfo(dimensions, rank, *this, _workspace);
     // create array to be returned
-    NDArray<T>* ret = new NDArray<T>(_buffer, shapeInfoNew, _workspace);
+    auto ret = new NDArray<T>(_buffer, shapeInfoNew, _workspace);
     // don't forget to indicate that memory for new array was allocated
     ret->_isBuffAlloc = false;
     ret->_isShapeAlloc = true;
@@ -2174,7 +2177,7 @@ template <typename T>
 void NDArray<T>::permute(const int* dimensions, const int rank, NDArray<T>& target) const {
 
     if (!nonNull() || !target.nonNull() || rank != rankOf() || rank != target.rankOf() )
-        throw "NDArray<T>::permute method: either arrays are nullptr or ranks are not suitable!";
+        throw std::runtime_error("NDArray<T>::permute method: either arrays are nullptr or ranks are not suitable!");
 
     // check whether target has allocated (its own) buffer
     if (target._isBuffAlloc) 
@@ -2196,7 +2199,7 @@ void NDArray<T>::permute(const int* dimensions, const int rank, NDArray<T>& targ
     void NDArray<T>::permute(const Nd4jLong *dimensions, const int rank, NDArray<T>& target) const {
 
         if (!nonNull() || !target.nonNull() || rank != rankOf() || rank != target.rankOf() )
-            throw "NDArray<T>::permute method: either arrays are nullptr or ranks are not suitable!";
+            throw std::runtime_error("NDArray<T>::permute method: either arrays are nullptr or ranks are not suitable!");
 
         // check whether target has allocated (its own) buffer
         if (target._isBuffAlloc)
@@ -2246,7 +2249,7 @@ void NDArray<T>::applyBroadcast(std::vector<int>& dimensions, const NDArray<T>* 
 
     Nd4jLong tadLength = shape::tadLength(this->_shapeInfo, copy.data(), (int) copy.size());
     if (tadLength != tadArray->lengthOf())
-       throw "Tad length mismatch";
+       throw std::runtime_error("Tad length mismatch");
 
     shape::TAD tad(this->_shapeInfo, copy.data(), copy.size());
     tad.createTadOnlyShapeInfo();
@@ -2265,7 +2268,7 @@ template <typename OpName>
 void NDArray<T>::applyTrueBroadcast(const NDArray<T>* other, NDArray<T>* target, const bool checkTargetShape, T *extraArgs) const {
 
     if(target == nullptr || other == nullptr)
-        throw "NDArray::applyTrueBroadcast method: target or other = nullptr !";
+        throw std::runtime_error("NDArray::applyTrueBroadcast method: target or other = nullptr !");
 
     const NDArray<T>* min(nullptr), *max(nullptr);
     if(this->rankOf() >= other->rankOf()) {
@@ -2280,9 +2283,9 @@ void NDArray<T>::applyTrueBroadcast(const NDArray<T>* other, NDArray<T>* target,
     if(checkTargetShape) {
         Nd4jLong* newShapeInfo = nullptr;
         if(!ShapeUtils<T>::evalBroadcastShapeInfo(*max, *min, false, newShapeInfo, _workspace))          // the rank of target array must be equal to max->rankOf)()
-            throw "NDArray::applyTrueBroadcast method: the shapes of this and other arrays are not suitable for broadcast operation !" ;
+            throw std::runtime_error("NDArray::applyTrueBroadcast method: the shapes of this and other arrays are not suitable for broadcast operation !");
         if(!shape::equalsSoft(target->getShapeInfo(), newShapeInfo))
-            throw "NDArray::applyTrueBroadcast method: the shape of target array is wrong !";
+            throw std::runtime_error("NDArray::applyTrueBroadcast method: the shape of target array is wrong !");
 
         // if workspace is not null - do not call delete.
         if (_workspace == nullptr)
@@ -2326,8 +2329,8 @@ NDArray<T>* NDArray<T>::applyTrueBroadcast(const NDArray<T>* other, T *extraArgs
 
     Nd4jLong* newShapeInfo = nullptr;
     if(!ShapeUtils<T>::evalBroadcastShapeInfo(*this, *other, true, newShapeInfo, _workspace))          // the rank of new array = max->rankOf)()
-        throw "NDArray::applyTrueBroadcast method: the shapes of this and other arrays are not suitable for broadcast operation !" ;
-    NDArray<T>* result = new NDArray<T>(newShapeInfo, false, this->_workspace);
+        throw std::runtime_error("NDArray::applyTrueBroadcast method: the shapes of this and other arrays are not suitable for broadcast operation !");
+    auto result = new NDArray<T>(newShapeInfo, false, this->_workspace);
 
     // if workspace is not null - do not call delete.
     if (_workspace == nullptr)
@@ -2344,7 +2347,7 @@ template<typename T>
 template <typename OpName>
 NDArray<T> NDArray<T>::applyTrueBroadcast(const NDArray<T>& other, T *extraArgs) const {
 
-    NDArray<T>* pResult = this->template applyTrueBroadcast<OpName>(&other, extraArgs);
+    auto pResult = this->template applyTrueBroadcast<OpName>(&other, extraArgs);
     pResult->_isShapeAlloc = false;
     pResult->_isBuffAlloc  = false;
 
@@ -2365,7 +2368,7 @@ NDArray<T>* NDArray<T>::broadcast(const NDArray<T>& other) {
 	// the orders must be the same
 	char order = ordering();
 	if(order != other.ordering())
-		throw "Broadcast method: arrays have different orders!";
+		throw std::runtime_error("Broadcast method: arrays have different orders!");
 	// recognize shapes with smaller and bigger rank
 	Nd4jLong* biggerShapeInfo = nullptr;
 	Nd4jLong* smallerShapeInfo = nullptr;
@@ -2386,7 +2389,7 @@ NDArray<T>* NDArray<T>::broadcast(const NDArray<T>& other) {
 	int diff = biggerRank - smallerRank;
 	for (int i = smallerRank; i<=1; --i)
 		if(biggerShapeInfo[diff+i] != smallerShapeInfo[i] && biggerShapeInfo[i] != 1 && smallerShapeInfo[i] != 1)
-			throw "Broadcast method: arrays have incompatible shapes !";
+			throw std::runtime_error("Broadcast method: arrays have incompatible shapes !");
 	// create and fill ret shapeInfo
 	auto shapeInfoNew = new Nd4jLong[shape::shapeInfoLength(biggerRank)];
 	memcpy(shapeInfoNew, biggerShapeInfo, shape::shapeInfoByteLength(biggerRank));
@@ -2394,7 +2397,7 @@ NDArray<T>* NDArray<T>::broadcast(const NDArray<T>& other) {
 		if(shapeInfoNew[diff+i] == 1 || smallerShapeInfo[i] == 1) 
 			shapeInfoNew[diff+i] *= smallerShapeInfo[i];
 
-	NDArray<T>* ret = new NDArray<T>(shapeInfoNew, _workspace);
+	auto ret = new NDArray<T>(shapeInfoNew, _workspace);
 	ret->updateStrides(order);
 	delete []shapeInfoNew;
 
@@ -2408,10 +2411,10 @@ template<typename T>
 bool NDArray<T>::hasOrthonormalBasis(const int arg) {
 
 	if(rankOf() !=2 )
-		throw "NDArray::hasOrthBasis method: rank of ndarray is not equal 2 !";
+		throw std::runtime_error("NDArray::hasOrthBasis method: rank of ndarray is not equal 2 !");
 
 	if(arg!=0  && arg!=1)
-		throw "NDArray::hasOrthBasis method: input argument is not equal to 0 or 1 !";
+		throw std::runtime_error("NDArray::hasOrthBasis method: input argument is not equal to 0 or 1 !");
 
 	const T eps = 1e-5f;
 	T dot = 0.f;
@@ -2457,7 +2460,7 @@ bool NDArray<T>::hasOrthonormalBasis(const int arg) {
 template<typename T>
 bool NDArray<T>::isIdentityMatrix() {
 	if(rankOf() !=2 || rows() != columns())
-		throw "isIdentityMatrix method: matrix must be square and have rank = 2 !";
+		throw std::runtime_error("isIdentityMatrix method: matrix must be square and have rank = 2 !");
 
 	const T eps = 1e-5f;
 	for(int i=0; i<rows(); ++i)
@@ -2479,7 +2482,7 @@ template<typename T>
 bool NDArray<T>::isUnitary() {
 
     if(rankOf() !=2 || rows() != columns())
-        throw "isUnitary method: matrix must be square and have rank = 2 !";
+        throw std::runtime_error("isUnitary method: matrix must be square and have rank = 2 !");
 
     NDArray<T>* tr = this->transpose();
     NDArray<T>* trMul = nd4j::NDArrayFactory<T>::mmulHelper(this, tr, nullptr, 1.f, 0.f);
@@ -2512,7 +2515,7 @@ bool NDArray<T>::isUnitary() {
         }
 
         if (idx.size() != this->rankOf())
-            throw "Number of indices should match";
+            throw std::runtime_error("Number of indices should match");
 
         Nd4jLong* newShape;
         ALLOCATE(newShape, _workspace, shape::shapeInfoLength(this->rankOf()), Nd4jLong);
@@ -2536,7 +2539,7 @@ bool NDArray<T>::isUnitary() {
                 shapeOf[d] = index->getIndices().size();
 
                 // for offset we're taking only the first index
-                int first = index->getIndices().at(0);
+                auto first = index->getIndices().at(0);
                 offset += first * stridesOf[d];
 
                 shape::stride(newShape)[d] *= index->stride();
@@ -2556,7 +2559,7 @@ bool NDArray<T>::isUnitary() {
     template<typename T>
     NDArray<T>* NDArray<T>::subarray(const std::initializer_list<NDIndex*>& idx) const {
         if (idx.size() != this->rankOf())
-            throw "NDArray::subarray: number of indices should match the array rank";
+            throw std::runtime_error("NDArray::subarray: number of indices should match the array rank");
 
         Nd4jLong *newShape;
         ALLOCATE(newShape, _workspace, shape::shapeInfoLength(this->rankOf()), Nd4jLong);
@@ -2576,7 +2579,7 @@ bool NDArray<T>::isUnitary() {
                 // size at this dimension equals to either 1 or interval
                 shapeOf[d] = index->getIndices().size();
                 // for offset we're taking only the first index
-                int first = index->getIndices().at(0);
+                auto first = index->getIndices().at(0);
                 offset += first * stridesOf[d];
             }
             ++d;
@@ -2597,7 +2600,7 @@ bool NDArray<T>::isUnitary() {
     NDArray<T>* NDArray<T>::subarray(const Intervals& idx) const {
 
         if (idx.size() != this->rankOf())
-            throw "NDArray::subarray: number of indices should match the rank of array!";
+            throw std::runtime_error("NDArray::subarray: number of indices should match the rank of array!");
 
         Nd4jLong *newShape;
         ALLOCATE(newShape, _workspace, shape::shapeInfoLength(this->rankOf()), Nd4jLong);
@@ -2612,7 +2615,7 @@ bool NDArray<T>::isUnitary() {
             // building new shape first
             if (!idx[d].empty()) {
                 if (idx[d].size() != 2)
-                    throw "NDArray::subarray: the interval must contain only two numbers {first, last} !";
+                    throw std::runtime_error("NDArray::subarray: the interval must contain only two numbers {first, last} !");
                 shapeOf[d] = idx[d][1] - idx[d][0];
                 // for offset we're taking only the first index
                 offset += idx[d][0] * stridesOf[d];
@@ -2667,7 +2670,7 @@ bool NDArray<T>::isUnitary() {
             std::sort(copy.begin(), copy.end());
 
         auto newShape = ShapeUtils<T>::evalReduceShapeInfo('c', copy, *this);
-        NDArray<T>* result = new NDArray<T>(newShape, _workspace);
+        auto result = new NDArray<T>(newShape, _workspace);
         RELEASE(newShape, _workspace);
 
         if(rankOf() == copy.size())
@@ -2692,7 +2695,7 @@ bool NDArray<T>::isUnitary() {
     NDArray<T>* NDArray<T>::applyReduce3(const NDArray<T>* other, const T* extraParams) const {
         // check shapes consistency
         if(!isSameShape(other))
-            throw "NDArray::applyReduce3 method: the shapes of array must be the same !";
+            throw std::runtime_error("NDArray::applyReduce3 method: the shapes of array must be the same !");
         // create shapeInfo for scalar
         Nd4jLong* newShape;
         ALLOCATE(newShape, _workspace, 8, Nd4jLong);
@@ -2701,7 +2704,7 @@ bool NDArray<T>::isUnitary() {
         newShape[2] = 1;    // set second dimension (scalar)
         shape::updateStrides(newShape, 'c');
         // create output array (scalar)
-        NDArray<T>* result = new NDArray<T>(newShape, _workspace);
+        auto result = new NDArray<T>(newShape, _workspace);
         RELEASE(newShape, _workspace);
         // create temporary array of extra parameters if array extraParams is empty (==nullptr)
         T* extraParamsVals = nullptr;
@@ -2736,7 +2739,7 @@ bool NDArray<T>::isUnitary() {
         tadY.createOffsets();        
         // check tads shapes
         if(!shape::equalsSoft(tadX.tadOnlyShapeInfo, tadY.tadOnlyShapeInfo)) 
-            throw "NDArray::applyAllReduce3 method: the shapes of array tads are different !";
+            throw std::runtime_error("NDArray::applyAllReduce3 method: the shapes of array tads are different !");
         // evaluate numbers of tads
         Nd4jLong tadLengthX = shape::tadLength(_shapeInfo, copy.data(), copy.size());
         Nd4jLong numTadsX = lengthOf() / tadLengthX;
@@ -2751,7 +2754,7 @@ bool NDArray<T>::isUnitary() {
         newShape[2] = numTadsY;
         shape::updateStrides(newShape, 'c');
         // create output array
-        NDArray<T>* result = new NDArray<T>(newShape, _workspace);
+        auto result = new NDArray<T>(newShape, _workspace);
         RELEASE(newShape, _workspace);
         // create temporary array of extra parameters if array extraParams is empty (==nullptr)
         T* extraParamsVals = nullptr;
@@ -2778,7 +2781,7 @@ bool NDArray<T>::isUnitary() {
         shape::checkDimensions(other->rankOf(), copy);               
 
         auto newShape = ShapeUtils<T>::evalReduceShapeInfo('c', copy, *this);
-        NDArray<T>* result = new NDArray<T>(newShape, _workspace);
+        auto result = new NDArray<T>(newShape, _workspace);
         RELEASE(newShape, _workspace);
         // create temporary array of extra parameters if array extraParams is empty (==nullptr)
         T* extraParamsVals = nullptr;
@@ -2817,7 +2820,7 @@ bool NDArray<T>::isUnitary() {
             std::sort(copy.begin(), copy.end());
             
         auto newShape = ShapeUtils<T>::evalReduceShapeInfo('c', copy, *this);
-        NDArray<T>* result = new NDArray<T>(newShape, _workspace);
+        auto result = new NDArray<T>(newShape, _workspace);
         RELEASE(newShape, _workspace);        
         
         if(rankOf() == copy.size())
@@ -2873,7 +2876,7 @@ bool NDArray<T>::isUnitary() {
         auto stridesOf = shape::stride(newShape);
 
         Nd4jLong offset = 0;
-        int first, last;
+        Nd4jLong first, last;
         for (int d = 0; d < rank; ++d) {
             // building new shape first
             if (idx[2*d] != idx[2*d+1]) {
@@ -2913,7 +2916,7 @@ bool NDArray<T>::isUnitary() {
 
         const int rank = rankOf();
         if (idx.size() != rank)
-            throw "NDArray::operator(Intervals): number of indices should match the rank of array!";
+            throw std::runtime_error("NDArray::operator(Intervals): number of indices should match the rank of array!");
 
         Nd4jLong *newShape;
         ALLOCATE(newShape, _workspace, shape::shapeInfoLength(rank), Nd4jLong);
@@ -2924,12 +2927,12 @@ bool NDArray<T>::isUnitary() {
         auto stridesOf = shape::stride(newShape);
 
         Nd4jLong offset = 0;
-        int first, last;
+        Nd4jLong first, last;
         for (int d = 0; d < idx.size(); ++d) {
             // building new shape first
             if (!idx[d].empty()) {
                 if (idx[d].size() != 2)
-                    throw "NDArray::operator(Intervals): the interval must contain only two numbers {first, last} !";
+                    throw std::runtime_error("NDArray::operator(Intervals): the interval must contain only two numbers {first, last} !");
                 first = idx[d][0] >= 0 ? idx[d][0] : idx[d][0] + sizeAt(d) + 1;
                 last  = idx[d][1] >= 0 ? idx[d][1] : idx[d][1] + sizeAt(d) + 1;
 
@@ -3168,7 +3171,7 @@ NDArray<T> NDArray<T>::operator+(const NDArray<T>& other) const {
     NDArray<T> NDArray<T>::operator/(const T scalar) const {
 
         if(scalar == (T)0.)
-            throw "NDArray::operator/ (division operator) : division by zero !";
+            throw std::runtime_error("NDArray::operator/ (division operator) : division by zero !");
         
         NDArray<T> result(this->_shapeInfo, this->_workspace);
         functions::scalar::ScalarTransform<T>::template transform<simdOps::Divide<T>>(this->_buffer, this->_shapeInfo, result._buffer, result._shapeInfo, scalar, nullptr);
@@ -3231,7 +3234,8 @@ NDArray<T> NDArray<T>::operator+(const NDArray<T>& other) const {
         int  rank    = rankOf();
         auto shape   = shapeOf();
         auto strides = stridesOf();
-        int  minDim  = 100000000;
+        // FIXME: replace to MAX_LONG
+        Nd4jLong  minDim  = MAX_INT;
         Nd4jLong indices[MAX_RANK];
         for(int j = 0; j < rank; ++j) 
                 indices[j] = 1;
@@ -3252,13 +3256,13 @@ NDArray<T> NDArray<T>::operator+(const NDArray<T>& other) const {
     void NDArray<T>::swapUnsafe(NDArray<T>& other) {
         
         if(_buffer == nullptr || other._buffer == nullptr)
-            throw "NDArray::swapUnsafe method: input array should not be empty!";
+            throw std::runtime_error("NDArray::swapUnsafe method: input array should not be empty!");
 
         // if(_buffer == other._buffer)
-        //     throw "NDArray::swapUnsafe method: the buffers of input arrays should not point on the same address!";
+        //     throw std::runtime_error("NDArray::swapUnsafe method: the buffers of input arrays should not point on the same address!");
 
         if(lengthOf() != other.lengthOf())
-            throw "NDArray::swapUnsafe method: input arrays should have the same length!";
+            throw std::runtime_error("NDArray::swapUnsafe method: input arrays should have the same length!");
 
         T temp;
 #pragma omp parallel for schedule(static) private(temp)
@@ -3287,8 +3291,9 @@ NDArray<T> NDArray<T>::operator+(const NDArray<T>& other) const {
             outShapeInfo[7] = (int)order;
         }
         else {            
-            
-            int diagSize  = 100000000;        
+
+            // FIXME: MAX_LONG should be used here!
+            Nd4jLong diagSize  = MAX_INT;
             Nd4jLong indices[MAX_RANK];
                     
             for(int i = 0; i < rank; ++i) {    
@@ -3314,7 +3319,7 @@ NDArray<T> NDArray<T>::operator+(const NDArray<T>& other) const {
             outShapeInfo[6] =  -1;
         }
 
-        NDArray<T>* result = new NDArray<T>(this->_buffer, outShapeInfo, this->_workspace);
+        auto result = new NDArray<T>(this->_buffer, outShapeInfo, this->_workspace);
         result->_isShapeAlloc = true;
         return result;
     }
@@ -3324,10 +3329,10 @@ template<typename T>
 void NDArray<T>::setValueInDiagMatrix(const T& value, const int diag, const char direction) {
 
     if(rankOf() != 2)
-       throw std::string("NDArray::setValueInDiagMatrix method: array must have rank = 2, but got " + toStringValue(rankOf()) + " instead !");
+       throw std::runtime_error("NDArray::setValueInDiagMatrix method: array must have rank = 2, but got " + toStringValue(rankOf()) + " instead !");
 
-    const int rows = sizeAt(0);
-    const int cols = sizeAt(1);
+    const auto rows = sizeAt(0);
+    const auto cols = sizeAt(1);
         
     switch(direction) {
             
@@ -3348,7 +3353,7 @@ void NDArray<T>::setValueInDiagMatrix(const T& value, const int diag, const char
             break;
 
         default:
-            throw std::string("NDArray::setValueInDiagMatrix method: wrong value of direction argument, expected is 'u' or 'l', but got " + std::string(1,direction) + " instead !");
+            throw std::runtime_error("NDArray::setValueInDiagMatrix method: wrong value of direction argument, expected is 'u' or 'l', but got " + std::string(1,direction) + " instead !");
     }  
 }
 
@@ -3430,9 +3435,9 @@ void NDArray<T>::tileToShape(const std::vector<Nd4jLong>& shape, NDArray<T>* tar
         thisShape[i] = sizeAt(i);
 
     if(!ShapeUtils<T>::areShapesBroadcastable(shape, thisShape))
-        throw "NDArray::tileToShape method: the shape of this array and input shape are not suitable for broadcast operation !" ;
+        throw std::runtime_error("NDArray::tileToShape method: the shape of this array and input shape are not suitable for broadcast operation !");
 
-    const int newRank = shape.size();
+    const int newRank = static_cast<int>(shape.size());
     std::vector<Nd4jLong> repeats(newRank);
 
     for(int i = 1; i <= newRank; ++i) {
@@ -3460,7 +3465,9 @@ T NDArray<T>::getTrace() const {
     int  rank    = rankOf();
     auto shape   = shapeOf();
     auto strides = stridesOf();
-    int  minDim  = 100000000;
+
+    // FIXME: MAX_LONG should be used here
+    Nd4jLong  minDim  = MAX_INT;
     
     Nd4jLong indices[MAX_RANK];
     for(int j = 0; j < rank; ++j) 
