@@ -25,8 +25,12 @@ endif()
 # -fsanitize=leak
 if (APPLE)
     set(CMAKE_CXX_FLAGS  " -O0 -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -D__APPLE_OS__=true")
-elseif(WIN32)    
-    set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2")
+elseif(WIN32)
+    if (${_CUDA})
+        # do we want any special flags here?
+    else()
+        set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2")
+    endif()
 else()
     if ("${_RELEASE}")
         set(CMAKE_CXX_FLAGS  "-O3 -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -march=native -mtune=native")
@@ -77,17 +81,30 @@ else()
 endif ()
 
 # Setting up OpenMP - regardless of target device
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-else()
-    message("OPENMP NOT FOUND")
+if (!${_CUDA} AND _WIN32)
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    else()
+        message("OPENMP NOT FOUND")
+    endif()
 endif()
 
 if (${_CUDA})
+    find_package(CUDA)
+    if (CUDA_FOUND)
+        message("CUDA Found!")
+    endif()
     message("CUDA Build")
     add_definitions(-D__CUDABLAS__=true)
+
+    set( CUDA_ARCHITECTURE_MINIMUM "3.0" CACHE STRING "Minimum required CUDA compute capability" )
+    SET(CUDA_VERBOSE_BUILD ON)
+    SET(CUDA_SEPARABLE_COMPILATION ON)
+    set(CUDA_COMPUTE_CAPABILITY "35")
+
+    list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O3 -arch=compute_61 -code=sm_61)
 
     file(GLOB_RECURSE TYPES_SOURCES false ../../include/types/*.cpp ../../include/types/*.h)
     file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.h)
@@ -100,7 +117,7 @@ if (${_CUDA})
     file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cu ../../include/helpers/*.h)
     file(GLOB_RECURSE LOOPS_SOURCES false ../../include/loops/*.cu ../../include/loops/*.h)
 
-    add_library(nd4jcuda STATIC ../../blas/cuda/NativeOps.cu ../../blas/cuda/NDArray.cu ../../blas/cpu/GraphExecutioner.cpp
+    CUDA_ADD_LIBRARY(nd4jcuda STATIC ../../blas/cuda/NativeOps.cu ../../blas/cuda/NDArray.cu ../../blas/cpu/GraphExecutioner.cpp
             ../../blas/cpu/NativeOpExcutioner.cpp ../../blas/cpu/NDArrayFactory.cpp
             ../../include/cnpy/cnpy.cpp  ../../include/nd4jmemset.h ../../include/nd4jmalloc.h
             ../../blas/Environment.cpp ../../blas/Environment.h
@@ -108,8 +125,13 @@ if (${_CUDA})
             ${MEMORY_SOURCES} ${GRAPH_SOURCES} ${CUSTOMOPS_SOURCES} ${INDEXING_SOURCES} ${HELPERS_SOURCES} ${CUSTOMOPS_HELPERS_SOURCES}
             ${OPS_SOURCES} ${LOOPS_SOURCES} ${ARRAY_SOURCES} ${TYPES_SOURCES})
 
+    target_link_libraries(runtests nd4jcuda ${CUDA_LIBRARIES} gtest gtest_main)
 
-    target_link_libraries(runtests nd4jcuda gtest gtest_main)
+    if(WIN32)
+        message("CUDA on Windows: enabling /EHsc")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+        SET_TARGET_PROPERTIES(nd4jcuda PROPERTIES COMPILER_FLAGS "/EHsc")
+    endif()
 
     add_executable(minifier ../../minifier/minifier.cpp ../../minifier/graphopt.cpp)
     target_link_libraries(minifier nd4jcuda)
