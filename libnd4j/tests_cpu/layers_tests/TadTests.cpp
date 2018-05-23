@@ -81,7 +81,7 @@ TEST_F(TadTests, TestShapeTad_1) {
     tad.createTadOnlyShapeInfo();
     tad.createOffsets();
 
-    Nd4jLong tadShapeInfo[shape::shapeInfoLength(tad.tadOnlyShapeInfo[0])];
+    auto tadShapeInfo = new Nd4jLong[shape::shapeInfoLength(tad.tadOnlyShapeInfo[0])];
     std::memcpy(tadShapeInfo, tad.tadOnlyShapeInfo, shape::shapeInfoByteLength(tad.tadOnlyShapeInfo));
 
     float* tadBuff = input.getBuffer() + tad.tadOffsets[0];
@@ -90,7 +90,8 @@ TEST_F(TadTests, TestShapeTad_1) {
     ASSERT_TRUE(numTads==1);
     ASSERT_TRUE(input.isSameShapeStrict(&tadArr));
     ASSERT_TRUE(input.equalsTo(&tadArr));
-    
+
+    delete tadShapeInfo;
 }
 
 TEST_F(TadTests, TadNoAxis_1) {
