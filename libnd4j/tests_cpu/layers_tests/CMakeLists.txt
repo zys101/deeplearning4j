@@ -104,7 +104,7 @@ if (${_CUDA})
     SET(CUDA_SEPARABLE_COMPILATION ON)
     set(CUDA_COMPUTE_CAPABILITY "35")
 
-    list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_61 -code=sm_61)
+    list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_61 -code=sm_61 -ftemplate-backtrace-limit=2)
 
     file(GLOB_RECURSE TYPES_SOURCES false ../../include/types/*.cpp ../../include/types/*.h)
     file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.h)
