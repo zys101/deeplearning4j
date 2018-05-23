@@ -35,7 +35,7 @@ void NDArray<T>::operator delete(void* p) {
 template <typename T>
 NDArray<T>* NDArray<T>::getView() {
 
-	return new NDArray();
+	return new NDArray<T>();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ template <typename T>
 template <typename N>
 NDArray<N>* NDArray<T>::asT() {	
 
-        return new NDArray();
+        return new NDArray<N>();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -150,14 +150,14 @@ std::vector<T> NDArray<T>::getBufferAsVector() {
 template<typename T>
 std::vector<Nd4jLong> NDArray<T>::getShapeAsVector() {
 
- 	return std::vector<T>();
+ 	return std::vector<Nd4jLong >();
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 std::vector<int64_t> NDArray<T>::getShapeInfoAsFlatVector() {
 
- 	return std::vector<T>();
+ 	return std::vector<int64_t>();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1172,24 +1172,23 @@ void NDArray<T>::operator*=(const T scalar) {
 // division operator array/array
 template<typename T>
 NDArray<T> NDArray<T>::operator/(const NDArray<T>& other) const {
-
-	return NDArray<T>();
+	NDArray<T> cs;
+	return cs;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // division operator array / scalar
 template<typename T>
 NDArray<T> NDArray<T>::operator/(const T scalar) const {
-
-	return NDArray<T>();
+	NDArray<T> cs;
+	return cs;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // division operator array1 /= array2
 template<typename T>
-void NDArray<T>::operator/=(const NDArray<T>& other) {    
+void NDArray<T>::operator/=(const NDArray<T>& other) {
 
-	return NDArray<T>();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1277,5 +1276,25 @@ NDArray<T>::~NDArray() noexcept {
 
 }
 
+	template class ND4J_EXPORT NDArray<float>;
+	template class ND4J_EXPORT NDArray<float16>;
+	template class ND4J_EXPORT NDArray<double>;
 
+
+	template NDArray<float>* NDArray<float>::asT<float>();
+	template NDArray<float16>* NDArray<float>::asT<float16>();
+	template NDArray<double>* NDArray<float>::asT<double>();
+
+	template NDArray<float>* NDArray<float16>::asT<float>();
+	template NDArray<float16>* NDArray<float16>::asT<float16>();
+	template NDArray<double>* NDArray<float16>::asT<double>();
+
+	template NDArray<float>* NDArray<double>::asT<float>();
+	template NDArray<float16>* NDArray<double>::asT<float16>();
+	template NDArray<double>* NDArray<double>::asT<double>();
+
+
+#ifndef __CLION_IDE__
+#include "../cpu/NDArray.macro"
+#endif
 }
