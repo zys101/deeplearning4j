@@ -5207,10 +5207,8 @@ void NativeOps::execAggregateFloat(Nd4jPointer *extraPointers,int opNum,
 
     dim3 launchDims = dim3(numBlocks, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateSimple, float, PARAMS(arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments), OPS_A(AGGREGATE_OPS))
 
-    nd4j::DebugHelper::checkErrorCode(stream, "execAggregateFloat(...) failed");
+	functions::aggregate::AggregatedFunction<float>::execAggregateSimple(stream, launchDims, opNum, arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments);
 }
 
 
@@ -5233,10 +5231,8 @@ void NativeOps::execAggregateDouble(Nd4jPointer *extraPointers,int opNum,
 
     dim3 launchDims = dim3(numBlocks, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateSimple, double, PARAMS(arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments), OPS_A(AGGREGATE_OPS))
 
-    nd4j::DebugHelper::checkErrorCode(stream, "execAggregateDouble(...) failed");
+	functions::aggregate::AggregatedFunction<double>::execAggregateSimple(stream, launchDims, opNum, arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments);
 }
 
 void NativeOps::execAggregateHalf(Nd4jPointer *extraPointers,int opNum,
@@ -5258,10 +5254,7 @@ void NativeOps::execAggregateHalf(Nd4jPointer *extraPointers,int opNum,
 
     dim3 launchDims = dim3(numBlocks, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateSimple, float16, PARAMS(arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments), OPS_A(AGGREGATE_OPS))
-
-    nd4j::DebugHelper::checkErrorCode(stream, "execAggregateHalf(...) failed");
+	functions::aggregate::AggregatedFunction<float16>::execAggregateSimple(stream, launchDims, opNum, arguments, numArguments, shapes, numShapes, indexArguments, numIndexArguments, intArrays, numIntArrays, realArguments, numRealArguments);
 }
 
 void NativeOps::execAggregateBatchFloat(Nd4jPointer *extraPointers, int numAggregates, int opNum, int maxArgs, int maxShapes, int maxIntArrays, int maxIntArraySize, int maxIdx, int maxReals,  void *ptrToArguments) {
@@ -5273,10 +5266,7 @@ void NativeOps::execAggregateBatchFloat(Nd4jPointer *extraPointers, int numAggre
 
     dim3 launchDims = dim3(numAggregates, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateBatchSimple, float, PARAMS(numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments), OPS_A(AGGREGATE_OPS))
-
-	DEBUG_KERNEL(stream, opNum);
+    functions::aggregate::AggregatedFunction<float>::execAggregateBatch(stream, launchDims, numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments);
 }
 
 void NativeOps::execAggregateBatchDouble(Nd4jPointer *extraPointers, int numAggregates, int opNum, int maxArgs, int maxShapes, int maxIntArrays, int maxIntArraySize, int maxIdx, int maxReals,  void *ptrToArguments) {
@@ -5288,10 +5278,7 @@ void NativeOps::execAggregateBatchDouble(Nd4jPointer *extraPointers, int numAggr
 
     dim3 launchDims = dim3(numAggregates, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateBatchSimple, double, PARAMS(numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments), OPS_A(AGGREGATE_OPS))
-
-	DEBUG_KERNEL(stream, opNum);
+    functions::aggregate::AggregatedFunction<double>::execAggregateBatch(stream, launchDims, numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments);
 }
 
 void NativeOps::execAggregateBatchHalf(Nd4jPointer *extraPointers, int numAggregates, int opNum, int maxArgs, int maxShapes, int maxIntArrays, int maxIntArraySize, int maxIdx, int maxReals,  void *ptrToArguments) {
@@ -5303,10 +5290,7 @@ void NativeOps::execAggregateBatchHalf(Nd4jPointer *extraPointers, int numAggreg
 
     dim3 launchDims = dim3(numAggregates, numThreads, shmem);
 
-	// this macro builds bunch of IF/ELSE selectors for kernel launch
-    DISPATCH_SIMPLE(aggregateBatchSimple, float16, PARAMS(numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments), OPS_A(AGGREGATE_OPS))
-
-	DEBUG_KERNEL(stream, opNum);
+    functions::aggregate::AggregatedFunction<float16>::execAggregateBatch(stream, launchDims, numAggregates, opNum, maxArgs, maxShapes, maxIntArrays, maxIntArraySize, maxIdx, maxReals, ptrToArguments);
 }
 
 void NativeOps::execRandomFloat(Nd4jPointer *extraPointers, int opNum, Nd4jPointer stateHost, float *z, Nd4jLong *zShapeBuffer, float *extraArguments) {
