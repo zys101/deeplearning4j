@@ -4,13 +4,14 @@
 
 #include <ops/declarable/helpers/col2im.h>
 
+
 namespace nd4j {
     namespace ops {
         namespace helpers {
             template <typename T>
-            void _CUDA_G device_col2im(T *result, T *dx, int *zShape, int *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX) {
-                int *inShape = shape::shapeOf(xShape);
-                int *inStride = shape::stride(xShape);
+            void _CUDA_G device_col2im(T *result, T *dx, Nd4jLong *zShape, Nd4jLong *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX) {
+                auto inShape = shape::shapeOf(xShape);
+                auto inStride = shape::stride(xShape);
 
                 int strideex = inStride[0];
                 int stridech = inStride[1];
@@ -22,9 +23,9 @@ namespace nd4j {
                 int kernelHeight = inShape[2];
                 int kernelWidth = inShape[3];
 
-                int *outShape = shape::shapeOf(zShape);
-                char resultOrder = shape::order(zShape);
-                int *outStride = shape::stride(zShape);
+                auto outShape = shape::shapeOf(zShape);
+                auto resultOrder = shape::order(zShape);
+                auto outStride = shape::stride(zShape);
 
                 int samples = outShape[0];
                 int depth = outShape[1];
@@ -86,14 +87,14 @@ namespace nd4j {
 
 
             template<typename T>
-            void _col2im(nd4j::graph::LaunchContext &context, T *dx, T *result, int *zShape, int *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX) {
+            void _col2im(nd4j::LaunchContext &context, T *dx, T *result, Nd4jLong *zShape, Nd4jLong *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX) {
                 device_col2im<T><<<512, 512>>>(result, dx, zShape, xShape, sY, sX, pY, pX, imgY, imgX, dY, dX);
             };
 
 
-            template void _col2im<float>(nd4j::graph::LaunchContext& context, float *dx, float *result, int *zShape, int *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
-            template void _col2im<float16>(nd4j::graph::LaunchContext& context, float16 *dx, float16 *result, int *zShape, int *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
-            template void _col2im<double>(nd4j::graph::LaunchContext& context, double *dx, double *result, int *zShape, int *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
+            template void _col2im<float>(nd4j::LaunchContext& context, float *dx, float *result, Nd4jLong *zShape, Nd4jLong *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
+            template void _col2im<float16>(nd4j::LaunchContext& context, float16 *dx, float16 *result, Nd4jLong *zShape, Nd4jLong *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
+            template void _col2im<double>(nd4j::LaunchContext& context, double *dx, double *result, Nd4jLong *zShape, Nd4jLong *xShape, int sY, int sX, int pY, int pX, int imgY, int imgX, int dY, int dX);
         }
     }
 }

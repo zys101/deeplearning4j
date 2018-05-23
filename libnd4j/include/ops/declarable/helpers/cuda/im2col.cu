@@ -9,7 +9,7 @@ namespace nd4j {
         namespace helpers {
 
             template <typename T>
-            void _CUDA_G device_im2col(T *result, T *dx, int *resultShapeBuffer, int *xShapeBuffer, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, double zeroPadVal) {
+            void _CUDA_G device_im2col(T *result, T *dx, Nd4jLong *resultShapeBuffer, Nd4jLong *xShapeBuffer, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, T zeroPadVal) {
                 int kSize = kX * kY;
 
                 if (threadIdx.x == 0) {
@@ -17,12 +17,12 @@ namespace nd4j {
                 }
                 __syncthreads();
 
-                int *outShape = shape::shapeOf(resultShapeBuffer);
+                Nd4jLong *outShape = shape::shapeOf(resultShapeBuffer);
                 char resultOrder = shape::order(resultShapeBuffer);
-                int *outStride = shape::stride(resultShapeBuffer);
+                Nd4jLong *outStride = shape::stride(resultShapeBuffer);
 
-                int *inShape = shape::shapeOf(xShapeBuffer);
-                int *inStride = shape::stride(xShapeBuffer);
+                Nd4jLong *inShape = shape::shapeOf(xShapeBuffer);
+                Nd4jLong *inStride = shape::stride(xShapeBuffer);
 
                 int samples = inShape[0];
                 int depth = inShape[1];
@@ -101,14 +101,14 @@ namespace nd4j {
 
             template <typename T>
             _CUDA_H
-            void _im2col(nd4j::graph::LaunchContext& context, T *dst, T *src, int *outShape, int *inShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode) {
-                device_im2col<T><<<512, 512>>>(dst, src, outShape, inShape, kY, kX, sY, sX, pY, pX, dY, dX, isSameMode);
+            void _im2col(nd4j::LaunchContext& context, T *dst, T *src, Nd4jLong *outShape, Nd4jLong *inShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, T zeroPadVal) {
+                device_im2col<T><<<512, 512>>>(dst, src, outShape, inShape, kY, kX, sY, sX, pY, pX, dY, dX, isSameMode, zeroPadVal);
             }
 
 
-            template void _im2col<float>(nd4j::graph::LaunchContext& context, float *result, float *dx, int *zShape, int *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, double zeroPadVal);
-            template void _im2col<float16>(nd4j::graph::LaunchContext& context, float16 *result, float16 *dx, int *zShape, int *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, double zeroPadVal);
-            template void _im2col<double>(nd4j::graph::LaunchContext& context, double *result, double *dx, int *zShape, int *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, double zeroPadVal);
+            template void _im2col<float>(nd4j::LaunchContext& context, float *result, float *dx, Nd4jLong *zShape, Nd4jLong *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, float zeroPadVal);
+            template void _im2col<float16>(nd4j::LaunchContext& context, float16 *result, float16 *dx, Nd4jLong *zShape, Nd4jLong *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, float16 zeroPadVal);
+            template void _im2col<double>(nd4j::LaunchContext& context, double *result, double *dx, Nd4jLong *zShape, Nd4jLong *xShape, int kY, int kX, int sY, int sX, int pY, int pX, int dY, int dX, bool isSameMode, double zeroPadVal);
         }
     }
 }
