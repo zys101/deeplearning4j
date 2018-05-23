@@ -3,6 +3,8 @@
 //
 
 #include <op_boilerplate.h>
+#include <helpers/shape.h>
+#include <helpers/TAD.h>
 #include <pointercast.h>
 #include <helpers/helper_ptrmap.h>
 #include <cuda.h>
@@ -794,7 +796,7 @@ __device__ void reduce3ScalarGeneric(
  * @param dimensionLength the dimension length
  * @param postProcessOrNot whether to post [
  */
-extern "C"
+
 __global__ void reduce3Double(
         int opNum,
         double *dx,
@@ -822,7 +824,6 @@ __global__ void reduce3Double(
 
 }
 
-extern "C"
 __global__ void reduce3AllDouble(
         int opNum,
         double *dx,
@@ -866,7 +867,7 @@ __global__ void reduce3AllDouble(
  * @param dimensionLength the dimension length
  * @param postProcessOrNot whether to post [
  */
-extern "C"
+
 __global__ void reduce3Float(
         int opNum,
         float *dx,
@@ -894,7 +895,7 @@ __global__ void reduce3Float(
 
 }
 
-extern "C"
+
 __global__ void reduce3AllFloat(
         int opNum,
         float *dx,
@@ -922,7 +923,6 @@ __global__ void reduce3AllFloat(
 
 }
 
-extern "C"
 __global__ void reduce3Half(
         int opNum,
         float16 *dx,
@@ -950,7 +950,6 @@ __global__ void reduce3Half(
 
 }
 
-extern "C"
 __global__ void reduce3AllHalf(
         int opNum,
         float16 *dx,
@@ -978,7 +977,6 @@ __global__ void reduce3AllHalf(
 
 }
 
-extern "C"
 __global__ void reduce3ScalarFloat(
         int opNum,
         float *dx,
@@ -1004,7 +1002,7 @@ __global__ void reduce3ScalarFloat(
 
 }
 
-extern "C" __global__ void reduce3ScalarHalf(
+__global__ void reduce3ScalarHalf(
         int opNum,
         float16 *dx,
         Nd4jLong *xShapeInfo,
@@ -1029,7 +1027,6 @@ extern "C" __global__ void reduce3ScalarHalf(
 
 }
 
-extern "C"
 __global__ void reduce3ScalarDouble(
         int opNum,
         double *dx,
