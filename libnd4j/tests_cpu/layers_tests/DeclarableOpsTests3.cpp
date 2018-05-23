@@ -145,8 +145,8 @@ TEST_F(DeclarableOpsTests3, Test_Unique_2) {
 }
 
 TEST_F(DeclarableOpsTests3, Test_Rint_1) {
-    NDArray<float> x('c', {1, 7}, {-1.7, -1.5, -0.2, 0.2, 1.5, 1.7, 2.0});
-    NDArray<float> exp('c', {1, 7}, {-2., -2., -0., 0., 2., 2., 2.});
+    NDArray<float> x('c', {1, 7}, {-1.7f, -1.5f, -0.2f, 0.2f, 1.5f, 1.7f, 2.0f});
+    NDArray<float> exp('c', {1, 7}, {-2.f, -2.f, -0.f, 0.f, 2.f, 2.f, 2.f});
 
     nd4j::ops::rint<float> op;
     auto result = op.execute({&x}, {}, {});
@@ -1500,7 +1500,7 @@ TEST_F(DeclarableOpsTests3, betainc_test2) {
     NDArrayFactory<float>::linspace(0.1, b, 0.1);
     x.assign(0.1);
 
-    NDArray<float> expected('c', {3,3}, {0.40638509,0.33668978,0.28271242,0.23973916,0.20483276,0.17604725,0.15203027,0.13180567,0.114647});
+    NDArray<float> expected('c', {3,3}, {0.40638509f,0.33668978f,0.28271242f,0.23973916f,0.20483276f,0.17604725f,0.15203027f,0.13180567f,0.114647f});
 
     nd4j::ops::betainc<float> op;
     nd4j::ResultSet<float>* results = op.execute({&a, &b, &x}, {}, {});

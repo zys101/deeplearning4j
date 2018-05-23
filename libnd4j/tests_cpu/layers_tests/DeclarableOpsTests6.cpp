@@ -1385,7 +1385,7 @@ TEST_F(DeclarableOpsTests6, dynamic_rnn_test2) {
     NDArray<double> Wh('c', {numUnits, numUnits});
     NDArray<double> b ('c', {2*numUnits});
     NDArray<double> h0('c', {bS, numUnits});
-    NDArray<double> maxTimeStep('c', {bS}, {time-1, time});
+    NDArray<double> maxTimeStep('c', {bS}, {static_cast<double>(time-1), static_cast<double>(time)});
 
     NDArrayFactory<double>::linspace(0.01, x, 0.01);
     h0 = 0.2;

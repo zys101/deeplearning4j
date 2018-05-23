@@ -59,10 +59,10 @@ TEST_F(NDArrayTest2, Test_ByteVector_3) {
 }
 
 TEST_F(NDArrayTest2, Test_IndexReduce_1) {
-    NDArray<float> x('c', {1, 5}, {1, 2, 3, 4, 5});
+    NDArray<float> x('c', {1, 5}, {1.f, 2.f, 3.f, 4.f, 5.f});
 
-    float extras[] = {3.0, 0.0, 10};
-    int idx = x.template indexReduceNumber<simdOps::FirstIndex<float>>(extras);
+    float extras[] = {3.0f, 0.0f, 10.f};
+    auto idx = x.template indexReduceNumber<simdOps::FirstIndex<float>>(extras);
 
     ASSERT_EQ(2, idx);
 }
@@ -159,7 +159,7 @@ TEST_F(NDArrayTest2, SetIdentity_test_8) {
 TEST_F(NDArrayTest2, Test_AllReduce3_1) {
     NDArray<float> x('c', {2, 3}, {1, 2, 3, 1, 2, 3});
     NDArray<float> y('c', {2, 3}, {2, 3, 4, 2, 3, 4});
-    NDArray<float> exp('c', {2, 2}, {1.73205, 1.73205, 1.73205, 1.73205});
+    NDArray<float> exp('c', {2, 2}, {1.73205f, 1.73205f, 1.73205f, 1.73205f});
 
     auto z = x.template applyAllReduce3<simdOps::EuclideanDistance<float>>(&y, {1}, nullptr);
 
@@ -173,7 +173,7 @@ TEST_F(NDArrayTest2, Test_AllReduce3_1) {
 TEST_F(NDArrayTest2, Test_AllReduce3_2) {
     NDArray<float> x('c', {2, 3}, {1, 2, 3, 2, 3, 4 });
     NDArray<float> y('c', {2, 3}, {1, 2, 3, 2, 3, 4});
-    NDArray<float> exp('c', {2, 2}, {0., 1.73205, 1.73205, 0.});
+    NDArray<float> exp('c', {2, 2}, {0.f, 1.73205f, 1.73205f, 0.f});
 
     auto z = x.template applyAllReduce3<simdOps::EuclideanDistance<float>>(&y, {1}, nullptr);
 
@@ -186,11 +186,11 @@ TEST_F(NDArrayTest2, Test_AllReduce3_2) {
 ////////////////////////////////////////////////////////////////////
 TEST_F(NDArrayTest2, mmul_test1) {
 
-    NDArray<float> x('c', {4, 1}, {1, 2, 3, 4});
-    NDArray<float> y('c', {1, 4}, {1, 2, 3, 4});
-    NDArray<float> exp('c', {4, 4}, {1,2, 3, 4,2,4, 6, 8,3,6, 9,12,4,8,12,16});
+    NDArray<double> x('c', {4, 1}, {1, 2, 3, 4});
+    NDArray<double> y('c', {1, 4}, {1, 2, 3, 4});
+    NDArray<double> exp('c', {4, 4}, {1,2, 3, 4, 2, 4, 6, 8, 3, 6, 9, 12, 4, 8, 12, 16});
                                                      
-    NDArray<float> result = mmul(x, y);
+    auto result = mmul(x, y);
 
     ASSERT_TRUE(exp.isSameShape(&result));
     ASSERT_TRUE(exp.equalsTo(&result));    
@@ -200,11 +200,11 @@ TEST_F(NDArrayTest2, mmul_test1) {
 ////////////////////////////////////////////////////////////////////
 TEST_F(NDArrayTest2, mmul_test2) {
 
-    NDArray<float> x('c', {4, 1}, {1, 2, 3, 4});
-    NDArray<float> y('c', {1, 4}, {1, 2, 3, 4});
-    NDArray<float> exp('c', {1, 1}, {30});
-                                                     
-    NDArray<float> result = mmul(y ,x);
+    NDArray<double> x('c', {4, 1}, {1, 2, 3, 4});
+    NDArray<double> y('c', {1, 4}, {1, 2, 3, 4});
+    NDArray<double> exp('c', {1, 1}, {30});
+
+    auto result = mmul(y ,x);
 
     ASSERT_TRUE(exp.isSameShape(&result));
     ASSERT_TRUE(exp.equalsTo(&result));    
@@ -214,13 +214,13 @@ TEST_F(NDArrayTest2, mmul_test2) {
 ////////////////////////////////////////////////////////////////////
 TEST_F(NDArrayTest2, mmul_test3) {
 
-    NDArray<float> x('c', {4, 1}, {1, 2, 3, 4});
-    NDArray<float> exp('c', {4, 4}, {1. ,0.2 ,0.3 ,0.4 ,0.2,0.04,0.06,0.08,0.3,0.06,0.09,0.12,0.4,0.08,0.12,0.16});
+    NDArray<float> x('c', {4, 1}, {1.f, 2.f, 3.f, 4.f});
+    NDArray<float> exp('c', {4, 4}, {1.f, 0.2f, 0.3f, 0.4f, 0.2f, 0.04f, 0.06f, 0.08f, 0.3f, 0.06f, 0.09f, 0.12f, 0.4f, 0.08f, 0.12f, 0.16f});
     NDArray<float> w( x.ordering(), {(int)x.lengthOf(), 1},  x.getWorkspace());                            // column-vector
     NDArray<float> wT(x.ordering(), {1, (int)x.lengthOf()}, x.getWorkspace());                            // row-vector (transposed w)    
 
     w = x / (float)10.;         
-    w(0) = 1.;
+    w(0) = 1.f;
     wT.assign(&w);
 
     NDArray<float> result = mmul(w ,wT);
@@ -279,8 +279,8 @@ TEST_F(NDArrayTest2, Test_Enforce_1) {
 
 TEST_F(NDArrayTest2, TestVector_1) {
     NDArray<float> x('c', {2, 3});
-    NDArray<float> row('c', {3}, {1, 2, 3});
-    NDArray<float> exp('c', {2, 3}, {1, 2, 3, 1, 2, 3});
+    NDArray<float> row('c', {3}, {1.f, 2.f, 3.f});
+    NDArray<float> exp('c', {2, 3}, {1.f, 2.f, 3.f, 1.f, 2.f, 3.f});
 
     x.addiRowVector(&row);
 
@@ -310,7 +310,7 @@ TEST_F(NDArrayTest2, Operator_Plus_Test_6) {
 
     NDArray<double> x('c', {3, 3, 3});
     NDArray<double> y('c', {3, 1, 3});
-    NDArray<double> expected('c', {3, 3, 3}, {2., 4., 6., 5., 7., 9., 8.,10.,12., 14.,16.,18.,17.,19.,21.,20.,22.,24., 26.,28.,30.,29.,31.,33.,32.,34.,36.});
+    NDArray<double> expected('c', {3, 3, 3}, {2.f, 4.f, 6.f, 5.f, 7.f, 9.f, 8.f, 10.f, 12.f, 14.f, 16.f, 18.f, 17.f, 19.f, 21.f, 20.f, 22.f, 24.f, 26.f, 28.f, 30.f, 29.f, 31.f, 33.f, 32.f, 34.f, 36.f});
     NDArrayFactory<double>::linspace(1, x);
     NDArrayFactory<double>::linspace(1, y);
 
@@ -651,7 +651,7 @@ TEST_F(NDArrayTest2, TestStdDev3) {
     // NDArray<double> array('c', {10, 10});
     NDArray<double> array('c', {2, 2}, {0.2946, 0.2084, 0.0345, 0.7368});
     // NDArrayFactory<double>::linspace(0.1, array, 0.1);
-    const int len = array.lengthOf();
+    const auto len = array.lengthOf();
 
     double sum = 0.;
     for(int i=0; i < len; ++i)

@@ -2391,7 +2391,7 @@ TEST_F(DeclarableOpsTests1, PnormPool2dBP) {
     auto argI = block->getIArguments();
     *argI = {kH,kW, sH,sW, pH,pW, dW,dH, 0, 3};   // 0,1 - kernel Height/Width; 2,3 - stride Height/Width; 4,5 - pad Height/Width; 6,7 - dilation Height/Width; 8 - same mode; 9 - divisor    
     std::vector<float>* argT = block->getTArguments();
-    *argT = {0.000001};
+    *argT = {0.000001f};
 
     nd4j::ops::pnormpool2d_bp<float> bp;
     Nd4jStatus status = bp.execute(block);

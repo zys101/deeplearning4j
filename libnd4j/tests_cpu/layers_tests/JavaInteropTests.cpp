@@ -2,7 +2,7 @@
 // @author raver119@gmail.com
 //
 
-#include <NativeOps.h>
+//#include <NativeOps.h>
 #include <NDArray.h>
 #include <ops/declarable/CustomOperations.h>
 #include <ops/declarable/OpRegistrator.h>
