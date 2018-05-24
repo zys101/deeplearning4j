@@ -23,8 +23,7 @@ namespace nd4j {
 
             if (block.getIArguments()->size() == 1 || (block.getIArguments()->size() == 2 && INT_ARG(1) == MAX_INT)) {
                 // scalar
-                T res = NativeOpExcutioner<T>::execSummaryStatsScalar(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data(),  biasCorrected);
-                z->putScalar(0, res);
+                LegacyOpExecutor<T>::execSummaryStatsScalar(*block.launchContext(), opNum, x, z, *block.getTArguments(), biasCorrected);
             } else {
                 // dimensions for TAD
                 // we should skip first argument here, because it's addressing bias correction
@@ -36,7 +35,7 @@ namespace nd4j {
                 if (dims.size() > 1)
                     std::sort(dims.begin(), dims.end());
 
-                REQUIRE_TRUE(dims.size() > 0, 0, "Some dimensions requuired for reduction!");
+                REQUIRE_TRUE(dims.size() > 0, 0, "Some dimensions required for reduction!");
 
                 NativeOpExcutioner<T>::execSummaryStats(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data(), z->getBuffer(), z->getShapeInfo(), dims.data(), (int) dims.size(), biasCorrected);
             }

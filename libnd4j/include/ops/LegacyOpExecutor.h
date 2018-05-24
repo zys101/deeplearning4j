@@ -22,6 +22,10 @@ namespace nd4j {
     public:
         // TODO: we must get rid of std::vector here
         static void execScalarOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, T scalar, std::vector<T> &extras);
+
+        static void execTransformOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras);
+
+        static void execSummaryStatsScalar(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras, bool biasCorrected);
     };
 }
 

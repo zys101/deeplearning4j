@@ -12,6 +12,16 @@ namespace nd4j {
         NativeOpExcutioner<T>::execScalar(opNum, x->getBuffer(), x->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), scalar, extras.data());
     }
 
+    template <typename T>
+    void LegacyOpExecutor<T>::execTransformOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras) {
+        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
+    }
+
+    template <typename T>
+    void LegacyOpExecutor<T>::execSummaryStatsScalar(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras, bool biasCorrected) {
+        T res = NativeOpExcutioner<T>::execSummaryStatsScalar(opNum, x->getBuffer(), x->getShapeInfo(), extras.data(),  biasCorrected);
+        z->putScalar(0, res);
+    }
 
     template class ND4J_EXPORT LegacyOpExecutor<float>;
     template class ND4J_EXPORT LegacyOpExecutor<float16>;

@@ -31,7 +31,7 @@ namespace nd4j {
 
             int opNum = block.opNum() < 0 ? this->_opNum : block.opNum();
 
-            NativeOpExcutioner<T>::execTransform(opNum, input->getBuffer(), input->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), block.getTArguments()->data(), nullptr, nullptr);
+            LegacyOpExecutor<T>::execTransformOp(*block.launchContext(), opNum, input, z, *block.getTArguments());
 
             STORE_RESULT(*z);
 
