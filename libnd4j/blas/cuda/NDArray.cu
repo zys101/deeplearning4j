@@ -49,16 +49,26 @@ NDArray<N>* NDArray<T>::asT() {
 ////////////////////////////////////////////////////////////////////////
 // default constructor, do not allocate memory, memory for array is passed from outside 
 template <typename T>
-NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) {
-
-}
+NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) 
+    :
+    _buffer(buffer),
+    _shapeInfo(shapeInfo),
+    _isBuffAlloc(false), // buffer is a weak link
+    _isShapeAlloc(false), // shapeInfo is a weak link
+    _workspace(workspace)
+{}
 
 ////////////////////////////////////////////////////////////////////////
 //constructor, create empty array at given workspace
 template <typename T>
-NDArray<T>::NDArray(nd4j::memory::Workspace* workspace) {
-
-}
+NDArray<T>::NDArray(nd4j::memory::Workspace* workspace)
+    :
+    _buffer(nullptr),
+    _shapeInfo(nullptr),
+    _isBuffAlloc(false),
+    _isShapeAlloc(false),
+    _workspace(workspace)
+{}
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
