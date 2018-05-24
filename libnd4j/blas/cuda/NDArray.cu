@@ -804,6 +804,7 @@ template <typename T>
 NDArray<T>* NDArray<T>::permute(const std::initializer_list<int>& dimensions) const {
     
     std::vector<int> vec(dimensions);
+    return new NDArray<T>();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -811,6 +812,7 @@ template <typename T>
 NDArray<T>* NDArray<T>::permute(const std::initializer_list<Nd4jLong>& dimensions) const {
     
     std::vector<Nd4jLong> vec(dimensions);
+		return new NDArray<T>();
 }
 
 //////////////////////////////////////////////////////////////////////////
