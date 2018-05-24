@@ -46,7 +46,7 @@ namespace nd4j {
             if (block.width() > 1) {
                 auto y = INPUT_VARIABLE(1);
                 scalar = y->getScalar(0);
-            } else if (block.getTArguments()->size() > 0) {
+            } else if (!block.getTArguments()->empty()) {
                 scalar = T_ARG(0);
                 offset++;
             } else {
@@ -55,9 +55,18 @@ namespace nd4j {
 
             auto z = OUTPUT_VARIABLE(0);
 
-            int opNum = block.opNum() < 0 ? this->_opNum : block.opNum();
+            auto opNum = block.opNum() < 0 ? this->_opNum : block.opNum();
 
-            NativeOpExcutioner<T>::execScalar(opNum, x->getBuffer(), x->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), scalar, block.getTArguments()->data() + offset);
+            //NativeOpExcutioner<T>::execScalar(opNum, x->getBuffer(), x->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), scalar, block.getTArguments()->data() + offset);
+
+            // TODO: block.getTArguments should just use our own implementation, suited for device use
+
+            auto eff = block.getTArguments()->size() - offset;
+            std::vector<T> extras(eff);
+            for (int e = 0; e < eff; e++)
+                extras[e] = (*block.getTArguments())[e + offset];
+
+            LegacyOpExecutor<T>::execScalarOp(*block.launchContext(), opNum, x, z, scalar, extras);
 
             STORE_RESULT(*z);
 

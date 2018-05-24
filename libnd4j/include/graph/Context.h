@@ -10,7 +10,7 @@
 #include <graph/VariableSpace.h>
 #include <graph/ContextPrototype.h>
 #include <memory/Workspace.h>
-
+#include <array/LaunchContext.h>
 
 // CUDA-specific includes
 #ifdef __CUDACC__
@@ -34,6 +34,8 @@ namespace nd4j {
             nd4j::graph::VariableSpace<T>* _variableSpace = nullptr;
             std::pair<Nd4jLong, Nd4jLong> _executionTime;
             nd4j::random::RandomBuffer* _rng = nullptr;
+            nd4j::LaunchContext *_launchContext = nullptr;
+
 
             // branch for divergent_op
             int _branch = 0;
@@ -58,6 +60,8 @@ namespace nd4j {
             void setInnerTime(Nd4jLong time);
             Nd4jLong getOuterTime();
             Nd4jLong getInnerTime();
+
+            LaunchContext * launchContext();
 
             // these methods are related to Workspace abstraction
             bool hasWorkspaceProvided();

@@ -65,6 +65,11 @@ namespace nd4j {
             this->_inputs.clear();
         }
 
+        template<typename T>
+        LaunchContext * Context<T>::launchContext() {
+            return _launchContext;
+        }
+
         template <typename T>
         bool Context<T>::hasWorkspaceProvided() {
             return this->_workspace != nullptr;
