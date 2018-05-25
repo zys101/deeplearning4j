@@ -19,21 +19,20 @@ namespace nd4j {
 
             if (x->isSameShape(y) && (block.getIArguments()->size() == 0 || (block.getIArguments()->size() == 1 && INT_ARG(0) == MAX_INT))) {
                 // reduce3 to scalar
-                T scalar = NativeOpExcutioner<T>::execReduce3Scalar(opNum, x->buffer(), x->shapeInfo(), block.getTArguments()->data(), y->buffer(), y->shapeInfo());
-                z->putScalar(0, scalar);
+                LegacyOpExecutor<T>::execReduce3ScalarOp(*block.launchContext(), opNum, x, y, z, *block.getTArguments());
             } else {
                 std::vector<int> dims(*block.getIArguments());
                 for (int e = 0; e < dims.size(); e++)
                     if (dims[e] < 0)
                         dims[e] += x->rankOf();
 
-                std::sort(dims.begin(), dims.end());
+                if (dims.size() > 1)
+                    std::sort(dims.begin(), dims.end());
 
-                REQUIRE_TRUE(dims.size() > 0, 0, "Some dimensions requuired for reduction!");
+                REQUIRE_TRUE(!dims.empty(), 0, "Some dimensions requuired for reduction!");
 
-                NativeOpExcutioner<T>::execReduce3(opNum, x->buffer(), x->shapeInfo(), block.getTArguments()->data(), y->buffer(), y->shapeInfo(), z->buffer(), z->shapeInfo(), dims.data(), dims.size());
+                LegacyOpExecutor<T>::execReduce3Op(*block.launchContext(), opNum, x, y, z, dims, *block.getTArguments());
             }
-
 
             STORE_RESULT(*z);
 
