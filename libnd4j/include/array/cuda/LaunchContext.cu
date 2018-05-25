@@ -1,5 +1,5 @@
 //
-//  @author raver119@gmail.co
+//  @author raver119@gmail.com
 //
 
 #include <array/LaunchContext.h>
@@ -15,7 +15,7 @@ namespace nd4j {
         return _stream;
     }
 
-    LaunchContext* LaunchContext::setStream(cudaStream_t *stream) {
+    LaunchContext* LaunchContext::setCudaStream(cudaStream_t *stream) {
         _stream = stream;
         return this;
     }

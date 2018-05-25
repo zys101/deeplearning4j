@@ -34,10 +34,10 @@ namespace nd4j {
 
 #ifdef __CUDACC__
         // cuda stream that will be used for this context
-        cudaStream_t *_stream;
+        cudaStream_t *_stream = nullptr;
 
-        Nd4jLong *_reductionBuffer;
-        Nd4jLong *_scalarPointer;
+        Nd4jLong *_reductionBuffer = nullptr;
+        Nd4jLong *_scalarPointer = nullptr;
 
         // cublas?
 #endif
