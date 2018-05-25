@@ -3,6 +3,8 @@
 //
 
 #include <helpers/VectorMigrationHelper.h>
+#include <stdexcept>
+
 namespace nd4j {
     template <typename T>
     VectorMigrationHelper<T>::VectorMigrationHelper(std::vector<T> &vec) {
