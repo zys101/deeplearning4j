@@ -4,6 +4,7 @@
 
 #include <helpers/VectorMigrationHelper.h>
 #include <stdexcept>
+#include <dll.h>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -40,4 +41,8 @@ namespace nd4j {
     Nd4jLong VectorMigrationHelper<T>::size() {
         return _size;
     }
+
+    template class ND4J_EXPORT VectorMigrationHelper<float>;
+    template class ND4J_EXPORT VectorMigrationHelper<float16>;
+    template class ND4J_EXPORT VectorMigrationHelper<double>;
 }
