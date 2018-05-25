@@ -1523,9 +1523,23 @@ struct __registratorSynonymDouble_##NAME {\
                                         shape::shapeBufferFortran(shape::rank(SRC), shape::shapeOf(SRC), TGT);\
 
 
+#ifdef __CUDABLAS__
+
+#define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaHostAlloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT)), cudaHostAllocDefault);} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
+#define RELEASE(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) cudaFreeHost(reinterpret_cast<void *>(VARIABLE));
+
+#define ALLOCATE_SPECIAL(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaMalloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT)));} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
+#define RELEASE_SPECIAL(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) cudaFree(reinterpret_cast<void *>(VARIABLE));
+
+#else
 
 #define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {VARIABLE = new TT[LENGTH]; } else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
 #define RELEASE(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) delete[] VARIABLE;
+
+#define ALLOCATE_SPECIAL(VARIABLE, WORKSPACE, LENGTH, TT)
+#define RELEASE_SPECIAL(VARIABLE, WORKSPACE)
+
+#endif
 
 #define OVERWRITE_RESULT(A)     this->overwriteResult(block, 0, A)
 #define OVERWRITE_2_RESULTS(A, B)     this->overwriteResult(block, 0, A); this->overwriteResult(block, 1, B)

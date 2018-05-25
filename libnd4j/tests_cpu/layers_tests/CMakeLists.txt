@@ -111,14 +111,14 @@ if (${_CUDA})
     file(GLOB_RECURSE MEMORY_SOURCES false ../../include/memory/*.cpp ../../include/memory/*.h)
     file(GLOB_RECURSE GRAPH_SOURCES false ../../include/graph/*.cpp ../../include/graph/*.h)
     file(GLOB_RECURSE CUSTOMOPS_SOURCES false ../../include/ops/declarable/generic/*.cpp)
-    file(GLOB_RECURSE CUSTOMOPS_HELPERS_SOURCES false ../../include/ops/declarable/helpers/cuda/*.cu ../../include/ops/declarable/helpers/cpu/*.cpp)
+    file(GLOB_RECURSE CUSTOMOPS_HELPERS_SOURCES false ../../include/ops/declarable/helpers/cuda/*.cu )
     file(GLOB_RECURSE OPS_SOURCES false ../../include/ops/cuda/*.cu ../../include/ops/impl/*.cpp ../../include/ops/declarable/impl/*.cpp  ../../include/ops/*.h)
     file(GLOB_RECURSE INDEXING_SOURCES false ../../include/indexing/*.cpp ../../include/indexing/*.h)
     file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.cu ../../include/helpers/*.h)
     file(GLOB_RECURSE LOOPS_SOURCES false ../../include/loops/cuda/*.cu ../../include/loops/cpu/*.cpp ../../include/loops/*.h)
 
     CUDA_ADD_LIBRARY(nd4jcuda STATIC ../../blas/cuda/NativeOps.cu ../../blas/cuda/NDArray.cu ../../blas/cpu/GraphExecutioner.cpp
-            ../../blas/cpu/NDArrayFactory.cpp ../../blas/cpu/NativeOpExcutioner.cpp
+            ../../blas/cpu/NDArrayFactory.cpp
             ../../include/cnpy/cnpy.cpp  ../../include/nd4jmemset.h ../../include/nd4jmalloc.h
             ../../blas/Environment.cpp ../../blas/Environment.h
             ../../blas/Nd4j.h ../../blas/cpu/Nd4j.cpp
@@ -145,7 +145,7 @@ else()
     file(GLOB_RECURSE GRAPH_SOURCES false ../../include/graph/*.cpp ../../include/graph/*.h)
     file(GLOB_RECURSE CUSTOMOPS_SOURCES false ../../include/ops/declarable/generic/*.cpp)
     file(GLOB_RECURSE CUSTOMOPS_HELPERS_SOURCES false ../../include/ops/declarable/helpers/cpu/*.cpp)
-    file(GLOB_RECURSE OPS_SOURCES false ../../include/ops/impl/*.cpp ../../include/ops/declarable/impl/*.cpp  ../../include/ops/*.h)
+    file(GLOB_RECURSE OPS_SOURCES false ../../include/ops/impl/*.cpp ../../include/ops/cpu/*.cpp ../../include/ops/declarable/impl/*.cpp  ../../include/ops/*.h)
     file(GLOB_RECURSE INDEXING_SOURCES false ../../include/indexing/*.cpp ../../include/indexing/*.h)
     file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.h)
     file(GLOB_RECURSE LOOPS_SOURCES false ../../include/loops/*.cpp ../../include/loops/*.h)
