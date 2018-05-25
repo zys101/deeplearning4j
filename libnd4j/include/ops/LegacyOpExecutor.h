@@ -45,6 +45,9 @@ namespace nd4j {
 
         // Pairwise operations
         static void execPairwiseOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *y, NDArray<T> *z, std::vector<T> &extras);
+
+        // Broadcast operations
+        static void execBroadcastOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *y, NDArray<T> *z, std::vector<int> &axis);
     };
 }
 

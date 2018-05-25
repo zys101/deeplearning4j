@@ -74,6 +74,29 @@ namespace nd4j {
         NativeOpExcutioner<T>::execIndexReduce(opNum, x->buffer(), x->shapeInfo(), extras.data(), z->buffer(), z->shapeInfo(), axis.data(), static_cast<int>(axis.size()), tad.tadOnlyShapeInfo, tad.tadOffsets);
     }
 
+    template <typename T>
+    void LegacyOpExecutor<T>::execBroadcastOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *y, NDArray<T> *z, std::vector<int> &axis) {
+        shape::TAD tad(x->shapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
+
+        if (x == z) {
+            shape::TAD tadZ(z->shapeInfo(), axis.data(), static_cast<int>(axis.size()));
+            tadZ.createTadOnlyShapeInfo();
+            tadZ.createOffsets();
+
+            NativeOpExcutioner<T>::execBroadcast(opNum, x->buffer(), x->shapeInfo(), y->buffer(), y->shapeInfo(),
+                                                 z->buffer(), z->shapeInfo(), axis.data(),
+                                                 static_cast<int>(axis.size()), tad.tadOnlyShapeInfo, tad.tadOffsets,
+                                                 tadZ.tadOnlyShapeInfo, tadZ.tadOffsets);
+        } else {
+            NativeOpExcutioner<T>::execBroadcast(opNum, x->buffer(), x->shapeInfo(), y->buffer(), y->shapeInfo(),
+                                                 z->buffer(), z->shapeInfo(), axis.data(),
+                                                 static_cast<int>(axis.size()), tad.tadOnlyShapeInfo, tad.tadOffsets,
+                                                 tad.tadOnlyShapeInfo, tad.tadOffsets);
+        }
+    }
+
     template class ND4J_EXPORT LegacyOpExecutor<float>;
     template class ND4J_EXPORT LegacyOpExecutor<float16>;
     template class ND4J_EXPORT LegacyOpExecutor<double>;
