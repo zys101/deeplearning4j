@@ -5,6 +5,9 @@
 #include <helpers/VectorMigrationHelper.h>
 #include <stdexcept>
 
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+
 namespace nd4j {
     template <typename T>
     VectorMigrationHelper<T>::VectorMigrationHelper(std::vector<T> &vec) {
