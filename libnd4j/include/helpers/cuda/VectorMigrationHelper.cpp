@@ -31,7 +31,7 @@ namespace nd4j {
     }
 
     template <typename T>
-    Nd4jLong* VectorMigrationHelper<T>::data() {
+    T* VectorMigrationHelper<T>::data() {
         return _deviceData;
     }
 
