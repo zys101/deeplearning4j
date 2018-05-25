@@ -107,7 +107,7 @@ if (${_CUDA})
     list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_61 -code=sm_61 -ftemplate-backtrace-limit=2)
 
     file(GLOB_RECURSE TYPES_SOURCES false ../../include/types/*.cpp ../../include/types/*.h)
-    file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.h)
+    file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.cu  ../../include/array/*.h)
     file(GLOB_RECURSE MEMORY_SOURCES false ../../include/memory/*.cpp ../../include/memory/*.h)
     file(GLOB_RECURSE GRAPH_SOURCES false ../../include/graph/*.cpp ../../include/graph/*.h)
     file(GLOB_RECURSE CUSTOMOPS_SOURCES false ../../include/ops/declarable/generic/*.cpp)
