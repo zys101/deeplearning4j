@@ -12,7 +12,7 @@ namespace nd4j {
     template <typename T>
     class VectorMigrationHelper {
     private:
-        Nd4Long _size = 0;
+        Nd4jLong _size = 0;
         T *_deviceData = nullptr;
     public:
         explicit VectorMigrationHelper(std::vector<T> &vector);
