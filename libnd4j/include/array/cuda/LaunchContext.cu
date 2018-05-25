@@ -7,7 +7,7 @@
 #include <cuda_runtime_api.h>
 
 namespace nd4j {
-    void* LaunchContext::workspace() {
+    void* LaunchContext::reductionPointer() {
         return reinterpret_cast<void *>(_reductionBuffer);
     }
 
