@@ -34,9 +34,12 @@ namespace nd4j {
 
 #ifdef __CUDACC__
         // cuda stream that will be used for this context
-            cudaStream_t *_stream;
+        cudaStream_t *_stream;
 
-            // cublas?
+        // this method should return reusable buffer suitable for accumulations
+        void* reductionPointer();
+
+        // cublas?
 #endif
 
     public:
