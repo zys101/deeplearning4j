@@ -5,7 +5,7 @@
 #include <helpers/VectorMigrationHelper.h>
 namespace nd4j {
     template <typename T>
-    VectorMigrationHelper::VectorMigrationHelper(std::vector<T> &vec) {
+    VectorMigrationHelper<T>::VectorMigrationHelper(std::vector<T> &vec) {
         if (!vec.empty()) {
             auto len0 = vec.size() * sizeof(T);
 
@@ -19,16 +19,19 @@ namespace nd4j {
         }
     }
 
-    VectorMigrationHelper::~VectorMigrationHelper() {
+    template <typename T>
+    VectorMigrationHelper<T>::~VectorMigrationHelper() {
         if (_deviceData != nullptr)
             cudaFree(_deviceData);
     }
 
-    Nd4jLong* VectorMigrationHelper::data() {
+    template <typename T>
+    Nd4jLong* VectorMigrationHelper<T>::data() {
         return _deviceData;
     }
 
-    Nd4jLong VectorMigrationHelper::size() {
+    template <typename T>
+    Nd4jLong VectorMigrationHelper<T>::size() {
         return _size;
     }
 }
