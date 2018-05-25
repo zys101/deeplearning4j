@@ -5,6 +5,7 @@
 #include <helpers/VectorMigrationHelper.h>
 #include <stdexcept>
 #include <dll.h>
+#include <types/float16.h>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
