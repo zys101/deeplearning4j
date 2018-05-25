@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 #include <cuda.h>
-#include <cuda_runtime.api>
+#include <cuda_runtime_api.h>
 
 namespace nd4j {
     TadMigrationHelper::TadMigrationHelper(shape::TAD &tad) {
