@@ -114,7 +114,7 @@ if (${_CUDA})
     file(GLOB_RECURSE CUSTOMOPS_HELPERS_SOURCES false ../../include/ops/declarable/helpers/cuda/*.cu)
     file(GLOB_RECURSE OPS_SOURCES false ../../include/ops/cuda/*.cu ../../include/ops/declarable/impl/*.cpp  ../../include/ops/*.h)
     file(GLOB_RECURSE INDEXING_SOURCES false ../../include/indexing/*.cpp ../../include/indexing/*.h)
-    file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.h)
+    file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.cu ../../include/helpers/*.h)
     file(GLOB_RECURSE LOOPS_SOURCES false ../../include/loops/*.cu ../../include/loops/*.h)
 
     CUDA_ADD_LIBRARY(nd4jcuda STATIC ../../blas/cuda/NativeOps.cu ../../blas/cuda/NDArray.cu ../../blas/cpu/GraphExecutioner.cpp

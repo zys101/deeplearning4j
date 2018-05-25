@@ -46,4 +46,6 @@ namespace nd4j {
     template class ND4J_EXPORT VectorMigrationHelper<float>;
     template class ND4J_EXPORT VectorMigrationHelper<float16>;
     template class ND4J_EXPORT VectorMigrationHelper<double>;
+    template class ND4J_EXPORT VectorMigrationHelper<int>;
+    template class ND4J_EXPORT VectorMigrationHelper<Nd4jLong>;
 }
