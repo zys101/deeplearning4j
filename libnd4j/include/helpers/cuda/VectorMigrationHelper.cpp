@@ -12,6 +12,7 @@ namespace nd4j {
     template <typename T>
     VectorMigrationHelper<T>::VectorMigrationHelper(std::vector<T> &vec) {
         if (!vec.empty()) {
+            _size = vec.size();
             auto len0 = vec.size() * sizeof(T);
 
             auto res0 = cudaMalloc(reinterpret_cast<void **>(&_deviceData), len0);
