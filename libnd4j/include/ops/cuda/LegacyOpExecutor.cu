@@ -41,7 +41,7 @@ namespace nd4j {
         VectorMigrationHelper<int> _axis(axis);
         VectorMigrationHelper<T> _extras(extras);
 
-        functions::reduce::ReduceFunction<T>::execReduceXD(launchDims, ctx.stream(), opNum, x->rank(), x->specialBuffer(), x->specialShapeInfo(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), _axis.data(), axis.size(), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
+        functions::reduce::ReduceFunction<T>::execReduceXD(launchDims, ctx.stream(), opNum, x->rankOf(), x->specialBuffer(), x->specialShapeInfo(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), _axis.data(), axis.size(), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
 
         cudaStreamSynchronize(*ctx.stream());
     }
