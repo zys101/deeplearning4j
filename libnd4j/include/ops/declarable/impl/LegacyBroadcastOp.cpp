@@ -15,28 +15,13 @@ namespace nd4j {
             auto z = OUTPUT_VARIABLE(0);
 
             std::vector<int> dims(*block.getIArguments());
-            if (dims.size() > 0)
-                std::sort(dims.begin(), dims.end());
 
+            if (dims.size() > 1)
+                std::sort(dims.begin(), dims.end());
 
             int opNum = block.opNum() < 0 ? this->_opNum : block.opNum();
 
-            shape::TAD tad(x->shapeInfo(), dims.data(), dims.size());
-            tad.createTadOnlyShapeInfo();
-            tad.createOffsets();
-
-            REQUIRE_TRUE(shape::length(tad.tadOnlyShapeInfo) == y->lengthOf(), 0, "Length of broadcast TAD should be equal to length of Y operand, but got [%i] vs [%i]", (int) shape::length(tad.tadOnlyShapeInfo), (int) y->lengthOf());
-
-            if (x == z)
-                NativeOpExcutioner<T>::execBroadcast(opNum, x->buffer(), x->shapeInfo(), y->buffer(), y->shapeInfo(), z->buffer(), z->shapeInfo(), dims.data(), dims.size(), tad.tadOnlyShapeInfo, tad.tadOffsets, tad.tadOnlyShapeInfo, tad.tadOffsets);
-            else {
-                // this is rare, but possible use case - X and Z might have different shapes/strides/orders. In this case we prepare and pass separate TAD info
-                shape::TAD tadZ(z->shapeInfo(), dims.data(), dims.size());
-                tadZ.createTadOnlyShapeInfo();
-                tadZ.createOffsets();
-
-                NativeOpExcutioner<T>::execBroadcast(opNum, x->buffer(), x->shapeInfo(), y->buffer(), y->shapeInfo(), z->buffer(), z->shapeInfo(), dims.data(), dims.size(), tad.tadOnlyShapeInfo, tad.tadOffsets, tadZ.tadOnlyShapeInfo, tadZ.tadOffsets);
-            }
+            LegacyOpExecutor<T>::execBroadcastOp(*block.launchContext(), opNum,  z, y, z, dims);
 
             STORE_RESULT(*z);
 

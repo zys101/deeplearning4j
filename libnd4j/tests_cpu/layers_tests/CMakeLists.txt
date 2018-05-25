@@ -107,14 +107,14 @@ if (${_CUDA})
     list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_61 -code=sm_61 -ftemplate-backtrace-limit=2)
 
     file(GLOB_RECURSE TYPES_SOURCES false ../../include/types/*.cpp ../../include/types/*.h)
-    file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.h)
+    file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.cu  ../../include/array/*.h)
     file(GLOB_RECURSE MEMORY_SOURCES false ../../include/memory/*.cpp ../../include/memory/*.h)
     file(GLOB_RECURSE GRAPH_SOURCES false ../../include/graph/*.cpp ../../include/graph/*.h)
     file(GLOB_RECURSE CUSTOMOPS_SOURCES false ../../include/ops/declarable/generic/*.cpp)
     file(GLOB_RECURSE CUSTOMOPS_HELPERS_SOURCES false ../../include/ops/declarable/helpers/cuda/*.cu)
     file(GLOB_RECURSE OPS_SOURCES false ../../include/ops/cuda/*.cu ../../include/ops/declarable/impl/*.cpp  ../../include/ops/*.h)
     file(GLOB_RECURSE INDEXING_SOURCES false ../../include/indexing/*.cpp ../../include/indexing/*.h)
-    file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.h)
+    file(GLOB_RECURSE HELPERS_SOURCES false ../../include/helpers/*.cpp ../../include/helpers/*.cu ../../include/helpers/*.h)
     file(GLOB_RECURSE LOOPS_SOURCES false ../../include/loops/*.cu ../../include/loops/*.h)
 
     CUDA_ADD_LIBRARY(nd4jcuda STATIC ../../blas/cuda/NativeOps.cu ../../blas/cuda/NDArray.cu ../../blas/cpu/GraphExecutioner.cpp

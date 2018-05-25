@@ -34,9 +34,12 @@ namespace nd4j {
 
 #ifdef __CUDACC__
         // cuda stream that will be used for this context
-            cudaStream_t *_stream;
+        cudaStream_t *_stream = nullptr;
 
-            // cublas?
+        Nd4jLong *_reductionBuffer = nullptr;
+        Nd4jLong *_scalarPointer = nullptr;
+
+        // cublas?
 #endif
 
     public:
@@ -55,11 +58,14 @@ namespace nd4j {
 
 #ifdef __CUDACC__
         /**
-             * This method returns pointer to cudaStream designated to given LaunchContext instance
-             */
-            cudaStream_t* stream();
+         * This method returns pointer to cudaStream designated to given LaunchContext instance
+         */
+         cudaStream_t* stream();
 
-            LaunchContext* setCudaStream(cudaStream_t *stream);
+         // this method should return reusable buffer suitable for accumulations
+         void* reductionPointer();
+
+         LaunchContext* setCudaStream(cudaStream_t *stream);
 #endif
 
         static LaunchContext* defaultContext();

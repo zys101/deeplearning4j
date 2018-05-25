@@ -37,7 +37,7 @@ namespace nd4j {
 
             int opNum = block.opNum() < 0 ? this->_opNum : block.opNum();
 
-            NativeOpExcutioner<T>::execPairwiseTransform(opNum, x->getBuffer(), x->getShapeInfo(), y->getBuffer(), y->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), block.getTArguments()->data());
+            LegacyOpExecutor<T>::execPairwiseOp(*block.launchContext(), opNum, x, y, z, *block.getTArguments());
 
             STORE_RESULT(*z);
 

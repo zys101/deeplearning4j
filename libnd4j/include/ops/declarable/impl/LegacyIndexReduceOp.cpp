@@ -67,8 +67,7 @@ namespace nd4j {
 
             if (block.getIArguments()->size() == 0 || (block.getIArguments()->size() == 1 && INT_ARG(0) == MAX_INT)) {
                 // scalar
-                T res = NativeOpExcutioner<T>::execIndexReduceScalar(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data());
-                z->putScalar(0, res);
+                LegacyOpExecutor<T>::execIndexReduceScalarOp(*block.launchContext(), opNum, x, z, *block.getTArguments());
             } else {
                 // TAD
                 std::vector<int> dims(*block.getIArguments());
@@ -79,11 +78,7 @@ namespace nd4j {
                 if (dims.size() > 1)
                     std::sort(dims.begin(), dims.end());
 
-                shape::TAD tad(x->getShapeInfo(), dims.data(), dims.size());
-                tad.createTadOnlyShapeInfo();
-                tad.createOffsets();
-
-                NativeOpExcutioner<T>::execIndexReduce(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data(), z->getBuffer(), z->getShapeInfo(), dims.data(), (int) dims.size(), tad.tadOnlyShapeInfo, tad.tadOffsets);
+                LegacyOpExecutor<T>::execIndexReduceOp(*block.launchContext(), opNum, x, z, dims, *block.getTArguments());
             }
 
             STORE_RESULT(*z);

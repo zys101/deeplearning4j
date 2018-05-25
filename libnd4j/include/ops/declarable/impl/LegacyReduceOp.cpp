@@ -41,25 +41,22 @@ namespace nd4j {
                 if ((block.getIArguments()->size() == 0) ||
                     (block.getIArguments()->size() == 1 && INT_ARG(0) == MAX_INT) || allAxes) {
                     // scalar
-                    T res = NativeOpExcutioner<T>::execReduceScalar(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data());
-                    z->putScalar(0, res);
+                    LegacyOpExecutor<T>::execReduceScalarOp(*block.launchContext(), opNum, x, z, *block.getTArguments());
                 } else {
                     // TAD
                     std::vector<int> dims(*block.getIArguments());
 
+                    // normalizing axis
                     for (int e = 0; e < dims.size(); e++)
                         if (dims[e] < 0)
                             dims[e] += x->rankOf();
 
-                    std::sort(dims.begin(), dims.end());
+                    if (dims.size() > 1)
+                        std::sort(dims.begin(), dims.end());
 
                     REQUIRE_TRUE(dims.size() > 0, 0, "Some dimensions required for reduction!");
 
-                    shape::TAD tad(x->getShapeInfo(), dims.data(), dims.size());
-                    tad.createTadOnlyShapeInfo();
-                    tad.createOffsets();
-
-                    NativeOpExcutioner<T>::execReduce(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data(), z->getBuffer(), z->getShapeInfo(), dims.data(), (int) dims.size(), tad.tadOnlyShapeInfo, tad.tadOffsets);
+                    LegacyOpExecutor<T>::execReduceOp(*block.launchContext(), opNum, x, z, dims, *block.getTArguments());
                 }
 
                 STORE_RESULT(*z);
@@ -68,12 +65,10 @@ namespace nd4j {
                 if (indices->lengthOf() == x->rankOf())
                     allAxes = true;
 
-                //indices->printIndexedBuffer("indices");
-
                 std::vector<int> axis(indices->lengthOf());
                 for (int e = 0; e < indices->lengthOf(); e++) {
                     // lol otherwise we segfault on macOS
-                    int f = (int) indices->getScalar(e);
+                    auto f = static_cast<int>(indices->getScalar(e));
                     axis[e] = f >= 0 ? f : f += x->rankOf();
                 }
 
@@ -84,8 +79,6 @@ namespace nd4j {
                     auto s = x->shapeInfo();
                     auto e = block.numT() > 0 ? block.getTArguments()->data() : nullptr;
 
-                    //x->printIndexedBuffer("x");
-
                     // scalar
                     T res = NativeOpExcutioner<T>::execReduceScalar(opNum, b, s, e);
                     z->putScalar(0, res);
@@ -94,19 +87,15 @@ namespace nd4j {
                     if (indices->lengthOf() > 1)
                         std::sort(axis.begin(), axis.end());
 
-                    REQUIRE_TRUE(axis.size() > 0, 0, "Some dimensions required for reduction!");
+                    REQUIRE_TRUE(!axis.empty(), 0, "Some dimensions required for reduction!");
 
-                    shape::TAD tad(x->getShapeInfo(), axis.data(), axis.size());
-                    tad.createTadOnlyShapeInfo();
-                    tad.createOffsets();
 
                     auto newShape = ShapeUtils<T>::evalReduceShapeInfo(x->ordering(), axis, x);
                     auto z = new NDArray<T>(newShape, x->getWorkspace());
 
-                    NativeOpExcutioner<T>::execReduce(opNum, x->getBuffer(), x->getShapeInfo(), block.getTArguments()->data(), z->getBuffer(), z->getShapeInfo(), axis.data(), (int) axis.size(), tad.tadOnlyShapeInfo, tad.tadOffsets);
+                    LegacyOpExecutor<T>::execReduceOp(*block.launchContext(), opNum, x, z, axis, *block.getTArguments());
 
                     RELEASE(newShape, x->getWorkspace());
-
 
                     // keepDims processing, for TF compatibility
                     if (block.getIArguments()->size() > 0 && block.getIArguments()->at(0) == 1) {
