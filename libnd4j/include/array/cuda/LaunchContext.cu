@@ -15,7 +15,8 @@ namespace nd4j {
         return _stream;
     }
 
-    void LaunchContext::setStream(cudaStream_t *stream) {
+    LaunchContext* LaunchContext::setStream(cudaStream_t *stream) {
         _stream = stream;
+        return this;
     }
 }
