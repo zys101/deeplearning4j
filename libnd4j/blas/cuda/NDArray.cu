@@ -6,13 +6,32 @@
 //
 
 #include "../NDArray.h"
+#include "../../../../../Program Files/NVIDIA GPU Computing Toolkit/CUDA/v9.2/include/cuda_runtime_api.h"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
-#include <cuda_device_runtime_api.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pointercast.h>
+
+#include <memory/Workspace.h>
+#include <memory/MemoryRegistrator.h>
+#include <ops.h>
+#include <ops/gemm.h>
+#include <pointercast.h>
+#include <stdexcept>
+#include <memory>
+#include <helpers/logger.h>
+#include <loops/pairwise_transform.h>
+#include <loops/transform.h>
+#include <loops/random.h>
+#include <loops/broadcasting.h>
+#include <indexing/NDIndex.h>
+#include <indexing/IndicesList.h>
+#include <helpers/ShapeUtils.h>
+#include <sstream>
+#include <helpers/ArrayUtils.h>
 
 namespace nd4j {
 
@@ -20,15 +39,27 @@ namespace nd4j {
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 void* NDArray<T>::operator new(size_t i) {
-	
-	return nullptr; 
+	if (nd4j::memory::MemoryRegistrator::getInstance()->hasWorkspaceAttached()) {
+		nd4j::memory::Workspace* ws = nd4j::memory::MemoryRegistrator::getInstance()->getWorkspace();
+
+		return ws->allocateBytes((Nd4jLong) i);
+	} else {
+		Nd4jPointer pointer = nullptr;
+		auto res = cudaHostAlloc(reinterpret_cast<void **>(&pointer), memorySize, cudaHostAllocDefault);
+
+		if (res != 0)
+			throw std::runtime_error("CUDA Host allocation failed!");
+
+		return pointer;
+	}
 }
 
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 void NDArray<T>::operator delete(void* p) {
-    
+	if (p != nullptr)
+		cudaFreeHost(reinterpret_cast<void *>(p));
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -96,7 +127,53 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, nd4j::memory::Workspace* workspace) {
+	int rank = (int) shape.size();
 
+	if (rank > MAX_RANK)
+		throw std::invalid_argument("Rank of NDArray can't exceed 32");
+
+	Nd4jLong shapeOf[MAX_RANK];
+	int cnt = 0;
+
+	for (auto &item: shape)
+		shapeOf[cnt++] = item;
+
+	// allocate host & device buffers for shape
+	ALLOCATE(_shapeInfo, _workspace, shape::shapeInfoLength(rank), Nd4jLong);
+	ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shape::shapeInfoLength(rank), Nd4jLong);
+
+	if (order == 'c')
+		_shapeInfo = shape::shapeBuffer(rank, shapeOf, _shapeInfo);
+	else
+		_shapeInfo = shape::shapeBufferFortran(rank, shapeOf, _shapeInfo);
+
+
+	auto bufLen = shape::length(_shapeInfo);
+
+	// allocate host & device buffers for data
+	ALLOCATE(_buffer, _workspace, bufLen, T);
+	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
+	if (!data.empty()) {
+		/**
+		 * FIXME: obviously we dont heed to udpate BOTH buffers here.
+		 * But since that's an example, and we don't have dirty tracking yet - let it be for now
+		 *
+		 * FIXME: once we update signatures, we will be using LaunchContext::stream() and LaunchContext::specialStream()
+		 * and we'll be using cudaMemcpyAsync instead
+		 */
+		// first we copy data to pinned memory
+		cudaMemcpy(_buffer, data.data(), data.size() * sizeof(T), cudaMemcpyHostToHost);
+
+		// then we copy data to device buffer
+		cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
+	} else {
+		// memset should be applied only on one side, and other one should be tagged as dirty
+		memset(_buffer, 0, bufLen * sizeof(T));
+	}
+
+	_isBuffAlloc = true;
+	_isShapeAlloc = true;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1275,7 +1352,17 @@ T NDArray<T>::getTrace() const {
 // default destructor
 template<typename T>
 NDArray<T>::~NDArray() noexcept {
+	// TODO: we probably want streamSync here, based on LaunchContext
 
+	if (_isBuffAlloc && _workspace == nullptr && _buffer != nullptr) {
+		cudaFreeHost(reinterpret_cast<void *>(_buffer));
+		cudaFree(reinterpret_cast<void *>(_bufferD));
+	}
+
+	if (_isShapeAlloc  && _workspace == nullptr && _shapeInfo != nullptr) {
+		cudaFreeHost(reinterpret_cast<void *>(_shapeInfo));
+		cudaFree(reinterpret_cast<void *>(_shapeInfoD));
+	}
 }
 
 	template class ND4J_EXPORT NDArray<float>;
