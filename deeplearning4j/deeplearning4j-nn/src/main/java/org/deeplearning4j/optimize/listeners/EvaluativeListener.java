@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.eval.IEvaluation;
 import org.deeplearning4j.exception.DL4JInvalidInputException;
@@ -18,6 +19,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.List;
 import java.util.Map;
@@ -158,13 +160,17 @@ public class EvaluativeListener extends BaseTrainingListener {
     @Override
     public void onEpochStart(Model model) {
         if (invocationType == InvocationType.EPOCH_START)
-            invokeListener(model);
+            try (val ws = Nd4j.getWorkspaceManager().scopeOutOfWorkspaces()) {
+                invokeListener(model);
+            }
     }
 
     @Override
     public void onEpochEnd(Model model) {
         if (invocationType == InvocationType.EPOCH_END)
-            invokeListener(model);
+            try (val ws = Nd4j.getWorkspaceManager().scopeOutOfWorkspaces()) {
+                invokeListener(model);
+            }
     }
 
     @Override
@@ -185,7 +191,9 @@ public class EvaluativeListener extends BaseTrainingListener {
     @Override
     public void onBackwardPass(Model model) {
         if (invocationType == InvocationType.ITERATION_END)
-            invokeListener(model);
+            try (val ws = Nd4j.getWorkspaceManager().scopeOutOfWorkspaces()) {
+                invokeListener(model);
+            }
     }
 
     protected void invokeListener(Model model) {
