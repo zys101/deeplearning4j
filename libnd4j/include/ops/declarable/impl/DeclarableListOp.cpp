@@ -8,6 +8,12 @@
 #include <graph/Variable.h>
 #include <graph/VariableSpace.h>
 
+#ifdef __CUDABLAS__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
+#endif
+
 namespace nd4j {
     namespace ops {
         template <typename T>

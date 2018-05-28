@@ -6,6 +6,7 @@
 #if NOT_EXCLUDED(OP_listdiff)
 
 #include <ops/declarable/headers/parity_ops.h>
+#include <ops/declarable/CustomOperations.h>
 
 // this op will probably never become GPU-compatible
 namespace nd4j {

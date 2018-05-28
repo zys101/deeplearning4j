@@ -5,7 +5,8 @@
 #include <op_boilerplate.h>
 #if NOT_EXCLUDED(OP_stop_gradient)
 
-#include <ops/declarable/headers/parity_ops.h>
+//#include <ops/declarable/headers/parity_ops.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
     namespace ops {

@@ -5,7 +5,8 @@
 #include <op_boilerplate.h>
 #if NOT_EXCLUDED(OP_test_scalar)
 
-#include <ops/declarable/headers/tests.h>
+//#include <ops/declarable/headers/tests.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
     namespace ops {

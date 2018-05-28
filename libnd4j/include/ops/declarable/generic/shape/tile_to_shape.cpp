@@ -5,7 +5,7 @@
 #include <op_boilerplate.h>
 #if NOT_EXCLUDED(OP_tile_to_shape)
 
-#include <ops/declarable/headers/shape.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
 namespace ops {

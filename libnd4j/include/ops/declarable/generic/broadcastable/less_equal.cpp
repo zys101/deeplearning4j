@@ -1,6 +1,7 @@
 //
 // @author raver119@gmail.com
 //
+#include <ops/declarable/CustomOperations.h>
 
 #include <ops/declarable/headers/broadcastable.h>
 

@@ -1525,10 +1525,10 @@ struct __registratorSynonymDouble_##NAME {\
 
 #ifdef __CUDABLAS__
 
-#define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaHostAlloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT)), cudaHostAllocDefault);} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
+#define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaHostAlloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT), cudaHostAllocDefault);} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
 #define RELEASE(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) cudaFreeHost(reinterpret_cast<void *>(VARIABLE));
 
-#define ALLOCATE_SPECIAL(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaMalloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT)));} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
+#define ALLOCATE_SPECIAL(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaMalloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT));} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
 #define RELEASE_SPECIAL(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) cudaFree(reinterpret_cast<void *>(VARIABLE));
 
 #else

@@ -7,6 +7,12 @@
 #include <Status.h>
 #include <helpers/ShapeUtils.h>
 
+#ifdef __CUDABLAS__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
+#endif
+
 namespace nd4j {
     namespace ops {
         Nd4jStatus conditionHelper(const char *file, int line, int condition, int argNumber, const char *format, ...) {

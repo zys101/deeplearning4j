@@ -6,6 +6,7 @@
 #include <helpers/ShapeUtils.h>
 #include <NDArray.h>
 
+#include <ops/declarable/CustomOperations.h>
 
 using namespace nd4j;
 using namespace nd4j::graph;

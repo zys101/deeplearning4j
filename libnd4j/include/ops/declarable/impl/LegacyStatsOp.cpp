@@ -5,6 +5,11 @@
 #include <ops/declarable/LegacyStatsOp.h>
 #include <helpers/ShapeUtils.h>
 
+#ifdef __CUDABLAS__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
+#endif
 
 namespace nd4j {
     namespace ops {

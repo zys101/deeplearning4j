@@ -5,6 +5,7 @@
 #include <ops/declarable/LegacyOp.h>
 
 
+
 namespace nd4j {
     namespace ops {
 

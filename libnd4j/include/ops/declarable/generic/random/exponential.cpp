@@ -4,6 +4,7 @@
 
 #include <op_boilerplate.h>
 #if NOT_EXCLUDED(OP_random_exponential)
+#include <ops/declarable/CustomOperations.h>
 
 #include <ops/declarable/headers/random.h>
 

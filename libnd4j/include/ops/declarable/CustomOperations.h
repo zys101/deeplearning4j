@@ -5,6 +5,12 @@
 #ifndef LIBND4J_CUSTOMOPERATIONS_H
 #define LIBND4J_CUSTOMOPERATIONS_H
 
+#ifdef __CUDABLAS__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
+#endif
+
 #include <ops/declarable/headers/activations.h>
 #include <ops/declarable/headers/boolean.h>
 #include <ops/declarable/headers/broadcastable.h>

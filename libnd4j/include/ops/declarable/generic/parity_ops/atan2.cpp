@@ -6,6 +6,7 @@
 #if NOT_EXCLUDED(OP_tf_atan2)
 
 #include <ops/declarable/headers/parity_ops.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
     namespace ops {

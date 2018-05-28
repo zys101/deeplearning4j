@@ -5,6 +5,12 @@
 #ifndef LIBND4J_NDARRAYFACTORY_CPP
 #define LIBND4J_NDARRAYFACTORY_CPP
 
+#ifdef __CUDABLAS__
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <cuda_runtime.h>
+#endif
+
 #include "../NDArrayFactory.h"
 #include "../NDArray.h"
 #include <memory/Workspace.h>

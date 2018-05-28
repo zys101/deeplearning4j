@@ -6,6 +6,7 @@
 #if NOT_EXCLUDED(OP_random_normal)
 
 #include <ops/declarable/headers/random.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
     namespace ops {

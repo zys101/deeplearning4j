@@ -44,7 +44,7 @@ void* NDArray<T>::operator new(size_t i) {
 		return ws->allocateBytes((Nd4jLong) i);
 	} else {
 		Nd4jPointer pointer = nullptr;
-		auto res = cudaHostAlloc(reinterpret_cast<void **>(&pointer), memorySize, cudaHostAllocDefault);
+		auto res = cudaHostAlloc(reinterpret_cast<void **>(&pointer), i, cudaHostAllocDefault);
 
 		if (res != 0)
 			throw std::runtime_error("CUDA Host allocation failed!");

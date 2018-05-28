@@ -5,7 +5,7 @@
 #include <op_boilerplate.h>
 #if NOT_EXCLUDED(OP_roll)
 
-#include <ops/declarable/headers/parity_ops.h>
+#include <ops/declarable/CustomOperations.h>
 #include <ops/declarable/helpers/roll.h>
 
 namespace nd4j {

@@ -7,6 +7,7 @@
 
 #include <ops/declarable/headers/parity_ops.h>
 #include <ops/declarable/helpers/adjust_hue.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
 namespace ops {

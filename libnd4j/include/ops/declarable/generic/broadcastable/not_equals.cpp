@@ -3,6 +3,7 @@
 //
 
 #include <ops/declarable/headers/broadcastable.h>
+#include <ops/declarable/CustomOperations.h>
 
 namespace nd4j {
     namespace ops {
