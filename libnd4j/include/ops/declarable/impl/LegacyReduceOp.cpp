@@ -85,9 +85,7 @@ namespace nd4j {
                     auto s = x->shapeInfo();
                     auto e = block.numT() > 0 ? block.getTArguments()->data() : nullptr;
 
-                    // scalar
-                    T res = NativeOpExcutioner<T>::execReduceScalar(opNum, b, s, e);
-                    z->putScalar(0, res);
+                    LegacyOpExecutor<T>::execReduceScalarOp(*block.launchContext(), opNum, x, z, *block.getTArguments());
                 } else {
                     // TAD
                     if (indices->lengthOf() > 1)
