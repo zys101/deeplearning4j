@@ -6,7 +6,6 @@
 //
 
 #include "../NDArray.h"
-#include "../../../../../Program Files/NVIDIA GPU Computing Toolkit/CUDA/v9.2/include/cuda_runtime_api.h"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
