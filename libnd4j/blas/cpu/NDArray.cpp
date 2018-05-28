@@ -723,10 +723,10 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
             else
                 _shapeInfo = shape::shapeBuffer(rank, shapeOf);
 
-            _buffer =  new T[shape::length(_shapeInfo)];
+            _buffer = new T[shape::length(_shapeInfo)];
         } else {
-            _buffer = reinterpret_cast<T*>(_workspace->allocateBytes(data.size() * sizeOfT()));
-            _shapeInfo = reinterpret_cast<Nd4jLong*>(_workspace->allocateBytes(shape::shapeInfoByteLength(rank)));
+            _buffer = reinterpret_cast<T *>(_workspace->allocateBytes(data.size() * sizeOfT()));
+            _shapeInfo = reinterpret_cast<Nd4jLong *>(_workspace->allocateBytes(shape::shapeInfoByteLength(rank)));
             if (order == 'f')
                 shape::shapeBufferFortran(rank, shapeOf, _shapeInfo);
             else
@@ -736,13 +736,16 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
 
         }
 
-        if (shape::length(_shapeInfo) != data.size()) {
-            nd4j_printf("Data size [%i] doesn't match shape length [%i]\n", data.size(), shape::length(_shapeInfo));
-            throw "Data size doesn't match shape";
-        }
+        if (data.empty()) {
+            memset(_buffer, 0, sizeOfT() * shape::length(_shapeInfo));
+        } else {
+            if (shape::length(_shapeInfo) != data.size()) {
+                nd4j_printf("Data size [%i] doesn't match shape length [%i]\n", data.size(), shape::length(_shapeInfo));
+                throw std::runtime_error("Data size doesn't match shape");
+            }
 
-        //memset(_buffer, 0, sizeOfT() * shape::length(_shapeInfo));
-        memcpy(_buffer, data.data(), sizeOfT() * shape::length(_shapeInfo));
+            memcpy(_buffer, data.data(), sizeOfT() * shape::length(_shapeInfo));
+        }
 
 		_isBuffAlloc = true;
 		_isShapeAlloc = true;
