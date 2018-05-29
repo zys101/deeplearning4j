@@ -11,6 +11,10 @@ namespace nd4j {
         return reinterpret_cast<void *>(_reductionBuffer);
     }
 
+    void* LaunchContext::allocationBuffer() {
+        return reinterpret_cast<void *>(_allocationBuffer);
+    }
+
     cudaStream_t* LaunchContext::stream() {
         return _stream;
     }
