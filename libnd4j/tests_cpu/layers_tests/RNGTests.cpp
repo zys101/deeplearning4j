@@ -468,7 +468,7 @@ TEST_F(RNGTests, Test_Reproducibility_9) {
 
     auto rng = (nd4j::random::RandomBuffer *) ops.initRandom(nullptr, seed, bufferSize, buffer);
 
-    const int length = 4000000;
+    const int length = 400000;
     int *arrayE = new int[length];
     int *arrayT = new int[length];
 
@@ -506,7 +506,7 @@ TEST_F(RNGTests, Test_Reproducibility_8) {
 
     auto rng = (nd4j::random::RandomBuffer *) ops.initRandom(nullptr, seed, bufferSize, buffer);
 
-    const int length = 4000000;
+    const int length = 400000;
     int *arrayE = new int[length];
     int *arrayT = new int[length];
 

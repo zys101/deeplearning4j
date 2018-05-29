@@ -73,10 +73,7 @@ namespace nd4j {
         *  default constructor, do not allocate memory, memory for array is passed from outside 
         */
         NDArray(T *buffer = nullptr, Nd4jLong* shapeInfo = nullptr, nd4j::memory::Workspace* workspace = nullptr);
-
-        NDArray(std::initializer_list<Nd4jLong> shape, nd4j::memory::Workspace* workspace = nullptr);
-
-        
+       
         /**
          * Constructor for scalar NDArray
          */
@@ -91,17 +88,6 @@ namespace nd4j {
         *  move constructor
         */
         NDArray(NDArray<T>&& other) noexcept;
-
-#ifndef __JAVACPP_HACK__
-        // this method only available out of javacpp
-        /**
-         * This constructor creates vector of T
-         *
-         * @param values
-         */
-        NDArray(std::initializer_list<T> values, nd4j::memory::Workspace* workspace = nullptr);
-        NDArray(std::vector<T> &values, nd4j::memory::Workspace* workspace = nullptr);
-#endif
 
         /**
         *  constructor, create empty array stored at given workspace

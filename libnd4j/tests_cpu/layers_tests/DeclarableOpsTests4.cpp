@@ -1307,7 +1307,7 @@ TEST_F(DeclarableOpsTests4, WeightedCrossEntropyWithLogits_2) {
 
     NDArray<float> input   ('c', {2, 3}, {11.f,   13.f,  4.f, 15.f,  6.f,  3.f});
     NDArray<float> targets ('c', {2, 3}, {15.5f, 15.7f,  5.f, 15.f,  5.f,  6.f});
-    NDArray<float> weights ({0.5f, 0.7f, 1.0f}) ;
+    NDArray<float> weights ('c', {3}, {0.5f, 0.7f, 1.0f}) ;
     NDArray<float> expected('c', {2, 3}, {-159.5001f, -191.1f, -15.98185f, -210.f,  -24.001238f, -14.951412f});
     
     nd4j::ops::weighted_cross_entropy_with_logits<float> op;
