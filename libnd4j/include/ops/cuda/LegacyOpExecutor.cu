@@ -13,8 +13,10 @@
 #include <loops/scalar.h>
 #include <loops/transform.h>
 #include <loops/reduce.h>
+#include <loops/reduce3.h>
 #include <loops/indexreduce.h>
 #include <loops/broadcasting.h>
+#include <loops/pairwise_transform.h>
 #include <helpers/TadMigrationHelper.h>
 #include <helpers/VectorMigrationHelper.h>
 
@@ -176,6 +178,14 @@ namespace nd4j {
     template <typename T>
     void LegacyOpExecutor<T>::execPairwiseOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *y, NDArray<T> *z, std::vector<T> &extras) {
 //        NativeOpExcutioner<T>::execPairwiseTransform(opNum, x->getBuffer(), x->getShapeInfo(), y->getBuffer(), y->getShapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data());
+        Nd4jPointer extraPtrs[] = {nullptr, reinterpret_cast<Nd4jPointer>(ctx.stream()), nullptr, nullptr};
+        dim3 launchDims = {128, 1024, 2048};
+
+// execudaCudaShaped(dim3& launchDims, Nd4jPointer *extraPointers, int opNum, T *dx, Nd4jLong *xShapeInfo, T *y, Nd4jLong *yShapeInfo, T *result, Nd4jLong *resultShapeInfo, T *extraParams);
+        VectorMigrationHelper<T> _extras(extras);
+
+        functions::pairwise_transforms::PairWiseTransform<T>::execudaCudaShaped(launchDims, extraPtrs, opNum, x->specialBuffer(), x->specialShapeInfo(), y->specialBuffer(), y->specialShapeInfo(), z->specialBuffer(),  z->specialShapeInfo(), _extras.data());
+        cudaStreamSynchronize(*ctx.stream());
     }
 
     template <typename T>
