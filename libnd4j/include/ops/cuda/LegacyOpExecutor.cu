@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <loops/scalar.h>
 #include <loops/transform.h>
+#include <loops/reduce.h>
 #include <helpers/TadMigrationHelper.h>
 #include <helpers/VectorMigrationHelper.h>
 
@@ -70,6 +71,24 @@ namespace nd4j {
     void LegacyOpExecutor<T>::execReduceScalarOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras) {
 //        T res = NativeOpExcutioner<T>::execReduceScalar(opNum, x->getBuffer(), x->getShapeInfo(), extras.data());
 //        z->putScalar(0, res);
+//        Nd4jPointer extraPtrs[] = {nullptr, reinterpret_cast<Nd4jPointer>(ctx.stream()), nullptr, nullptr};
+        std::vector<int> axis(x->rankOf());
+        for (int i = 0; i < axis.size(); i++)
+            axis[i] = i;
+
+        dim3 launchDims = {128, 1024, 2048};
+//execReduceScalar(dim3 launchDims, cudaStream_t *stream, int opNum, float *x, Nd4jLong *xShapeInfo, float *extraParams, float *z, Nd4jLong *zShapeInfo, int *dimension, int dimensionLength, float *reductionBuffer, Nd4jLong *tadOnlyShapeInfo) {
+        shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
+
+        TadMigrationHelper helper(tad);
+        VectorMigrationHelper<int> _axis(axis);
+        VectorMigrationHelper<T> _extras(extras);
+
+        functions::reduce::ReduceFunction<T>::execReduceScalar(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), _extras.data(), z->specialBuffer(),  z->specialShapeInfo(), _axis.data(), axis.size(), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo());
+        cudaStreamSynchronize(*ctx.stream());
+
     }
 
     template <typename T>
