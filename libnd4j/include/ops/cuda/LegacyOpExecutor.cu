@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <loops/scalar.h>
+#include <loops/transform.h>
 #include <helpers/TadMigrationHelper.h>
 #include <helpers/VectorMigrationHelper.h>
 
@@ -54,7 +55,15 @@ namespace nd4j {
 
     template <typename T>
     void LegacyOpExecutor<T>::execTransformOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras) {
+        Nd4jPointer extraPtrs[] = {nullptr, reinterpret_cast<Nd4jPointer>(ctx.stream()), nullptr, nullptr};
+        dim3 launchDims = {128, 1024, 2048};
+
 //        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
+//	executeTransformShaped(dim3 launchDims, cudaStream_t *stream, int opNum, T *x, Nd4jLong *xShape, int xRank, T *extraParams, T *z, Nd4jLong *zShape, int zRank, int *allocationPointer, T *reductionPointer,  Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets);
+
+        functions::transform::Transform<T>::executeTransformShaped(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), extras.data(), z->specialBuffer(),  z->specialShapeInfo(), z->rankOf(), nullptr, nullptr, nullptr, nullptr);
+        cudaStreamSynchronize(*ctx.stream());
+
     }
 
     template <typename T>
