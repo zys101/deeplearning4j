@@ -13,6 +13,7 @@
 #include <loops/scalar.h>
 #include <loops/transform.h>
 #include <loops/reduce.h>
+#include <loops/indexreduce.h>
 #include <loops/broadcasting.h>
 #include <helpers/TadMigrationHelper.h>
 #include <helpers/VectorMigrationHelper.h>
@@ -63,7 +64,7 @@ namespace nd4j {
 //        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
 //	executeTransformShaped(dim3 launchDims, cudaStream_t *stream, int opNum, T *x, Nd4jLong *xShape, int xRank, T *extraParams, T *z, Nd4jLong *zShape, int zRank, int *allocationPointer, T *reductionPointer,  Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets);
 
-        functions::transform::Transform<T>::executeTransformShaped(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), extras.data(), z->specialBuffer(),  z->specialShapeInfo(), z->rankOf(), nullptr, nullptr, nullptr, nullptr);
+        functions::transform::Transform<T>::executeTransformShaped(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), extras.data(), z->specialBuffer(),  z->specialShapeInfo(), z->rankOf(), nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), nullptr, nullptr);
         cudaStreamSynchronize(*ctx.stream());
 
     }
@@ -139,13 +140,37 @@ namespace nd4j {
 
     template <typename T>
     void LegacyOpExecutor<T>::execIndexReduceScalarOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<T> &extras) {
-//        T res = NativeOpExcutioner<T>::execIndexReduceScalar(opNum, x->getBuffer(), x->getShapeInfo(), extras.data());
-//        z->putScalar(0, res);
+
+//    executeIndexReduceScalar(dim3 launchDims, cudaStream_t *stream, const int op, T *dx, Nd4jLong *xShapeInfo, int xRank, T *extraParams, T *result, Nd4jLong *resultShapeInfo, int zRank, int *dimension, int dimensionLength, int postProcessOrNot, int *allocationBuffer, T *reductionBuffer, Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets);
+        std::vector<int> axis(x->rankOf());
+        for (int i = 0; i < axis.size(); i++)
+            axis[i] = i;
+
+        shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
+
+        TadMigrationHelper helper(tad);
+        dim3 launchDims = {128, 1024, 8192};
+
+        VectorMigrationHelper<int> _axis(axis);
+        VectorMigrationHelper<T> _extras(extras);
+        functions::indexreduce::IndexReduce<T>::executeIndexReduceScalar(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
     }
 
     template <typename T>
     void LegacyOpExecutor<T>::execIndexReduceOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<int> &axis, std::vector<T> &extras) {
+        shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
 
+        TadMigrationHelper helper(tad);
+        dim3 launchDims = {128, 1024, 8192};
+
+//     executeIndexReduce(dim3 launchDims, cudaStream_t *stream, const int op, T *dx, Nd4jLong *xShapeInfo, int xRank, T *extraParams, T *result, Nd4jLong *resultShapeInfo, int zRank, int *dimension, int dimensionLength, int postProcessOrNot, int *allocationBuffer, T *reductionBuffer, Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets);
+        VectorMigrationHelper<int> _axis(axis);
+        VectorMigrationHelper<T> _extras(extras);
+        functions::indexreduce::IndexReduce<T>::executeIndexReduce(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
     }
 
     template <typename T>
