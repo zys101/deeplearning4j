@@ -13,6 +13,7 @@
 #include <loops/scalar.h>
 #include <loops/transform.h>
 #include <loops/reduce.h>
+#include <loops/broadcasting.h>
 #include <helpers/TadMigrationHelper.h>
 #include <helpers/VectorMigrationHelper.h>
 
@@ -113,7 +114,27 @@ namespace nd4j {
 
     template <typename T>
     void LegacyOpExecutor<T>::execBroadcastOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *y, NDArray<T> *z, std::vector<int> &axis) {
-        // only skeleton
+
+        shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
+
+        shape::TAD tadZ(z->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+
+        TadMigrationHelper helper(tad);
+        TadMigrationHelper helperZ(tadZ);
+
+        //NativeOpExcutioner<T>::execReduce(opNum, x->buffer(), x->shapeInfo(), extras.data(), z->buffer(), z->shapeInfo(), axis.data(), static_cast<int>(axis.size()), tad.tadOnlyShapeInfo, tad.tadOffsets);
+
+        dim3 launchDims = {128, 1024, 8192};
+
+        VectorMigrationHelper<int> _axis(axis);
+//        VectorMigrationHelper<T> _extras(extras);
+
+
+//  executeBroadcast(dim3 launchDims, cudaStream_t *stream, int opNum, T *x, Nd4jLong *xShapeInfo, T *y, Nd4jLong *yShapeInfo, T *result, Nd4jLong *resultShapeInfo, int *dimension, int dimensionLength, Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets, Nd4jLong *tadOnlyShapeInfoZ, Nd4jLong *tadOffsetsZ);
+        functions::broadcast::Broadcast<T>::executeBroadcast(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), y->specialBuffer(), y->specialShapeInfo(), z->specialBuffer(), z->specialShapeInfo(), _axis.data(), axis.size(), helper.tadShapeInfo(), helper.tadOffsets(), helperZ.tadShapeInfo(), helperZ.tadOffsets());
+        cudaStreamSynchronize(*ctx.stream());
     }
 
     template <typename T>
