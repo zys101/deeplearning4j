@@ -1013,7 +1013,7 @@ template <typename T>
 // perform array transformation
     template<typename T>
     template<typename OpName>
-    NDArray<T> NDArray<T>::transform(T *extraParams) {
+    NDArray<T> NDArray<T>::transform(T *extraParams) const{
     
         NDArray<T> result(this->_shapeInfo, true, this->_workspace);
         functions::transform::Transform<T>::template exec<OpName>(this->_buffer, this->_shapeInfo, result._buffer,
@@ -1473,7 +1473,7 @@ template<typename T>
 
     template<typename T>
     template<typename OpName>
-    void NDArray<T>::applyScalar(T scalar, NDArray<T>* target, T *extraParams) {
+    void NDArray<T>::applyScalar(T scalar, NDArray<T>* target, T *extraParams) const{
 
         if (target == nullptr)
             functions::scalar::ScalarTransform<T>::template transform<OpName>(this->_buffer, this->_shapeInfo, this->_buffer, this->_shapeInfo, scalar, extraParams);
@@ -1484,7 +1484,7 @@ template<typename T>
     template<typename T>
     template<typename OpName>
 
-    void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) {
+    void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) const{
         if (!scalar.isScalar()) {
             throw "Operand is not a scalar!";
         }
