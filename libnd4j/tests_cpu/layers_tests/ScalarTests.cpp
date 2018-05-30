@@ -19,6 +19,10 @@ public:
 
 TEST_F(ScalarTests, Test_Create_1) {
     NDArray<float> x(2.0f);
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Create_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_EQ(0, x.rankOf());
     ASSERT_EQ(1, x.lengthOf());
@@ -34,6 +38,10 @@ TEST_F(ScalarTests, Test_Add_1) {
     NDArray<float> exp(5.0f);
 
     x += 3.0f;
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Add_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_NEAR(5.0f, x.getScalar(0), 1e-5f);
     ASSERT_TRUE(exp.isSameShape(&x));
@@ -46,8 +54,13 @@ TEST_F(ScalarTests, Test_Add_2) {
     NDArray<float> exp(5.0f);
 
     x += y;
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Add_2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_NEAR(5.0f, x.getScalar(0), 1e-5f);
+
     ASSERT_TRUE(exp.isSameShape(&x));
     ASSERT_TRUE(exp.equalsTo(&x));
 }
@@ -67,6 +80,11 @@ TEST_F(ScalarTests, Test_Add_3) {
 TEST_F(ScalarTests, Test_EQ_1) {
     NDArray<float> x(2.0f);
     NDArray<float> y(3.0f);
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_EQ_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_TRUE(y.isSameShape(&x));
     ASSERT_FALSE(y.equalsTo(&x));
@@ -228,6 +246,12 @@ TEST_F(ScalarTests, Test_Stack_2) {
 
     nd4j::ops::stack<float> op;
     auto result = op.execute({&t, &u, &v, &w}, {}, {0});
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Stack_2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -250,6 +274,12 @@ TEST_F(ScalarTests, Test_Concat_Scalar_1) {
 
     nd4j::ops::concat<float> op;
     auto result = op.execute({&t, &u, &v, &w}, {}, {0});
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Concat_Scalar_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -270,6 +300,11 @@ TEST_F(ScalarTests, Test_Concat_Scalar_2) {
 
     nd4j::ops::concat<float> op;
     auto result = op.execute({&t, &u, &v, &w}, {}, {1});
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Concat_Scalar_2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
