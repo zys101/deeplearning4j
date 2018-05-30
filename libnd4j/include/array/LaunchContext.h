@@ -38,7 +38,7 @@ namespace nd4j {
 
         Nd4jLong *_reductionBuffer = nullptr;
         Nd4jLong *_scalarPointer = nullptr;
-
+        Nd4jLong *_allocationBuffer = nullptr;
         // cublas?
 #endif
 
@@ -64,6 +64,7 @@ namespace nd4j {
 
          // this method should return reusable buffer suitable for accumulations
          void* reductionPointer();
+         void* allocationBuffer();
 
          LaunchContext* setCudaStream(cudaStream_t *stream);
 #endif

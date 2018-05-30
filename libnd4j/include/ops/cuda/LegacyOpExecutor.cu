@@ -63,10 +63,19 @@ namespace nd4j {
         Nd4jPointer extraPtrs[] = {nullptr, reinterpret_cast<Nd4jPointer>(ctx.stream()), nullptr, nullptr};
         dim3 launchDims = {128, 1024, 2048};
 
+        std::vector<int> axis(x->rankOf());
+        for (int i = 0; i < axis.size(); i++)
+            axis[i] = i;
+
+        shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
+        tad.createTadOnlyShapeInfo();
+        tad.createOffsets();
+        TadMigrationHelper helper(tad);
+
 //        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
 //	executeTransformShaped(dim3 launchDims, cudaStream_t *stream, int opNum, T *x, Nd4jLong *xShape, int xRank, T *extraParams, T *z, Nd4jLong *zShape, int zRank, int *allocationPointer, T *reductionPointer,  Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets);
 
-        functions::transform::Transform<T>::executeTransformShaped(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), extras.data(), z->specialBuffer(),  z->specialShapeInfo(), z->rankOf(), nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), nullptr, nullptr);
+        functions::transform::Transform<T>::executeTransformShaped(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), extras.data(), z->specialBuffer(),  z->specialShapeInfo(), z->rankOf(), reinterpret_cast<int *>(ctx.allocationBuffer()), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
         cudaStreamSynchronize(*ctx.stream());
 
     }
@@ -157,7 +166,7 @@ namespace nd4j {
 
         VectorMigrationHelper<int> _axis(axis);
         VectorMigrationHelper<T> _extras(extras);
-        functions::indexreduce::IndexReduce<T>::executeIndexReduceScalar(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
+        functions::indexreduce::IndexReduce<T>::executeIndexReduceScalar(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, reinterpret_cast<int *>(ctx.allocationBuffer()), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
     }
 
     template <typename T>
@@ -172,7 +181,7 @@ namespace nd4j {
 //     executeIndexReduce(dim3 launchDims, cudaStream_t *stream, const int op, T *dx, Nd4jLong *xShapeInfo, int xRank, T *extraParams, T *result, Nd4jLong *resultShapeInfo, int zRank, int *dimension, int dimensionLength, int postProcessOrNot, int *allocationBuffer, T *reductionBuffer, Nd4jLong *tadOnlyShapeInfo, Nd4jLong *tadOffsets);
         VectorMigrationHelper<int> _axis(axis);
         VectorMigrationHelper<T> _extras(extras);
-        functions::indexreduce::IndexReduce<T>::executeIndexReduce(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, nullptr, reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
+        functions::indexreduce::IndexReduce<T>::executeIndexReduce(launchDims, ctx.stream(), opNum, x->specialBuffer(), x->specialShapeInfo(), x->rankOf(), _extras.data(), z->specialBuffer(), z->specialShapeInfo(), z->rankOf(), _axis.data(), axis.size(), 0, reinterpret_cast<int *>(ctx.allocationBuffer()), reinterpret_cast<T *>(ctx.reductionPointer()), helper.tadShapeInfo(), helper.tadOffsets());
     }
 
     template <typename T>
