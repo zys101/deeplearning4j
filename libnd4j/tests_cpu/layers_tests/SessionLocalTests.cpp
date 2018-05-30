@@ -9,7 +9,7 @@
 #include <graph/SessionLocalStorage.h>
 
 using namespace nd4j::graph;
-
+#ifndef __CUDABLAS__
 class SessionLocalTests : public testing::Test {
 public:
 
@@ -65,5 +65,6 @@ TEST_F(SessionLocalTests, BasicTests_2) {
         lastValue = arr->getScalar(0);
     }
 }
+#endif
 
 #endif //LIBND4J_SESSIONLOCALTESTS_H

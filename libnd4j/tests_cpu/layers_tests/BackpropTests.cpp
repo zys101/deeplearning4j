@@ -15,6 +15,11 @@ public:
 };
 
 TEST_F(BackpropTests, Test_Add_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Add_1 was skipped for cuda.\n", "");
+    return ;
+#endif
+
     NDArray<float> x('c', {2, 3, 4});
     NDArray<float> y('c', {3, 4});
     NDArray<float> e('c', {2, 3, 4});

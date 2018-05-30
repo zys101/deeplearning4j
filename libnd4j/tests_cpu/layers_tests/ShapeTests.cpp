@@ -290,6 +290,11 @@ TEST_F(ShapeTests, Test_Remove_Index_6) {
 }
 
 TEST_F(ShapeTests, Tests_Transpose_119_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Transpose_119_1 was skipped for cuda.\n", "");
+    return;
+#endif
+
     NDArray<float> x('c', {3, 2});
     NDArray<float> y('c', {2}, {1.0f, 0.0f});
     NDArray<float> z('c', {2, 3});

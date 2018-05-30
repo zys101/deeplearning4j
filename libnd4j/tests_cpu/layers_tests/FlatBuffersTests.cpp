@@ -12,6 +12,7 @@
 #include <GraphExecutioner.h>
 #include <ops/declarable/CustomOperations.h>
 
+#ifndef __CUDABLAS__
 using namespace nd4j;
 using namespace nd4j::graph;
 
@@ -724,3 +725,4 @@ TEST_F(FlatBuffersTest, ReadLoops_SimpleWhile_1) {
 }
 
  */
+#endif

@@ -11,7 +11,7 @@
 #include <ops/declarable/CustomOperations.h>
 
 using namespace nd4j;
-
+#ifndef __CUDABLAS__
 class RNGTests : public testing::Test {
 private:
     NativeOps nativeOps;
@@ -620,3 +620,4 @@ TEST_F(RNGTests, Test_Reproducibility_2) {
 
     ops.destroyRandom(reinterpret_cast<Nd4jPointer>(rng));
 }
+#endif
