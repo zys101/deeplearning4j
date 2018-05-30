@@ -50,6 +50,7 @@
 #define OP_BOILERPLATE_HH
 
 #include <helpers/OpTracker.h>
+#include <stdexcept>
 
 #ifdef __CUDACC__
 #define meta_def inline __device__
@@ -1525,7 +1526,7 @@ struct __registratorSynonymDouble_##NAME {\
 
 #ifdef __CUDABLAS__
 
-#define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaHostAlloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT), cudaHostAllocDefault);} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
+#define ALLOCATE(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {auto cres = cudaHostAlloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT), cudaHostAllocDefault); if (cres !=0) {nd4j_printf("CUDA host allocation of [%lld bytes] failed, error code: %i\n", (long long) LENGTH * sizeof(TT), (int) (cres)); throw std::runtime_error("CUDA host allocation failed");};} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }
 #define RELEASE(VARIABLE, WORKSPACE)    if (WORKSPACE == nullptr) cudaFreeHost(reinterpret_cast<void *>(VARIABLE));
 
 #define ALLOCATE_SPECIAL(VARIABLE, WORKSPACE, LENGTH, TT)   if (WORKSPACE == nullptr) {cudaMalloc(reinterpret_cast<void **>(&VARIABLE), LENGTH * sizeof(TT));} else {VARIABLE = reinterpret_cast<TT*>(WORKSPACE->allocateBytes(LENGTH * sizeof(TT))); }

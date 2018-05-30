@@ -66,6 +66,11 @@ namespace nd4j {
         */  
         DataType _dataType = DataType_FLOAT;
 
+        /**
+        *  number of array elements
+        */  
+        Nd4jLong _length = 0;
+
         std::string toStringValue(T value);
     public:        
         
@@ -1151,10 +1156,36 @@ namespace nd4j {
 
 
 
-
 //////////////////////////////////////////////////////////////////////////
 ///// IMLEMENTATION OF INLINE METHODS ///// 
 //////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+template<typename T>
+ char NDArray<T>::ordering() const {
+
+    return shape::order(_shapeInfo);
+}
+
+//////////////////////////////////////////////////////////////////////////
+template<typename T>
+ int NDArray<T>::sizeOfT() const {
+    
+    return sizeof(T);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+template<typename T>
+ void NDArray<T>::triggerAllocationFlag(bool bufferAllocated, bool shapeAllocated) {
+  
+    _isBuffAlloc = bufferAllocated;
+    _isShapeAlloc = shapeAllocated;
+}
+
+
+// #ifndef __CUDABLAS__
 
 template <typename T>
 template <typename T2>
@@ -1195,21 +1226,6 @@ template<typename T>
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
- void NDArray<T>::triggerAllocationFlag(bool bufferAllocated, bool shapeAllocated) {
-  
-    _isBuffAlloc = bufferAllocated;
-    _isShapeAlloc = shapeAllocated;
-}
-
-//////////////////////////////////////////////////////////////////////////
-template<typename T>
- char NDArray<T>::ordering() const {
-
-    return shape::order(_shapeInfo);
-}
-
-//////////////////////////////////////////////////////////////////////////
-template<typename T>
  bool NDArray<T>::isView() {
 
     return _isView;
@@ -1240,7 +1256,7 @@ int NDArray<T>::rankOf() const {
 template<typename T>
 Nd4jLong NDArray<T>::lengthOf() const {
     
-    return shape::length(_shapeInfo);
+    return _length;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1255,13 +1271,6 @@ template<typename T>
 Nd4jLong NDArray<T>::columns() const {
 
     return shapeOf()[1];
-}
-
-//////////////////////////////////////////////////////////////////////////
-template<typename T>
- int NDArray<T>::sizeOfT() const {
-    
-    return sizeof(T);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1330,7 +1339,7 @@ template<typename T>
         return _buffer[i*ews];
     else {
         Nd4jLong idx[MAX_RANK];
-        shape::ind2subC(rankOf(), shapeOf(), i, idx);
+        shape::ind2subC(rankOf(), shapeOf(), i, static_cast<int>(_length), idx);
         Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
         return _buffer[offset];        
     }
@@ -1353,7 +1362,7 @@ template<typename T>
         return _buffer[i*ews];
     else {
         Nd4jLong idx[MAX_RANK];
-        shape::ind2subC(rankOf(), shapeOf(), i, idx);
+        shape::ind2subC(rankOf(), shapeOf(), i, static_cast<int>(_length), idx);        
         auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
         return _buffer[offset];
     }    
@@ -1530,6 +1539,7 @@ bool NDArray<T>::isSameShapeStrict(const NDArray<T> *other) const {
   return shape::equalsStrict(_shapeInfo, other->_shapeInfo);
 }
 
+// #endif //__CUDABLAS__
 
 
 }
