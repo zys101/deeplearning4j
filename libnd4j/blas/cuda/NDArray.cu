@@ -114,11 +114,15 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
 
 	const auto bufLen = shape::length(const_cast<Nd4jLong*>(shapeInfo));
     const auto shapeLen = shape::shapeInfoLength(shapeInfo[0]);
-    
-    ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+
+
     ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
+    ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+
     ALLOCATE(_buffer, _workspace, bufLen, T);
-	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
     
     memcpy(_shapeInfo, shapeInfo, shape::shapeInfoByteLength(shapeInfo[0])); 
     if(!copyStrides)

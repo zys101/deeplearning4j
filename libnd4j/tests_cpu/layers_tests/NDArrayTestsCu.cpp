@@ -5,6 +5,13 @@
 #include "testlayers.h"
 #include <NDArray.h>
 
+//#ifdef __CUDABLAS__
+
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+
+//#endif
+
 using namespace nd4j;
 
 //////////////////////////////////////////////////////////////////////
@@ -16,7 +23,17 @@ public:
 
 //////////////////////////////////////////////////////////////////////
 // just draft, will be rewritten and amplified !!!
-TEST_F(NDArrayTestCu, test1) { 
+TEST_F(NDArrayTestCu, test1) {
+    int cnt = 0;
+    cudaGetDeviceCount(&cnt);
+
+    nd4j_printf("number of devices: [%i]\n", cnt);
+
+    auto res = cudaSetDevice(0);
+    if (res != 0) {
+        nd4j_printf("cudaSetDevice() failed with error code [%i]\n", static_cast<int>(res));
+        throw std::runtime_error("cudaSetDevice failed");
+    }
     
     Nd4jLong cShapeInfo[8] = {2, 2, 2, 2, 1, 0, 1, 99};
     Nd4jLong fShapeInfo[8] = {2, 2, 2, 1, 2, 0, 1, 102};

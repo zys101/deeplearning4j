@@ -103,12 +103,14 @@ if (${_CUDA})
     message("CUDA Build")
     add_definitions(-D__CUDABLAS__=true)
 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-rpath,$ORIGIN/")
+
     set( CUDA_ARCHITECTURE_MINIMUM "3.0" CACHE STRING "Minimum required CUDA compute capability" )
     SET(CUDA_VERBOSE_BUILD ON)
     SET(CUDA_SEPARABLE_COMPILATION ON)
     set(CUDA_COMPUTE_CAPABILITY "35")
 
-    list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_37 -code=sm_37 -ftemplate-backtrace-limit=2)
+    list(APPEND CUDA_NVCC_FLAGS -DCUDA_9 -w --cudart=static -O0 -arch=compute_61 -code=sm_61 -ftemplate-backtrace-limit=2)
 
     file(GLOB_RECURSE TYPES_SOURCES false ../../include/types/*.cpp ../../include/types/*.h)
     file(GLOB_RECURSE ARRAY_SOURCES false ../../include/array/*.cpp ../../include/array/*.cu  ../../include/array/*.h)
@@ -137,8 +139,8 @@ if (${_CUDA})
         SET_TARGET_PROPERTIES(nd4jcuda PROPERTIES COMPILER_FLAGS "/EHsc")
     endif()
 
-    add_executable(minifier ../../minifier/minifier.cpp ../../minifier/graphopt.cpp)
-    target_link_libraries(minifier nd4jcuda)
+    #add_executable(minifier ../../minifier/minifier.cpp ../../minifier/graphopt.cpp)
+    #target_link_libraries(minifier nd4jcuda)
 else()
     message("CPU Build")
     add_definitions(-D__CPUBLAS__=true)
