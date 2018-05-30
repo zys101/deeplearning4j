@@ -10,6 +10,8 @@
 #include <ops/declarable/LegacyRandomOp.h>
 #include <ops/declarable/CustomOperations.h>
 
+#ifndef __CUDABLAS__
+
 using namespace nd4j;
 
 class RNGTests : public testing::Test {
@@ -59,8 +61,10 @@ TEST_F(RNGTests, Test_Dropout_1) {
 
     float prob[] = {0.5f};
 
+
     x0.template applyRandom<randomOps::DropOut<float>>(_rngA, nullptr, &x0, prob);
     x1.template applyRandom<randomOps::DropOut<float>>(_rngB, nullptr, &x1, prob);
+
 
     ASSERT_TRUE(x0.equalsTo(&x1));
 
@@ -620,3 +624,5 @@ TEST_F(RNGTests, Test_Reproducibility_2) {
 
     ops.destroyRandom(reinterpret_cast<Nd4jPointer>(rng));
 }
+
+#endif
