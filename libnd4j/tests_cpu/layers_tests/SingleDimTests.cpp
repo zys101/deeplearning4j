@@ -54,6 +54,10 @@ TEST_F(SingleDimTests, Test_Concat_1) {
 
     nd4j::ops::concat<float> op;
     auto result = op.execute({&x, &y}, {}, {0});
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Concat_1 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
 
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
@@ -89,6 +93,11 @@ TEST_F(SingleDimTests, Test_ExpandDims_1) {
     nd4j::ops::expand_dims<float> op;
     auto result = op.execute({&x}, {}, {0});
 
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_ExpandDims_1 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -106,6 +115,11 @@ TEST_F(SingleDimTests, Test_ExpandDims_2) {
 
     nd4j::ops::expand_dims<float> op;
     auto result = op.execute({&x}, {}, {1});
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_ExpandDims_2 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
 
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
@@ -127,6 +141,11 @@ TEST_F(SingleDimTests, Test_Squeeze_1) {
     nd4j::ops::squeeze<float> op;
     auto result = op.execute({&x}, {}, {});
 
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Squeeze_1 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -143,6 +162,12 @@ TEST_F(SingleDimTests, Test_Squeeze_2) {
 
     nd4j::ops::squeeze<float> op;
     auto result = op.execute({&x}, {}, {});
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Squeeze_2 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -192,6 +217,12 @@ TEST_F(SingleDimTests, Test_Permute_1) {
 
     nd4j::ops::permute<float> op;
     auto result = op.execute({&x}, {}, {0});
+
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Permute_1 was skipped for cuda.\n", "");
+    ASSERT_TRUE(false);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
