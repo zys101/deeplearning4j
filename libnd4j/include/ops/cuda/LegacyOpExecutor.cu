@@ -70,6 +70,7 @@ namespace nd4j {
         shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
         tad.createTadOnlyShapeInfo();
         tad.createOffsets();
+        TadMigrationHelper helper(tad);
 
 //        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
 //	executeTransformShaped(dim3 launchDims, cudaStream_t *stream, int opNum, T *x, Nd4jLong *xShape, int xRank, T *extraParams, T *z, Nd4jLong *zShape, int zRank, int *allocationPointer, T *reductionPointer,  Nd4jLong *tadShapeInfo, Nd4jLong *tadOffsets);

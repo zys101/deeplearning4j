@@ -595,7 +595,7 @@ void NDArray<T>::applyTransform(T *extraParams) {
 // perform array transformation
 template<typename T>
 template<typename OpName>
-NDArray<T> NDArray<T>::transform(T *extraParams) {
+NDArray<T> NDArray<T>::transform(T *extraParams) const{
     
 	return NDArray<T>();
 }
@@ -759,14 +759,14 @@ void NDArray<T>::muliColumnVector(const NDArray<T> *column) {
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 template<typename OpName>
-void NDArray<T>::applyScalar(T scalar, NDArray<T>* target, T *extraParams) {
+void NDArray<T>::applyScalar(T scalar, NDArray<T>* target, T *extraParams) const{
 
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 template<typename OpName>
-void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) {
+void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) const{
 
 }
 
