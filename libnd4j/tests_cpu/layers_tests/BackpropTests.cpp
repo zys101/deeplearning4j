@@ -22,6 +22,11 @@ TEST_F(BackpropTests, Test_Add_1) {
     nd4j::ops::add_bp<float> op;
     auto result = op.execute({&x, &y, &e}, {}, {});
 
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Add_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     ASSERT_EQ(Status::OK(), result->status());
 
     auto eps = result->at(0);
