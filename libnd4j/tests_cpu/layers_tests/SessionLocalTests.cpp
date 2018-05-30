@@ -2,6 +2,7 @@
 // @author raver119@gmail.com
 //
 
+#ifndef __CUDABLAS__
 #ifndef LIBND4J_SESSIONLOCALTESTS_H
 #define LIBND4J_SESSIONLOCALTESTS_H
 
@@ -67,3 +68,4 @@ TEST_F(SessionLocalTests, BasicTests_2) {
 }
 
 #endif //LIBND4J_SESSIONLOCALTESTS_H
+#endif //__CUDABLASS__
