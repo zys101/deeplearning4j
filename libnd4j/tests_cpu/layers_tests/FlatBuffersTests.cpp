@@ -595,6 +595,10 @@ TEST_F(FlatBuffersTest, Ae_00) {
     NDArray<float> exp('c', {5, 4}, {0.32454616f, -0.06604697f, 0.22593613f, 0.43166467f, -0.18320604f, 0.00102305f, -0.06963076f, 0.25266643f, 0.07568010f, -0.03009197f, 0.07805517f, 0.33180334f, -0.06220427f, 0.07249600f, -0.06726961f, -0.22998397f, -0.06343779f, 0.07384885f, -0.06891008f,  -0.23745790f});
 
 //    graph->printOut();
+#ifdef __CUDABLAS__
+    nd4j_printf("Ae_00 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_EQ(OutputMode_VARIABLE_SPACE, graph->getExecutorConfiguration()->_outputMode);
 
