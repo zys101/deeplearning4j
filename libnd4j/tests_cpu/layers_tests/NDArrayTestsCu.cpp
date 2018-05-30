@@ -16,7 +16,7 @@ public:
 
 //////////////////////////////////////////////////////////////////////
 // just draft, will be rewritten and amplified !!!
-TEST_F(NDArrayTestCu, test1) {
+TEST_F(NDArrayTestCu, test1) { 
     
     Nd4jLong cShapeInfo[8] = {2, 2, 2, 2, 1, 0, 1, 99};
     Nd4jLong fShapeInfo[8] = {2, 2, 2, 1, 2, 0, 1, 102};

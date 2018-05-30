@@ -66,33 +66,33 @@ TEST_F(TadTests, TestNumTads1) {
     ASSERT_EQ(2, numTadsY);
 }
 
-TEST_F(TadTests, TestShapeTad_1) {
+// TEST_F(TadTests, TestShapeTad_1) {
 
-    float buff[]  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,16,17,18,19,20,21,22,23,24};    
-    Nd4jLong shapeInfo[] = {3, 2, 3, 4, 12, 4, 1, 0, 1, 99};
+//     float buff[]  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,16,17,18,19,20,21,22,23,24};    
+//     Nd4jLong shapeInfo[] = {3, 2, 3, 4, 12, 4, 1, 0, 1, 99};
 
-    NDArray<float> input(buff, shapeInfo);
+//     NDArray<float> input(buff, shapeInfo);
     
-    std::vector<int> dimensions = {0,1,2};
-    Nd4jLong tadLength = shape::tadLength(input.getShapeInfo(), dimensions.data(), dimensions.size());
-    Nd4jLong numTads = input.lengthOf() / tadLength;
+//     std::vector<int> dimensions = {0,1,2};
+//     Nd4jLong tadLength = shape::tadLength(input.getShapeInfo(), dimensions.data(), dimensions.size());
+//     Nd4jLong numTads = input.lengthOf() / tadLength;
     
-    shape::TAD tad(input.getShapeInfo(), dimensions.data(), dimensions.size());
-    tad.createTadOnlyShapeInfo();
-    tad.createOffsets();
+//     shape::TAD tad(input.getShapeInfo(), dimensions.data(), dimensions.size());
+//     tad.createTadOnlyShapeInfo();
+//     tad.createOffsets();
 
-    auto tadShapeInfo = new Nd4jLong[shape::shapeInfoLength(tad.tadOnlyShapeInfo[0])];
-    std::memcpy(tadShapeInfo, tad.tadOnlyShapeInfo, shape::shapeInfoByteLength(tad.tadOnlyShapeInfo));
+//     auto tadShapeInfo = new Nd4jLong[shape::shapeInfoLength(tad.tadOnlyShapeInfo[0])];
+//     std::memcpy(tadShapeInfo, tad.tadOnlyShapeInfo, shape::shapeInfoByteLength(tad.tadOnlyShapeInfo));
 
-    float* tadBuff = input.getBuffer() + tad.tadOffsets[0];
-    NDArray<float> tadArr(tadBuff, tadShapeInfo);
+//     float* tadBuff = input.getBuffer() + tad.tadOffsets[0];
+//     NDArray<float> tadArr(tadBuff, tadShapeInfo);
    
-    ASSERT_TRUE(numTads==1);
-    ASSERT_TRUE(input.isSameShapeStrict(&tadArr));
-    ASSERT_TRUE(input.equalsTo(&tadArr));
+//     ASSERT_TRUE(numTads==1);
+//     ASSERT_TRUE(input.isSameShapeStrict(&tadArr));
+//     ASSERT_TRUE(input.equalsTo(&tadArr));
 
-    delete tadShapeInfo;
-}
+//     delete tadShapeInfo;
+// }
 
 TEST_F(TadTests, TadNoAxis_1) {
     NDArray<float> array('c', {2, 3});

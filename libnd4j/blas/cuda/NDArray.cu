@@ -34,59 +34,29 @@
 
 namespace nd4j {
 
-
-////////////////////////////////////////////////////////////////////////
-template<typename T>
-void* NDArray<T>::operator new(size_t i) {
-	if (nd4j::memory::MemoryRegistrator::getInstance()->hasWorkspaceAttached()) {
-		nd4j::memory::Workspace* ws = nd4j::memory::MemoryRegistrator::getInstance()->getWorkspace();
-
-		return ws->allocateBytes((Nd4jLong) i);
-	} else {
-		Nd4jPointer pointer = nullptr;
-		auto res = cudaHostAlloc(reinterpret_cast<void **>(&pointer), i, cudaHostAllocDefault);
-
-		if (res != 0)
-			throw std::runtime_error("CUDA Host allocation failed!");
-
-		return pointer;
-	}
-}
-
-
-////////////////////////////////////////////////////////////////////////
-template<typename T>
-void NDArray<T>::operator delete(void* p) {
-	if (p != nullptr)
-		cudaFreeHost(reinterpret_cast<void *>(p));
-}
-
-////////////////////////////////////////////////////////////////////////
-template <typename T>
-NDArray<T>* NDArray<T>::getView() {
-
-	return new NDArray<T>();
-}
-
-////////////////////////////////////////////////////////////////////////
-template <typename T>
-template <typename N>
-NDArray<N>* NDArray<T>::asT() {	
-
-        return new NDArray<N>();
-}
-
 ////////////////////////////////////////////////////////////////////////
 // default constructor, do not allocate memory, memory for array is passed from outside 
 template <typename T>
-NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) 
-    :
-    _buffer(buffer),
-    _shapeInfo(shapeInfo),
-    _isBuffAlloc(false), // buffer is a weak link
-    _isShapeAlloc(false), // shapeInfo is a weak link
-    _workspace(workspace)
-{}
+NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) {
+	
+	_buffer    = buffer;
+	_shapeInfo = shapeInfo;
+	_isBuffAlloc = false;                                  // indicate that memory for array is passed from outside
+	_isShapeAlloc = false;
+	_workspace = workspace;
+	if(_shapeInfo != nullptr)
+    	_length = shape::length(_shapeInfo);
+
+	const auto shapeLen = shape::shapeInfoLength(_shapeInfo);
+    const auto bufLen = shape::length(_shapeInfo);
+
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 //constructor, create empty array at given workspace
@@ -105,6 +75,29 @@ NDArray<T>::NDArray(nd4j::memory::Workspace* workspace)
 template <typename T>
 NDArray<T>::NDArray(T scalar) {
 
+	nd4j::memory::Workspace* workspace = nullptr;
+
+    ALLOCATE(_buffer, workspace, 1, T);
+    ALLOCATE(_shapeInfo, workspace, shape::shapeInfoLength(0), Nd4jLong);
+    _shapeInfo[0] = 0;
+    _shapeInfo[1] = 0;
+    _shapeInfo[2] = 1;
+    _shapeInfo[3] = 99;
+
+    _buffer[0] = scalar;
+    _length = 1;
+
+    _isBuffAlloc = true; 
+    _isShapeAlloc = true;
+
+    const auto shapeLen = shape::shapeInfoLength(_shapeInfo);
+    const auto bufLen = shape::length(_shapeInfo);
+
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -134,6 +127,7 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
 
     memset(_buffer, 0, bufLen*sizeOfT());          // set all elements in new array to be zeros
     
+    _length = shape::length(_shapeInfo);
     _isBuffAlloc = true;
     _isShapeAlloc = true;
 }
@@ -188,6 +182,7 @@ NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const 
 		memset(_buffer, 0, bufLen * sizeof(T));
 	}
 
+	_length = shape::length(_shapeInfo);
 	_isBuffAlloc = true;
 	_isShapeAlloc = true;
 }
@@ -229,6 +224,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
     // copy data from host _buffer to device _bufferD
 	cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
 
+    _length = shape::length(_shapeInfo);
     _isBuffAlloc = false;
     _isShapeAlloc = true;
 }
@@ -251,6 +247,7 @@ NDArray<T>::NDArray(const NDArray<T> *other, const bool copyStrides, nd4j::memor
     ALLOCATE(_buffer, _workspace, bufLen, T);
     ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T); 
 
+    _length = shape::length(_shapeInfo);
     _isBuffAlloc = true;
     _isShapeAlloc = true;
 }
@@ -275,8 +272,50 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
     this->assign(&other);
     cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
     
+    _length = shape::length(_shapeInfo);
     _isBuffAlloc = true; 
     _isShapeAlloc = true;    
+}
+
+////////////////////////////////////////////////////////////////////////
+template<typename T>
+void* NDArray<T>::operator new(size_t i) {
+	if (nd4j::memory::MemoryRegistrator::getInstance()->hasWorkspaceAttached()) {
+		nd4j::memory::Workspace* ws = nd4j::memory::MemoryRegistrator::getInstance()->getWorkspace();
+
+		return ws->allocateBytes((Nd4jLong) i);
+	} else {
+		Nd4jPointer pointer = nullptr;
+		auto res = cudaHostAlloc(reinterpret_cast<void **>(&pointer), i, cudaHostAllocDefault);
+
+		if (res != 0)
+			throw std::runtime_error("CUDA Host allocation failed!");
+
+		return pointer;
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////
+template<typename T>
+void NDArray<T>::operator delete(void* p) {
+	if (p != nullptr)
+		cudaFreeHost(reinterpret_cast<void *>(p));
+}
+
+////////////////////////////////////////////////////////////////////////
+template <typename T>
+NDArray<T>* NDArray<T>::getView() {
+
+	return new NDArray<T>();
+}
+
+////////////////////////////////////////////////////////////////////////
+template <typename T>
+template <typename N>
+NDArray<N>* NDArray<T>::asT() {	
+
+        return new NDArray<N>();
 }
 
 ////////////////////////////////////////////////////////////////////////
