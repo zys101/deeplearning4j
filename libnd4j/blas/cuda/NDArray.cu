@@ -31,7 +31,7 @@
 #include <helpers/ShapeUtils.h>
 #include <sstream>
 #include <helpers/ArrayUtils.h>
-
+#include <LegacyOpExecutor.h>
 namespace nd4j {
 
 
@@ -694,7 +694,7 @@ void NDArray<T>::transposei() {
 template<typename T>
 bool NDArray<T>::equalsTo(NDArray<T> &other, T eps) const {
     
-    return true;
+    return equalsTo(&other, eps);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -702,7 +702,30 @@ bool NDArray<T>::equalsTo(NDArray<T> &other, T eps) const {
 template<typename T>
 bool NDArray<T>::equalsTo(const NDArray<T> *other, T eps) const {
 
-	return true;
+    if (lengthOf() != other->lengthOf())
+        return false;
+
+    // we need to be able to compare [1, len] to [len]
+    if ((rankOf() == 1 && other->rankOf() == 2) || (rankOf() == 2 && other->rankOf() == 1)) {
+        // FIXME: do something here?
+    } else if (!shape::equalsSoft(_shapeInfo, other->_shapeInfo))
+        return false;
+
+//    T *extras; 
+//    ALLOCATE(extras, _workspace, 1LL, T); //new T[1]{eps};
+    std::vector<T> extras; 
+    extras[0] = eps;
+
+    // we don't need extraparams for this op
+    //T val = NativeOpExcutioner<T>::execReduce3Scalar(4, _buffer, _shapeInfo, extras, other->_buffer,
+    //                                                 other->_shapeInfo);
+    NDArray<T> res(eps);
+    LegacyOpExecutor<T>::execReduce3ScalarOp(*LaunchContext::defaultContext(), 4, const_cast<NDArray<T>*>(this), const_cast<NDArray<T>*>(other), &res, extras);
+    
+    if (res(0) > 0)
+        return false;
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
