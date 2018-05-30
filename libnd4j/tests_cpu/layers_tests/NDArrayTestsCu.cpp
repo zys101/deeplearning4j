@@ -32,5 +32,23 @@ TEST_F(NDArrayTestCu, test1) {
     ASSERT_TRUE(true);    
 }
 
+//////////////////////////////////////////////////////////////////////
+// just draft, will be rewritten and amplified !!!
+TEST_F(NDArrayTestCu, test2) {
+    
+    Nd4jLong cShapeInfo[8] = {2, 2, 2, 2, 1, 0, 1, 99};
+    Nd4jLong fShapeInfo[8] = {2, 2, 2, 1, 2, 0, 1, 102};
+    double buffer[4] = {1,2,3,4};
+
+    NDArray<double> arr1(cShapeInfo, true);
+    NDArray<double> arr2('f', {2, 2}, {1,2,3,4});
+    NDArray<double> arr3('c', {2, 2});
+    NDArray<double> arr4(buffer, 'c', {2,2}, nullptr);
+    NDArray<double> arr5(&arr4, true);
+    NDArray<double> arr6 = arr5;
+
+    ASSERT_TRUE(true);    
+}
+
 
 
