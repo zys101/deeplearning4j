@@ -301,6 +301,10 @@ TEST_F(ShapeTests, Tests_Transpose_119_1) {
 
     nd4j::ops::transpose<float> op;
     auto result = op.execute({&x, &y}, {&z}, {}, {});
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Transpose_119_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     ASSERT_EQ(Status::OK(), result);
     ASSERT_TRUE(e->isSameShape(z));
