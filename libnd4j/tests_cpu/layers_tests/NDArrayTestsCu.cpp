@@ -51,20 +51,55 @@ TEST_F(NDArrayTestCu, test2) {
 }
 
 //////////////////////////////////////////////////////////////////////
-TEST_F(NDArrayTestCu, test3) {
+TEST_F(NDArrayTestCu, test3_form_only) {
     
     Nd4jLong cShapeInfo[8] = {2, 2, 2, 2, 1, 0, 1, 99};
     Nd4jLong fShapeInfo[8] = {2, 2, 2, 1, 2, 0, 1, 102};
-    float buffer[4] = {1,2,3,4};
+    float buffer[4] = {1.f,2.f,3.f,4.f};
 
     NDArray<float> x(cShapeInfo, true);
-//    NDArray<float> arr2('f', {2, 2}, {1,2,3,4});
     NDArray<float> exp('c', {2, 2});
-//    NDArray<float> arr4(buffer, 'c', {2,2}, nullptr);
-//    NDArray<float> arr5(&arr4, true);
-//    NDArray<float> arr6 = arr5;
+    x(0) = buffer[0];
+    x(1) = buffer[1];
+    x(2) = buffer[2];
+    x(3) = buffer[3];
+//    exp = x;
+    ASSERT_TRUE(x.isSameShape(&exp));
+//    x.printIndexedBuffer("Hello");
+//    ASSERT_TRUE(x.equalsTo(&exp));
+    
+}
+
+//////////////////////////////////////////////////////////////////////
+TEST_F(NDArrayTestCu, test3) {
+    
+    NDArray<float> x(12.f);
+    NDArray<float> exp(12.f);
 
     ASSERT_TRUE(x.isSameShape(&exp));
+    ASSERT_TRUE(x.equalsTo(&exp));
+    
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+TEST_F(NDArrayTestCu, test4) {
+    
+    Nd4jLong cShapeInfo[8] = {2, 2, 2, 2, 1, 0, 1, 99};
+    Nd4jLong fShapeInfo[8] = {2, 2, 2, 1, 2, 0, 1, 102};
+    float buffer[4] = {1.f,2.f,3.f,4.f};
+
+    NDArray<float> x(cShapeInfo, true);
+    NDArray<float> exp('c', {2, 2});
+    x(0) = buffer[0];
+    x(1) = buffer[1];
+    x(2) = buffer[2];
+    x(3) = buffer[3];
+    exp = x;
+    ASSERT_TRUE(x.isSameShape(&exp));
+    x.printIndexedBuffer("Hello");
     ASSERT_TRUE(x.equalsTo(&exp));
     
 }

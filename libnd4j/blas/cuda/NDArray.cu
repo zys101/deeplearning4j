@@ -105,6 +105,29 @@ NDArray<T>::NDArray(nd4j::memory::Workspace* workspace)
 template <typename T>
 NDArray<T>::NDArray(T scalar) {
 
+    nd4j::memory::Workspace* workspace = nullptr;
+
+    ALLOCATE(_buffer, workspace, 1, T);
+    ALLOCATE(_shapeInfo, workspace, shape::shapeInfoLength(0), Nd4jLong);
+    _shapeInfo[0] = 0;
+    _shapeInfo[1] = 0;
+    _shapeInfo[2] = 1;
+    _shapeInfo[3] = 99;
+
+    _buffer[0] = scalar;
+    _length = 1;
+
+    _isBuffAlloc = true; 
+    _isShapeAlloc = true;
+
+    const auto shapeLen = shape::shapeInfoLength(_shapeInfo);
+    const auto bufLen = shape::length(_shapeInfo);
+
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -713,7 +736,7 @@ bool NDArray<T>::equalsTo(const NDArray<T> *other, T eps) const {
 
 //    T *extras; 
 //    ALLOCATE(extras, _workspace, 1LL, T); //new T[1]{eps};
-    std::vector<T> extras; 
+    std::vector<T> extras(1); 
     extras[0] = eps;
 
     // we don't need extraparams for this op

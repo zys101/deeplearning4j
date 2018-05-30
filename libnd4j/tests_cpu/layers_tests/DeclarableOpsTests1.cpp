@@ -457,6 +457,11 @@ TEST_F(DeclarableOpsTests1, SubtractMatrices1) {
 }
 
 TEST_F(DeclarableOpsTests1, TestRng1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("TestRng1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     Nd4jLong *buffer = new Nd4jLong[100000];
 
     NativeOps nativeOps;
@@ -1208,13 +1213,20 @@ TEST_F(DeclarableOpsTests1, Reshapeas1) {
 }
 
 TEST_F(DeclarableOpsTests1, Test_Cast_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Cast_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     // TODO: right now there's no real cast implementation, but genera idea should be the same: arrays equality to be expected
     NDArray<float> x('c', {5, 5});
+
     NDArrayFactory<float>::linspace(1, x);
 
     nd4j::ops::cast<float> op;
 
     auto result = op.execute({&x}, {}, {3});
+
     ASSERT_EQ(ND4J_STATUS_OK, result->status());
 
     auto z = result->at(0);
@@ -1420,6 +1432,10 @@ TEST_F(DeclarableOpsTests1, Reshape2) {
 }
 
 TEST_F(DeclarableOpsTests1, Reshape3) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Reshape3 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 4, 5});
 
     nd4j::ops::reshape<float> op;
@@ -1435,6 +1451,11 @@ TEST_F(DeclarableOpsTests1, Reshape3) {
 }
 
 TEST_F(DeclarableOpsTests1, Reshape4) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Reshape4 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<float> x('c', {3, 4, 5});
 
     nd4j::ops::reshape<float> op;
@@ -1450,6 +1471,10 @@ TEST_F(DeclarableOpsTests1, Reshape4) {
 }
 
 TEST_F(DeclarableOpsTests1, Reshape5) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Reshape5 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 4, 5});
 
     nd4j::ops::reshape<float> op;
@@ -2411,6 +2436,10 @@ TEST_F(DeclarableOpsTests1, CompactLaunchTests1) {
     NDArray<double> exp(_expB, _expS);
     exp.triggerAllocationFlag(false, false);
 
+#ifdef __CUDABLAS__
+    nd4j_printf("CompactLaunchTests1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {2, 3, 4, 4});
     NDArray<double> weights('c', {3, 3, 5, 5});
@@ -2436,6 +2465,10 @@ TEST_F(DeclarableOpsTests1, CompactLaunchTests2) {
     NDArray<double> exp(_expB, _expS);
     exp.triggerAllocationFlag(false, false);
 
+#ifdef __CUDABLAS__
+    nd4j_printf("CompactLaunchTests2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {2, 3, 4, 4});
     NDArray<double> weights('c', {3, 3, 5, 5});
@@ -2456,6 +2489,10 @@ TEST_F(DeclarableOpsTests1, CompactLaunchTests2) {
 
 ////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests1, batchnorm_test1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("batchnorm_test1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     
     NDArray<double> input   ('c', {2,3,2,3,2});
     NDArray<double> mean    ('c', {2,3,2,3,2});
@@ -2487,6 +2524,10 @@ TEST_F(DeclarableOpsTests1, batchnorm_test1) {
 
 
 TEST_F(DeclarableOpsTests1, batchnorm_test2) {
+#ifdef __CUDABLAS__
+    nd4j_printf("batchnorm_test2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     
     NDArray<double> input   ('c', {2,3,1,3,1});
     NDArray<double> mean    ('c', {1,3,2,1,2});
@@ -2518,6 +2559,10 @@ TEST_F(DeclarableOpsTests1, batchnorm_test2) {
 
 ////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests1, batchnorm_test3) {
+#ifdef __CUDABLAS__
+    nd4j_printf("batchnorm_test3 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     
     NDArray<double> input   ('c', {2,3,2,3,2});
     NDArray<double> mean    ('c', {2,3,2});
@@ -2549,6 +2594,10 @@ TEST_F(DeclarableOpsTests1, batchnorm_test3) {
 
 ////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests1, batchnorm_test4) {
+#ifdef __CUDABLAS__
+    nd4j_printf("batchnorm_test4 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     
     NDArray<double> input   ('c', {3,2});
     NDArray<double> mean    ('c', {2,3,2});
@@ -2588,6 +2637,10 @@ TEST_F(DeclarableOpsTests1, sru_old_test1) {
     const int N = 4;
     double expStateBuff[] =  {0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715};
     double expOutputBuff[] = {1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656};
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_old_test1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {bS,K,N});
     NDArray<double> weights('c', {3*K,K});
@@ -2627,6 +2680,10 @@ TEST_F(DeclarableOpsTests1, sru_test1) {
     const int N = 4;
     double expOutputBuff[] = {0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715};
     double expStateBuff[]  = {1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656};
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_test1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {bS,K,N});
     NDArray<double> weights('c', {3*K,K});
@@ -2665,6 +2722,11 @@ TEST_F(DeclarableOpsTests1, sru_logic_test1) {
     const int N = 4;
     double expOutputBuff[] = {0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715};
     double expStateBuff[]  = {1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656, 1.090533, 1.174509, 1.252403, 1.324656};
+
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_logic_test1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {bS,K,N});
     NDArray<double> weights('c', {3*K,K});
@@ -2706,6 +2768,10 @@ TEST_F(DeclarableOpsTests1, sru_bp) {
     double expGradBBuff[] = {-0.7043748, -0.7043748, -0.7043748, -0.2128962, -0.2128962, -0.2128962};
     double expGradInitBuff[] = {1.1421, 1.1421, 1.1421, 1.1421, 1.1421, 1.1421};
     double stateBuff[] = {0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715};                       
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_bp was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {bS,K,N});
     NDArray<double> weights('c', {3*K,K});
@@ -2763,6 +2829,11 @@ TEST_F(DeclarableOpsTests1, sru_bp_logic1) {
     double expGradInitBuff[] = {1.1421, 1.1421, 1.1421, 1.1421, 1.1421, 1.1421};
     double stateBuff[] = {0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715, 0.847983, 0.874549, 0.896109, 0.913715};                       
 
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_bp_logic1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<double> input('c', {bS,K,N});
     NDArray<double> weights('c', {3*K,K});
     NDArray<double> bias('c', {1,2*K});
@@ -2815,6 +2886,10 @@ TEST_F(DeclarableOpsTests1, sru_bi_1) {
     const int N = 4;
     double expStateBuff[] =  {1.02857, 1.02857, 1.02857, 1.11288, 1.11288, 1.11288, 1.02857, 1.02857, 1.02857, 1.11288, 1.11288, 1.11288, 1.0569, 1.0569, 1.0569, 1.08501, 1.08501, 1.08501, 1.0569, 1.0569, 1.0569, 1.08501, 1.08501, 1.08501, 1.08501, 1.08501, 1.08501, 1.0569, 1.0569, 1.0569, 1.08501, 1.08501, 1.08501, 1.0569, 1.0569, 1.0569, 1.11288, 1.11288, 1.11288, 1.02857, 1.02857, 1.02857, 1.11288, 1.11288, 1.11288, 1.02857, 1.02857, 1.02857};
     double expOutputBuff[] = {0.779265, 0.779265, 0.779265, 0.810752, 0.810752, 0.810752, 0.779265, 0.779265, 0.779265, 0.810752, 0.810752, 0.810752, 0.790317, 0.790317, 0.790317, 0.800804, 0.800804, 0.800804, 0.790317, 0.790317, 0.790317, 0.800804, 0.800804, 0.800804, 0.800804, 0.800804, 0.800804, 0.790317, 0.790317, 0.790317, 0.800804, 0.800804, 0.800804, 0.790317, 0.790317, 0.790317, 0.810752, 0.810752, 0.810752, 0.779265, 0.779265, 0.779265, 0.810752, 0.810752, 0.810752, 0.779265, 0.779265, 0.779265};
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_bi_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input('c', {N,bS,2*K});
     NDArray<double> weights('c', {2*K,6*K});
@@ -2855,6 +2930,10 @@ TEST_F(DeclarableOpsTests1, sru_bi_bp_1) {
     double expGradWBuff[] = {0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02595354,-0.090096 ,-0.00882456,0.02595354,-0.090096 ,-0.0088245, 0.02595354,-0.090096 ,-0.00882456,0.01651665,-0.0559437,-0.0084390, 0.01651665,-0.0559437,-0.00843906,0.01651665,-0.0559437,-0.00843906, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.02124567,-0.0731508,-0.00868926,0.02124567,-0.0731508,-0.0086892, 0.02124567,-0.0731508,-0.00868926,0.02084955,-0.0712011,-0.0085608, 0.02084955,-0.0712011,-0.00856086,0.02084955,-0.0712011,-0.00856086, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926, 0.01671156,-0.0570699,-0.00856086,0.01671156,-0.0570699,-0.0085608, 0.01671156,-0.0570699,-0.00856086,0.02534988,-0.0880002,-0.0086892, 0.02534988,-0.0880002,-0.00868926,0.02534988,-0.0880002,-0.00868926};
     double expGradBBuff[] = {-0.0734389, -0.0734389, -0.0734389, -0.0717151, -0.0717151, -0.0717151, -0.0734389, -0.0734389, -0.0734389, -0.0717151, -0.0717151, -0.0717151, -0.00869156, -0.00869156, -0.00869156, -0.00856306, -0.00856306, -0.00856306, -0.00869156, -0.00869156, -0.00869156, -0.00856306, -0.00856306, -0.00856306};
     double stateBuff[] = {1.028569, 1.028569, 1.028569, 1.112884, 1.112884, 1.112884, 1.028569, 1.028569, 1.028569, 1.112884, 1.112884, 1.112884, 1.056905, 1.056905, 1.056905, 1.085009, 1.085009, 1.085009, 1.056905, 1.056905, 1.056905, 1.085009, 1.085009, 1.085009, 1.085009, 1.085009, 1.085009, 1.056905, 1.056905, 1.056905, 1.085009, 1.085009, 1.085009, 1.056905, 1.056905, 1.056905, 1.112884, 1.112884, 1.112884, 1.028569, 1.028569, 1.028569, 1.112884, 1.112884, 1.112884, 1.028569, 1.028569, 1.028569};
+#ifdef __CUDABLAS__
+    nd4j_printf("sru_bi_bp_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     
     NDArray<double> input('c', {N,bS,2*K});
     NDArray<double> weights('c', {2*K,6*K});
@@ -2912,6 +2991,10 @@ TEST_F(DeclarableOpsTests1, Maxpool2d_bp2) {
 
     double epsilonBuff[]  = {6., 7., 8., 10., 11., 12., 14., 15., 16., 22., 23., 24., 26., 27., 28., 30., 31., 32.};
     double expectedBuff[] = {0., 0., 0., 0.,0., 6., 7., 8.,0.,10.,11.,12.,0.,14.,15.,16.,0., 0., 0., 0.,0.,22.,23.,24.,0.,26.,27.,28.,0.,30.,31.,32.};
+#ifdef __CUDABLAS__
+    nd4j_printf("Maxpool2d_bp2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input   ('c', {bS,iD,iH,iW});
     NDArray<double> epsilon ('c', {bS,iD,oH,oW});
@@ -2943,6 +3026,10 @@ TEST_F(DeclarableOpsTests1, Avgpool2d_bp2) {
 
     double epsilonBuff[] = {3.5 , 4.5 , 5.5, 7.5 , 8.5 , 9.5, 11.5, 12.5, 13.5, 19.5, 20.5, 21.5, 23.5, 24.5, 25.5, 27.5, 28.5, 29.5};
     double expectedBuff[] = {0.875, 2., 2.5,  1.375, 2.75 , 6., 7.,  3.75, 4.75 ,10., 11., 5.75, 2.875, 6., 6.5, 3.375, 4.875, 10.,10.5, 5.375, 10.75, 22.,23., 11.75, 12.75, 26.,27., 13.75, 6.875, 14.,14.5, 7.375};
+#ifdef __CUDABLAS__
+    nd4j_printf("Avgpool2d_bp2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArray<double> input   ('c', {bS,iD,iH,iW});
     NDArray<double> epsilon ('c', {bS,iD,oH,oW});
@@ -2966,6 +3053,11 @@ TEST_F(DeclarableOpsTests1, Avgpool2d_bp2) {
 }
 
 TEST_F(DeclarableOpsTests1, ArgMax1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMax1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<float> x('c', {3, 5});
     NDArrayFactory<float>::linspace(1, x);
     NDArray<float> exp('c', {3, 1});
@@ -2987,6 +3079,10 @@ TEST_F(DeclarableOpsTests1, ArgMax1) {
 
 
 TEST_F(DeclarableOpsTests1, ArgMax2) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMax2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArrayFactory<float>::linspace(1, x);
     NDArray<float> exp('c', {1, 5});
@@ -3008,6 +3104,10 @@ TEST_F(DeclarableOpsTests1, ArgMax2) {
 
 
 TEST_F(DeclarableOpsTests1, ArgMax3) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMax3 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArray<float> dim('c', {1, 1}, {0});
     NDArrayFactory<float>::linspace(1, x);
@@ -3029,6 +3129,10 @@ TEST_F(DeclarableOpsTests1, ArgMax3) {
 }
 
 TEST_F(DeclarableOpsTests1, ArgMax4) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMax4 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArray<float> dim('c', {1, 1}, {1});
     NDArrayFactory<float>::linspace(1, x);
@@ -3051,6 +3155,10 @@ TEST_F(DeclarableOpsTests1, ArgMax4) {
 
 
 TEST_F(DeclarableOpsTests1, ArgMax5) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMax5 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArray<float> dim('c', {1, 2}, {0, 1});
     NDArrayFactory<float>::linspace(1, x);
@@ -3073,6 +3181,10 @@ TEST_F(DeclarableOpsTests1, ArgMax5) {
 
 
 TEST_F(DeclarableOpsTests1, ArgMin1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("ArgMin1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArrayFactory<float>::linspace(1, x);
     NDArray<float> exp('c', {3, 1});
@@ -3094,6 +3206,10 @@ TEST_F(DeclarableOpsTests1, ArgMin1) {
 
 
 TEST_F(DeclarableOpsTests1, SquareTests1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("SquareTest1 skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {3, 5});
     NDArrayFactory<float>::linspace(1, x);
 
@@ -3114,6 +3230,11 @@ TEST_F(DeclarableOpsTests1, SquareTests1) {
 }
 
 TEST_F(DeclarableOpsTests1, OneHotTests_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("OneHotTests_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<float> indices('c', {1, 4});
     indices.putScalar(0, 0.0);
     indices.putScalar(1, 2.0);
@@ -3138,6 +3259,10 @@ TEST_F(DeclarableOpsTests1, OneHotTests_1) {
 }
 
 TEST_F(DeclarableOpsTests1, OneHotTests_2) {
+#ifdef __CUDABLAS__
+    nd4j_printf("OneHotTests_2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> indices('c', {2, 2});
     indices.putScalar(0, 0.0);
     indices.putScalar(1, 2.0);
@@ -3163,6 +3288,10 @@ TEST_F(DeclarableOpsTests1, OneHotTests_2) {
 }
 
 TEST_F(DeclarableOpsTests1, FillAs_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("FillAs_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> x('c', {2, 2});
     x.assign(117);
 
@@ -3196,6 +3325,7 @@ TEST_F(DeclarableOpsTests1, Stack_1) {
     Nd4jLong shape1[]    = {2, 3, 4, 4, 1, 0, 1, 99};
     Nd4jLong shape2[]    = {2, 3, 4, 4, 1, 0, 1, 99};
     Nd4jLong expShape[]  = {3, 2, 3, 4, 12, 4, 1, 0, 1, 99};
+
 
     NDArray<float> input1(buff1, shape1);
     NDArray<float> input2(buff2, shape2);
@@ -3423,6 +3553,11 @@ TEST_F(DeclarableOpsTests1, Stack_10) {
 
 
 TEST_F(DeclarableOpsTests1, Test_Range_Integer_1) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Range_Integer_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<float> exp('c', {4});
     NDArrayFactory<float>::linspace(1, exp);
 
@@ -3443,6 +3578,10 @@ TEST_F(DeclarableOpsTests1, Test_Range_Integer_1) {
 
 
 TEST_F(DeclarableOpsTests1, Test_Range_Integer_2) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Range_Integer_2 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<float> exp('c', {4});
     NDArrayFactory<float>::linspace(1, exp);
 
@@ -3472,6 +3611,11 @@ TEST_F(DeclarableOpsTests1, Test_Range_Integer_2) {
 
 
 TEST_F(DeclarableOpsTests1, Test_Range_Integer_3) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Range_Integer_3 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     NDArray<float> exp('c', {4});
     NDArrayFactory<float>::linspace(1, exp);
 
@@ -3493,6 +3637,10 @@ TEST_F(DeclarableOpsTests1, Test_Range_Integer_3) {
 //////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests1, softmax_test1) {
     NDArray<double> input('c', {3, 3}, {-1, 1, -2, 2, -3, 3, -4, 4, 5});
+#ifdef __CUDABLAS__
+    nd4j_printf("softmax_test1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
     NDArray<double> expOutput('c', {3, 3}, {1.14195199e-01, 8.43794734e-01, 4.20100661e-02, 2.68454951e-01, 1.80883523e-03, 7.29736214e-01, 9.02116571e-05, 2.68917160e-01, 7.30992629e-01});
 
     nd4j::ops::softmax<double> op;
