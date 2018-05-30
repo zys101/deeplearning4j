@@ -254,7 +254,7 @@ TEST_F(DeclarableOpsTests6, Test_CumSum_Exclusive_Reverse_2_1) {
 TEST_F(DeclarableOpsTests6, TestDropout_1) {
 
     NDArray<float> x('c', {2, 2, 2}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f});
-    NDArray<float> shape({2.f, 2.f});
+    NDArray<float> shape('c', {2}, {2.f, 2.f});
     nd4j::ops::dropout<float> op;
 
     auto ress = op.execute({&x, &shape}, {0.2f}, {113});
@@ -287,7 +287,7 @@ TEST_F(DeclarableOpsTests6, TestDropout_3) {
 //    NDArray<float> x0('c', {10, 10});
 //    NDArray<float> x1('c', {10, 10});
     NDArray<float> x('c', {2, 2, 2}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f});
-    NDArray<float> shape({1.f, 2.f});
+    NDArray<float> shape('c', {2}, {1.f, 2.f});
 
     nd4j::ops::dropout<float> op;
 
@@ -357,10 +357,10 @@ TEST_F(DeclarableOpsTests6, SufficientStatistics_1) {
     );
 // ------------------------------------
     double count = 8.0;
-    NDArray<double> sumExp({30.2, 5., 7.8, 22.8});
-    NDArray<double> sqrExp({154.22,   7.,    14.34, 103.62});
+    NDArray<double> sumExp('c', {4}, {30.2, 5., 7.8, 22.8});
+    NDArray<double> sqrExp('c', {4}, {154.22,   7.,    14.34, 103.62});
 
-    NDArray<double> axis({0.0, 1.0, 2.0});
+    NDArray<double> axis('c', {3}, {0.0, 1.0, 2.0});
 
     nd4j::ops::sufficient_statistics<double> op;
 
@@ -400,7 +400,7 @@ TEST_F(DeclarableOpsTests6, SufficientStatistics_2) {
            41., 2.,  3.56, 69.}
     );
 
-    NDArray<double> axis({0.0, 1.0});
+    NDArray<double> axis('c', {2}, {0.0, 1.0});
 
     nd4j::ops::sufficient_statistics<double> op;
 
@@ -422,7 +422,7 @@ TEST_F(DeclarableOpsTests6, BinCount_1) {
     );
 // ------------------------------------
 
-    NDArray<double> exp({1., 3., 4.});
+    NDArray<double> exp('c', {3}, {1., 3., 4.});
 
     nd4j::ops::bincount<double> op;
 
@@ -447,7 +447,7 @@ TEST_F(DeclarableOpsTests6, BinCount_2) {
 
 // ------------------------------------
 
-    NDArray<double> exp({3., 4., 13.});
+    NDArray<double> exp('c', {3}, {3., 4., 13.});
 
     nd4j::ops::bincount<double> op;
 
@@ -472,7 +472,7 @@ TEST_F(DeclarableOpsTests6, BinCount_3) {
 
 // ------------------------------------
 
-    NDArray<double> exp({3., 4.});
+    NDArray<double> exp('c', {2}, {3., 4.});
 
     nd4j::ops::bincount<double> op;
 
@@ -487,13 +487,13 @@ TEST_F(DeclarableOpsTests6, BinCount_3) {
 /////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_1) {
 
-    NDArray<double> x( {2., 2., 2.} );
+    NDArray<double> x('c', {3},  {2., 2., 2.} );
 
-    NDArray<double> y({ 2., 1., 2.});
+    NDArray<double> y('c', {3}, { 2., 1., 2.});
 
 // ------------------------------------
 
-    NDArray<double> exp({2., 2., 2.});
+    NDArray<double> exp('c', {3}, {2., 2., 2.});
 
     nd4j::ops::broadcast_dynamic_shape<double> op;
 
@@ -508,12 +508,12 @@ TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_1) {
 /////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_2) {
 
-    NDArray<double> x( {2., 2.} );
+    NDArray<double> x('c', {2},  {2., 2.} );
 
-    NDArray<double> y({2.0, 1.0, 2.0});
+    NDArray<double> y('c', {3}, {2.0, 1.0, 2.0});
 
 // ------------------------------------
-    NDArray<double> exp({2., 2., 2.});
+    NDArray<double> exp('c', {3}, {2., 2., 2.});
 
     nd4j::ops::broadcast_dynamic_shape<double> op;
 
@@ -527,13 +527,13 @@ TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_2) {
 /////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_3) {
 
-    NDArray<double> x( {2., 2., 2.} );
+    NDArray<double> x('c', {3},  {2., 2., 2.} );
 
-    NDArray<double> y({ 2.0, 1.0});
+    NDArray<double> y('c', {2}, { 2.0, 1.0});
 
 // ------------------------------------
 
-    NDArray<double> exp({2., 2., 2.});
+    NDArray<double> exp('c', {3}, {2., 2., 2.});
 
     nd4j::ops::broadcast_dynamic_shape<double> op;
 
@@ -548,13 +548,13 @@ TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_3) {
 /////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests6, BroadcastDynamicShape_4) {
 
-    NDArray<double> x({2., 2., 2.});
+    NDArray<double> x('c', {3}, {2., 2., 2.});
 
-    NDArray<double> y({2., 2.});
+    NDArray<double> y('c', {2}, {2., 2.});
 
 // ------------------------------------
 
-    NDArray<double> exp({2., 2., 2.});
+    NDArray<double> exp('c', {3}, {2., 2., 2.});
 
     nd4j::ops::broadcast_dynamic_shape<double> op;
 
@@ -681,7 +681,7 @@ TEST_F(DeclarableOpsTests6, ClipByGlobalNorm_3) {
 TEST_F(DeclarableOpsTests6, MatrixDeterminant_1) {
 
     NDArray<double> x('c', {2, 3, 3}, {-3.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, -3.0, 4.0, 0.0, 0.0, 0.0, -3.0, 0.0, 0.0, 0.0, 4.0});
-    NDArray<double> exp({36.0, -48.0});
+    NDArray<double> exp('c', {2}, {36.0, -48.0});
 
     nd4j::ops::matrix_determinant<double> op;
     auto result = op.execute({&x}, {}, {});
@@ -702,7 +702,7 @@ TEST_F(DeclarableOpsTests6, MatrixDeterminant_1) {
 TEST_F(DeclarableOpsTests6, MatrixDeterminant_2) {
 
     NDArray<double> x('c', {2, 2, 2}, {1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0});
-    NDArray<double> exp({-2.0, -2.0});
+    NDArray<double> exp('c', {2}, {-2.0, -2.0});
 
     nd4j::ops::matrix_determinant<double> op;
     auto result = op.execute({&x}, {}, {});
@@ -766,53 +766,6 @@ TEST_F(DeclarableOpsTests6, MatrixInverse_1) {
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-/*
-TEST_F(DeclarableOpsTests6, MatrixInverse_2) {
-
-    NDArray<double> x('c', {2, 5, 5}, {
-                    1.,  2., 30.,  4.,  5.,
-                    0.,  1.,  2.,  3.,  4.,
-                    0.,  0.,  1.,  2.,  3.,
-                    0.,  0.,  0.,  1.,  2.,
-                    0.,  0.,  0.,  0.,  1.,
-
-                     4.,   0.,  0.,  0.,  0.,
-                     4.,   2.,  0.,  0.,  0.,
-                    30.,   2.,  1.,  0.,  0.,
-                     8.,   6.,  4.,  2.,  0.,
-                    15.,  12.,  9.,  6.,  3.,
-    });
-
-    NDArray<double> exp('c', {2, 5, 5}, {
-     1.0,  -2.0,  -26.0,  54.0, -27.0,
-     0.0,   1.0,  -2.0,    1.0,   0.0,
-     0.0,   0.0,   1.0,   -2.0,   1.0, 
-     0.0,   0.0,   0.0,    1.0,  -2.0, 
-     0.0,   0.0,   0.0,    0.0,   1.0, 
-
-     0.25,  0.0,    0.0,   0.0,   0.0,
-    -0.50,  0.5,    0.0,   0.0,   0.0,
-    -6.50, -1.0,    1.0,   0.0,   0.0,
-    13.50,  0.5,   -2.0,   0.5,   0.0,
-    -6.75,  0.0,    1.0,  -1.0,   0.33333333
-    });
-
-    nd4j::ops::matrix_inverse<double> op;
-    auto result = op.execute({&x}, {}, {});
-
-    ASSERT_EQ(ND4J_STATUS_OK, result->status());
-
-    auto z = result->at(0);
-    z->printIndexedBuffer("Output ");
-    exp.printIndexedBuffer("Expected ");
-
-    ASSERT_TRUE(exp.isSameShape(z));
-    ASSERT_TRUE(exp.equalsTo(z));
-
-    delete result;
-}
-*/
 ////////////////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests6, MatrixInverse_3) {
 
@@ -885,7 +838,7 @@ TEST_F(DeclarableOpsTests6, MatrixInverse_4) {
 TEST_F(DeclarableOpsTests6, ReluLayer_1) {
     NDArray<double> x('c', {3, 4}, {1.0, -2.0, 3.0, 4.0, 5.0, -6.0, 7.0, 8.0, 9.0, -10.0, 11.0, 12});
     NDArray<double> w('c', {4, 3}, {0.5, 0.1, 0.8, 0.5, 0.2, 0.5, 0.5, 0.25, 0.5, 0.1, 0.0, 0.25}); 
-    NDArray<double> b({20.0, 30.0, 50.0});
+    NDArray<double> b('c', {3}, {20.0, 30.0, 50.0});
 
 
 

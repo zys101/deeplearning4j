@@ -1560,7 +1560,7 @@ TEST_F(DeclarableOpsTests5, EmbeddingLookup_1) {
                                       14, 24, 15, 25, 16, 26, 17, 27,
                                       18, 28, 19, 29, 20, 30, 21, 31});
     
-    NDArray<float> y({1.f, 1.f, 1.f, 0.f, 0.f, 0.f, 2.f, 2.f, 2.f});
+    NDArray<float> y('c', {9}, {1.f, 1.f, 1.f, 0.f, 0.f, 0.f, 2.f, 2.f, 2.f});
     NDArray<float> exp('c', {9, 4, 2}, {14, 24, 15, 25, 16, 26, 17, 27, 14, 24, 15, 25,
                                         16, 26, 17, 27, 14, 24, 15, 25, 16, 26, 17, 27,
                                         10, 20, 11, 21, 12, 22, 13, 23, 10, 20, 11, 21,
@@ -1594,7 +1594,7 @@ TEST_F(DeclarableOpsTests5, EmbeddingLookup_2) {
                                       13, 14, 15, 16, 17, 18, 
                                       19, 20, 21, 22, 23, 24});
                     //1,   0,   1,   0,   1,   0
-    NDArray<float> y({1.f, 0.f, 1.f, 0.f, 1.f, 0.f});
+    NDArray<float> y('c', {6}, {1.f, 0.f, 1.f, 0.f, 1.f, 0.f});
     NDArray<float> exp('c', {6, 4, 2}, {90, 10, 11, 12, 13, 14,
                                         15, 16, 10, 20, 30, 40,
                                         50, 60, 70, 80, 90, 10,
@@ -1634,12 +1634,7 @@ TEST_F(DeclarableOpsTests5, DynamicPartition_1) {
                       1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f 
                     }
     );
-/*    NDArray<float> y('c', {3, 4}, {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 
-                      2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 
-                      1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f 
-                    }
-    );
-*/
+
     int numPartition = 3;
     std::vector<NDArray<float>> exp( { NDArray<float>('c', {6}, {10, 20, 11, 21, 12, 22}), 
                                       NDArray<float>('c', {8}, {18, 28, 19, 29, 20, 30, 21, 31}),
@@ -1669,10 +1664,10 @@ TEST_F(DeclarableOpsTests5, DynamicPartition_2) {
     NDArray<float> x('c', {2, 4}, {0.1f, -1.f, 5.2f, 4.3f, -1.f, 7.4f, 0.0f, -2.2f});
     NDArray<float> y('c', {2, 4}, {1, 2, 1, 2, 1, 2, 3, 0});
 
-    std::vector<NDArray<float>> exp( {NDArray<float>({-2.2f}),
+    std::vector<NDArray<float>> exp( {NDArray<float>('c', {1}, {-2.2f}),
                                       NDArray<float>('c', {3}, {0.1f, 5.2f, -1.f}),
                                       NDArray<float>('c', {3}, {-1.f, 4.3f, 7.4f}),
-                                      NDArray<float>({0.0f})
+                                      NDArray<float>('c', {1}, {0.0f})
                                      });
 
     nd4j::ops::dynamic_partition<float> op;
@@ -1684,9 +1679,9 @@ TEST_F(DeclarableOpsTests5, DynamicPartition_2) {
 
     for (int e = 0; e < result->size(); e++) {
         NDArray<float>* output = result->at(e);
-        output->printShapeInfo("Output shape> ");
-        exp[e].printShapeInfo("Expected shape> ");
-        output->printIndexedBuffer("Output data> ");
+        // output->printShapeInfo("Output shape> ");
+        // exp[e].printShapeInfo("Expected shape> ");
+        // output->printIndexedBuffer("Output data> ");
 
         ASSERT_TRUE(exp[e].isSameShape(output));
         ASSERT_TRUE(exp[e].equalsTo(output));
@@ -1701,10 +1696,10 @@ TEST_F(DeclarableOpsTests5, DynamicPartition_3) {
     NDArray<float> x('c', {2, 4}, {0.1f, -1.f, 5.2f, 4.3f, -1.f, 7.4f, 0.0f, -2.2f});
     NDArray<float> y('c', {2, 4}, {0, 1, 0, 2, 0, 2, 3, 0});
 
-    std::vector<NDArray<float>> exp( {NDArray<float>({0.1f, 5.2f, -1.f, -2.2f}),
-                                      NDArray<float>({-1.f}),
-                                      NDArray<float>({4.3f, 7.4f}),
-                                      NDArray<float>({0.0f})
+    std::vector<NDArray<float>> exp( {NDArray<float>('c', {4}, {0.1f, 5.2f, -1.f, -2.2f}),
+                                      NDArray<float>('c', {1}, {-1.f}),
+                                      NDArray<float>('c', {2}, {4.3f, 7.4f}),
+                                      NDArray<float>('c', {1}, {0.0f})
                                      });
 
     nd4j::ops::dynamic_partition<float> op;
@@ -1738,13 +1733,12 @@ TEST_F(DeclarableOpsTests5, DynamicPartition_3) {
 
 TEST_F(DeclarableOpsTests5, DynamicStitch_1) {
     
-    NDArray<float> x1({1.f, 3.f, 5.f, 0.f});
-    NDArray<float> x2({2.f, 4.f});
-    NDArray<float> y2({-1.f, -1.f});
-    NDArray<float> y1({0.1f, 5.2f, 4.3f, 7.4f});
+    NDArray<float> x1('c', {4}, {1.f, 3.f, 5.f, 0.f});
+    NDArray<float> x2('c', {2}, {2.f, 4.f});
+    NDArray<float> y2('c', {2}, {-1.f, -1.f});
+    NDArray<float> y1('c', {4}, {0.1f, 5.2f, 4.3f, 7.4f});
 
-    
-    NDArray<float> exp({7.4f, 0.1f, -1.f, 5.2f, -1.f, 4.3f});
+    NDArray<float> exp('c', {6}, {7.4f, 0.1f, -1.f, 5.2f, -1.f, 4.3f});
 
     nd4j::ops::dynamic_stitch<float> op;
     ResultSet<float>* result = op.execute({&x1, &x2, &y1, &y2}, {}, {});
@@ -1753,10 +1747,10 @@ TEST_F(DeclarableOpsTests5, DynamicStitch_1) {
 
     NDArray<float>* output = result->at(0);
 
-    output->printShapeInfo("Output shape> ");
-    exp.printShapeInfo("Expected shape> ");
-    output->printIndexedBuffer("Output data> ");
-    exp.printIndexedBuffer("Expected res>");    
+    // output->printShapeInfo("Output shape> ");
+    // exp.printShapeInfo("Expected shape> ");
+    // output->printIndexedBuffer("Output data> ");
+    // exp.printIndexedBuffer("Expected res>");    
     ASSERT_TRUE(exp.isSameShape(output));
     ASSERT_TRUE(exp.equalsTo(output));
 
@@ -1767,13 +1761,13 @@ TEST_F(DeclarableOpsTests5, DynamicStitch_1) {
 
 TEST_F(DeclarableOpsTests5, DynamicStitch_2) {
     
-    NDArray<float> x1({1.f, 3.f});
-    NDArray<float> x2({5.f, 0.f, 2.f, 4.f});
-    NDArray<float> y1({-1.f, -1.f});
-    NDArray<float> y2({0.1f, 5.2f, 4.3f, 7.4f});
+    NDArray<float> x1('c', {2}, {1.f, 3.f});
+    NDArray<float> x2('c', {4}, {5.f, 0.f, 2.f, 4.f});
+    NDArray<float> y1('c', {2}, {-1.f, -1.f});
+    NDArray<float> y2('c', {4}, {0.1f, 5.2f, 4.3f, 7.4f});
 
     
-    NDArray<float> exp({5.2f, -1.f, 4.3f, -1.f, 7.4f, 0.1f});
+    NDArray<float> exp('c', {6}, {5.2f, -1.f, 4.3f, -1.f, 7.4f, 0.1f});
 
     nd4j::ops::dynamic_stitch<float> op;
     ResultSet<float>* result = op.execute({&x1, &x2, &y1, &y2}, {}, {});
@@ -2061,7 +2055,7 @@ TEST_F(DeclarableOpsTests5, XWPlusB_1) {
 
     NDArray<float> x('c', {2,3}, { 1.f, 11.f,  3.f, 14.f,  5.f,  6.f});
     NDArray<float> y('c', {3,2}, { 11.f,  3.f, 4.f,  5.f, 6.f,  2.f});
-    NDArray<float> b({100.f, 200.f});
+    NDArray<float> b('c', {2}, {100.f, 200.f});
 
     NDArray<float> exp('c', {2,2}, {173.f, 264.f, 310.f, 279.f});
 

@@ -100,11 +100,6 @@ NDArray<T>::NDArray(nd4j::memory::Workspace* workspace)
     _workspace(workspace)
 {}
 
-////////////////////////////////////////////////////////////////////////
-template <typename T>
-NDArray<T>::NDArray(std::initializer_list<Nd4jLong> s, nd4j::memory::Workspace* workspace) {
-
-}
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
@@ -113,53 +108,64 @@ NDArray<T>::NDArray(T scalar) {
 }
 
 ////////////////////////////////////////////////////////////////////////
-#ifndef __JAVACPP_HACK__
-template <typename T>
-NDArray<T>::NDArray(std::initializer_list<T> v, nd4j::memory::Workspace* workspace) {
-
-}
-
-////////////////////////////////////////////////////////////////////////
-template <typename T>
-NDArray<T>::NDArray(std::vector<T> &values, nd4j::memory::Workspace* workspace) {
-
-}
-#endif
-
-////////////////////////////////////////////////////////////////////////
 // creates new NDArray using shape information from "shapeInfo" array, set all elements in new array to be zeros
 template <typename T>
 NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::memory::Workspace* workspace) {
-   
+
+	const int rank = shapeInfo[0];
+
+	if (rank > MAX_RANK)
+		throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");	
+
+	_workspace = workspace;
+
+	const auto bufLen = shape::length(const_cast<Nd4jLong*>(shapeInfo));
+    const auto shapeLen = shape::shapeInfoLength(const_cast<Nd4jLong*>(shapeInfo));
+    
+    ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE(_buffer, _workspace, bufLen, T);
+	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+    
+    memcpy(_shapeInfo, shapeInfo, shape::shapeInfoByteLength(const_cast<Nd4jLong*>(shapeInfo)));     // copy shape information into new array
+    if(!copyStrides)
+        shape::updateStrides(_shapeInfo, ordering());
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+
+    memset(_buffer, 0, bufLen*sizeOfT());          // set all elements in new array to be zeros
+    
+    _isBuffAlloc = true;
+    _isShapeAlloc = true;
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, nd4j::memory::Workspace* workspace) {
-	int rank = (int) shape.size();
+
+	const int rank = (int) shape.size();
 
 	if (rank > MAX_RANK)
-		throw std::invalid_argument("Rank of NDArray can't exceed 32");
+		throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");	
 
-	Nd4jLong shapeOf[MAX_RANK];
-	int cnt = 0;
-
-	for (auto &item: shape)
-		shapeOf[cnt++] = item;
+	_workspace = workspace;
 
 	// allocate host & device buffers for shape
-	ALLOCATE(_shapeInfo, _workspace, shape::shapeInfoLength(rank), Nd4jLong);
-	ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shape::shapeInfoLength(rank), Nd4jLong);
+	const auto shapeLen = shape::shapeInfoLength(rank);
+	ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+	ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
 
-	if (order == 'c')
-		_shapeInfo = shape::shapeBuffer(rank, shapeOf, _shapeInfo);
-	else
-		_shapeInfo = shape::shapeBufferFortran(rank, shapeOf, _shapeInfo);
+	// fill host _shapeInfo
+	int i = 1;
+    _shapeInfo[0] = rank;
+    for (auto &item: shape)
+            _shapeInfo[i++] = item;
+    shape::updateStrides(_shapeInfo, order);
 
-
-	auto bufLen = shape::length(_shapeInfo);
-
-	// allocate host & device buffers for data
+    // copy information from host _shapeInfo to device _shapeInfoD, _shapeInfoD already points on pinned-host-memory
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+	
+    // allocate host & device buffers for data
+    const auto bufLen = shape::length(_shapeInfo);	
 	ALLOCATE(_buffer, _workspace, bufLen, T);
 	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
 
@@ -171,12 +177,13 @@ NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const 
 		 * FIXME: once we update signatures, we will be using LaunchContext::stream() and LaunchContext::specialStream()
 		 * and we'll be using cudaMemcpyAsync instead
 		 */
-		// first we copy data to pinned memory
-		cudaMemcpy(_buffer, data.data(), data.size() * sizeof(T), cudaMemcpyHostToHost);
+		// first we copy data to pinned memory, here _buffer already points on pinned-host-memory
+		memcpy(_buffer, data.data(), data.size() * sizeof(T));
 
 		// then we copy data to device buffer
 		cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
-	} else {
+	} 
+	else {
 		// memset should be applied only on one side, and other one should be tagged as dirty
 		memset(_buffer, 0, bufLen * sizeof(T));
 	}
@@ -187,14 +194,89 @@ NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const 
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
-NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, nd4j::memory::Workspace* workspace) {
-
-}
+NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, nd4j::memory::Workspace* workspace) 
+	:
+	NDArray(order, shape, std::vector<T>(), workspace)
+{}
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &shape, nd4j::memory::Workspace* workspace) {
 
+	const int rank = (int) shape.size();
+
+    if (rank > MAX_RANK)
+        throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");
+
+    _workspace = workspace;        
+    _buffer = buffer;
+
+    const auto shapeLen = shape::shapeInfoLength(rank);
+	ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+	ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+
+    int i = 1;
+    _shapeInfo[0] = rank;
+    for (auto &item: shape)
+            _shapeInfo[i++] = item;
+    shape::updateStrides(_shapeInfo, order);
+
+    // copy information from host _shapeInfo to device _shapeInfoD, _shapeInfoD already points on pinned-host-memory
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+
+    ALLOCATE_SPECIAL(_bufferD, _workspace, shape::length(_shapeInfo), T);
+
+    // copy data from host _buffer to device _bufferD
+	cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
+
+    _isBuffAlloc = false;
+    _isShapeAlloc = true;
+}
+
+////////////////////////////////////////////////////////////////////////
+template <typename T>
+NDArray<T>::NDArray(const NDArray<T> *other, const bool copyStrides, nd4j::memory::Workspace* workspace) {
+
+	_workspace = workspace;
+
+	const auto shapeLen = shape::shapeInfoLength(other->_shapeInfo[0]);
+	ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+	ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+	memcpy(_shapeInfo, other->_shapeInfo, shape::shapeInfoByteLength(other->_shapeInfo));
+	if(!copyStrides) 
+        shape::updateStrides(_shapeInfo, ordering());
+	cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+
+    const auto bufLen = shape::length(other->_shapeInfo);	
+    ALLOCATE(_buffer, _workspace, bufLen, T);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T); 
+
+    _isBuffAlloc = true;
+    _isShapeAlloc = true;
+}
+
+////////////////////////////////////////////////////////////////////////
+// copy constructor
+template <typename T>
+NDArray<T>::NDArray(const NDArray<T>& other) {
+
+	_workspace = other._workspace;
+
+	const int shapeLen = shape::shapeInfoLength(other._shapeInfo[0]);
+    ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE(_buffer, _workspace, shape::length(other._shapeInfo), T);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, shape::length(other._shapeInfo), T); 
+
+    memcpy(_shapeInfo, other._shapeInfo, shape::shapeInfoByteLength(other._shapeInfo));     // copy shape information into new array
+    shape::updateStrides(_shapeInfo, other.ordering());
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+
+    this->assign(&other);
+    cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
+    
+    _isBuffAlloc = true; 
+    _isShapeAlloc = true;    
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -287,22 +369,9 @@ void NDArray<T>::applyIndexedPairwiseLambda(NDArray<T>* other, const std::functi
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
-NDArray<T>::NDArray(const NDArray<T> *other, const bool copyStrides, nd4j::memory::Workspace* workspace) {
-
-}
-
-////////////////////////////////////////////////////////////////////////
-template <typename T>
 std::vector<int8_t> NDArray<T>::asByteVector() {
 
 	return std::vector<int8_t>();
-}
-
-////////////////////////////////////////////////////////////////////////
-// copy constructor
-template <typename T>
-NDArray<T>::NDArray(const NDArray<T>& other) {
-
 }
 
 ////////////////////////////////////////////////////////////////////////

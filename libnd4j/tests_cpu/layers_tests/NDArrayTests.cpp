@@ -1527,7 +1527,7 @@ TEST_F(NDArrayTest, TestStdDev2) {
 }
 
 TEST_F(NDArrayTest, TestStdDev3) {
-    NDArray<float> array('c', {1, 5000000});
+    NDArray<float> array('c', {1, 2000000});
     for (int e = 0; e < array.lengthOf(); e++)
         array(e) = 1.f + (e%2?0.5f:-0.5f);
 
@@ -1537,7 +1537,7 @@ TEST_F(NDArrayTest, TestStdDev3) {
 }
 
 TEST_F(NDArrayTest, TestStdDev4) {
-    NDArray<float> array('c', {1, 2000000});
+    NDArray<float> array('c', {1, 500000});
     float const ethalon = 1 / 3.f;
     float x = ethalon;
     int total = array.lengthOf();
