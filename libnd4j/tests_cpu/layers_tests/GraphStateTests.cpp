@@ -118,6 +118,11 @@ TEST_F(GraphStateTests, Stateful_Execution_2) {
  * This test checks WHILE loop
  */
 TEST_F(GraphStateTests, Stateful_Execution_3) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Skip Stateful_Execution_3 test.\n", "");
+    ASSERT_TRUE(false);
+#endif
+
     NativeOps nativeOps;
 
     NDArray<float> var0('c', {2, 2}, {1, 2, 3, 4});
@@ -202,6 +207,10 @@ TEST_F(GraphStateTests, Stateful_Execution_3) {
  * This test checks CONDITIONAL execution for FALSE
  */
 TEST_F(GraphStateTests, Stateful_Execution_4) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Skip Stateful_Execution_4 test.\n", "");
+    ASSERT_TRUE(false);
+#endif
     NativeOps nativeOps;
 
     NDArray<float> var0('c', {2, 2}, {1, 2, 3, 4});
@@ -280,6 +289,10 @@ TEST_F(GraphStateTests, Stateful_Execution_4) {
  * This test checks CONDITIONAL execution for TRUE
  */
 TEST_F(GraphStateTests, Stateful_Execution_5) {
+#ifdef __CUDABLAS__
+    nd4j_printf("Skip Stateful_Execution_5 test.\n", "");
+    ASSERT_TRUE(false);
+#endif
     NativeOps nativeOps;
 
     NDArray<float> var0('c', {2, 2}, {1, 2, 3, 4});
