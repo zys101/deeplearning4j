@@ -53,7 +53,7 @@ NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* wor
     ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
     ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
 
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
     cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
 }
 
@@ -96,7 +96,7 @@ NDArray<T>::NDArray(T scalar) {
     ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
     ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
 
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
     cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
 }
 
@@ -113,17 +113,17 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
 	_workspace = workspace;
 
 	const auto bufLen = shape::length(const_cast<Nd4jLong*>(shapeInfo));
-    const auto shapeLen = shape::shapeInfoLength(const_cast<Nd4jLong*>(shapeInfo));
+    const auto shapeLen = shape::shapeInfoLength(shapeInfo[0]);
     
     ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
     ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
     ALLOCATE(_buffer, _workspace, bufLen, T);
 	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
     
-    memcpy(_shapeInfo, shapeInfo, shape::shapeInfoByteLength(const_cast<Nd4jLong*>(shapeInfo)));     // copy shape information into new array
+    memcpy(_shapeInfo, shapeInfo, shape::shapeInfoByteLength(shapeInfo[0])); 
     if(!copyStrides)
         shape::updateStrides(_shapeInfo, ordering());
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(shapeInfo[0]), cudaMemcpyHostToDevice);
 
     memset(_buffer, 0, bufLen*sizeOfT());          // set all elements in new array to be zeros
     
@@ -156,7 +156,7 @@ NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const 
     shape::updateStrides(_shapeInfo, order);
 
     // copy information from host _shapeInfo to device _shapeInfoD, _shapeInfoD already points on pinned-host-memory
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
 	
     // allocate host & device buffers for data
     const auto bufLen = shape::length(_shapeInfo);	
@@ -217,7 +217,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
     shape::updateStrides(_shapeInfo, order);
 
     // copy information from host _shapeInfo to device _shapeInfoD, _shapeInfoD already points on pinned-host-memory
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
 
     ALLOCATE_SPECIAL(_bufferD, _workspace, shape::length(_shapeInfo), T);
 
@@ -241,7 +241,7 @@ NDArray<T>::NDArray(const NDArray<T> *other, const bool copyStrides, nd4j::memor
 	memcpy(_shapeInfo, other->_shapeInfo, shape::shapeInfoByteLength(other->_shapeInfo));
 	if(!copyStrides) 
         shape::updateStrides(_shapeInfo, ordering());
-	cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+	cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
 
     const auto bufLen = shape::length(other->_shapeInfo);	
     ALLOCATE(_buffer, _workspace, bufLen, T);
@@ -267,7 +267,7 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
 
     memcpy(_shapeInfo, other._shapeInfo, shape::shapeInfoByteLength(other._shapeInfo));     // copy shape information into new array
     shape::updateStrides(_shapeInfo, other.ordering());
-    cudaMemcpy(_shapeInfoD, _shapeInfo, shapeLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
 
     this->assign(&other);
     cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);

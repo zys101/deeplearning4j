@@ -79,7 +79,7 @@ template <typename T>
     const int rank = shapeInfo[0];
 
     if (rank > MAX_RANK)
-        throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");  
+        throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");
 
     auto arrLength = shape::length(const_cast<Nd4jLong*>(shapeInfo));
     auto shapeLength = shape::shapeInfoLength(const_cast<Nd4jLong*>(shapeInfo));
