@@ -68,8 +68,8 @@ namespace nd4j {
             axis[i] = i;
 
         shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
-        tad.createTadOnlyShapeInfo();
-        tad.createOffsets();
+//        tad.createTadOnlyShapeInfo();
+//        tad.createOffsets();
         TadMigrationHelper helper(tad);
 
 //        NativeOpExcutioner<T>::execTransform(opNum, x->buffer(), x->shapeInfo(), z->getBuffer(), z->getShapeInfo(), extras.data(), nullptr, nullptr);
@@ -92,8 +92,8 @@ namespace nd4j {
         dim3 launchDims = {128, 1024, 2048};
 //execReduceScalar(dim3 launchDims, cudaStream_t *stream, int opNum, float *x, Nd4jLong *xShapeInfo, float *extraParams, float *z, Nd4jLong *zShapeInfo, int *dimension, int dimensionLength, float *reductionBuffer, Nd4jLong *tadOnlyShapeInfo) {
         shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
-        tad.createTadOnlyShapeInfo();
-        tad.createOffsets();
+        //tad.createTadOnlyShapeInfo();
+        //tad.createOffsets();
 
         TadMigrationHelper helper(tad);
         VectorMigrationHelper<int> _axis(axis);
@@ -107,8 +107,8 @@ namespace nd4j {
     template <typename T>
     void LegacyOpExecutor<T>::execReduceOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, std::vector<int> &axis, std::vector<T> &extras) {
         shape::TAD tad(x->getShapeInfo(), axis.data(), static_cast<int>(axis.size()));
-        tad.createTadOnlyShapeInfo();
-        tad.createOffsets();
+//        tad.createTadOnlyShapeInfo();
+//        tad.createOffsets();
 
         TadMigrationHelper helper(tad);
 

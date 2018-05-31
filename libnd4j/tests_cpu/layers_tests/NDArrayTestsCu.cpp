@@ -104,5 +104,16 @@ TEST_F(NDArrayTestCu, test4) {
     
 }
 
+TEST_F(NDArrayTestCu, AddScalarTest1) {
+    NDArray<float> x('c', {1, 4});
+    x.assign(2.f);
+    x.printIndexedBuffer("Source");
+
+    NDArray<float> result('c', {1, 4});
+
+    x.applyScalar<simdOps::Add<float>>(1.f, &result);
+    result.printIndexedBuffer("Result");
+    ASSERT_NEAR(3.f, result.meanNumber(), 1e-5);
+}
 
 

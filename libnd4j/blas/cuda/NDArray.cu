@@ -519,7 +519,12 @@ void NDArray<T>::assign(const NDArray<T>& other) {
 // This method assigns given value to all elements in this NDArray
 template<typename T>
 void NDArray<T>::assign(const T value) {
+//        NativeOpExcutioner<T>::execScalar(13, _buffer, _shapeInfo, _buffer, _shapeInfo, value, nullptr);
+    std::vector<T> extras;
 
+//    LegacyOpExecutor<T>::execScalarOp(*LaunchContext::defaultContext(), 13, this, this, value, extras);
+    LaunchContext ctx;
+    LegacyOpExecutor<T>::execScalarOp(ctx, 13, this, this, value, extras);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -556,7 +561,14 @@ T NDArray<T>::sumNumber() const {
 // This method returns mean number of this NDArray
 template<typename T>
 T NDArray<T>::meanNumber() const {
-    return T();
+//        return NativeOpExcutioner<T>::execReduceScalar(0, _buffer, _shapeInfo, nullptr);
+    T res;
+    NDArray<T> resT(res);
+    std::vector<T> extras;
+    LaunchContext ctx;
+    int const kMeanOp(0);
+    LegacyOpExecutor<T>::execReduceScalarOp(ctx, kMeanOp, const_cast<NDArray<T>*>(this), &resT, extras);
+    return resT(0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -917,13 +929,28 @@ template<typename T>
 template<typename OpName>
 void NDArray<T>::applyScalar(T scalar, NDArray<T>* target, T *extraParams) const{
 
+//        static void execScalarOp(nd4j::LaunchContext &ctx, int opNum, NDArray<T> *x, NDArray<T> *z, T scalar, std::vector<T> &extras);
+////    std::vector<T> extras;
+////    if (extraParams) {
+////        extras.push_back(extraParams[0]);
+////    }
+////    LegacyOpExecutor<T>::execScalarOp(*LaunchContext::defaultContext(), opNum, const_cast<NDArray<T>*>(this), (target == nullptr?const_cast<NDArray<T>*>(this):target), scalar, extras);
+
+    if (target == nullptr)
+        functions::scalar::ScalarTransform<T>::template transform<OpName>(this->_buffer, this->_shapeInfo, this->_buffer, this->_shapeInfo, scalar, extraParams);
+    else
+        functions::scalar::ScalarTransform<T>::template transform<OpName>(this->_buffer, this->_shapeInfo, target->_buffer, target->_shapeInfo, scalar, extraParams);
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 template<typename OpName>
 void NDArray<T>::applyScalar(NDArray<T>& scalar, NDArray<T>* target, T *extraParams) const{
+    if (!scalar.isScalar()) {
+        throw "Operand is not a scalar!";
+    }
 
+    applyScalar<OpName>(scalar.getScalar(0), target, extraParams);
 }
 
 //////////////////////////////////////////////////////////////////////////

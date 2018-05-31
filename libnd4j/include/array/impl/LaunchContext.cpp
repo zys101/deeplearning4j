@@ -3,11 +3,17 @@
 //
 
 #include <array/LaunchContext.h>
-
+#ifndef __CUDABLAS__
 namespace nd4j {
     LaunchContext::LaunchContext() {
         // default constructor, just to make clang/ranlib happy
     }
+
+    LaunchContext::~LaunchContext() {
+        // default destuctor, just to make clang/ranlib happy
+    }
+
+
 
     Workspace* LaunchContext::workspace() {
         return _workspace;
@@ -42,3 +48,4 @@ namespace nd4j {
         return nullptr;
     }
 }
+#endif

@@ -44,7 +44,7 @@ namespace nd4j {
 
     public:
         LaunchContext();
-        ~LaunchContext() = default;
+        ~LaunchContext(); // = default;
 
         /////////////////////////
         Workspace* workspace();
