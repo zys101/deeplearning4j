@@ -697,13 +697,47 @@ NDArray<T>* NDArray<T>::tensorAlongDimension(Nd4jLong index, const std::initiali
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 void NDArray<T>::printShapeInfo(const char * msg) const {
+    // TODO: _shapeInfo should be validate before printing
+    // this->validateShapeInfo();
 
+    if (msg == nullptr)
+        shape::printShapeInfoLinear(_shapeInfo);
+    else {
+        int rank = shape::rank(_shapeInfo);
+        int lim = shape::shapeInfoLength(rank);
+        printf("%s: [", msg);
+        for (int i = 0; i < shape::shapeInfoLength(rank); i++) {
+            printf("%lld", (long long) _shapeInfo[i]);
+
+            if (i < lim - 1)
+                printf(", ");
+        }
+        printf("]\n");
+    }
+    fflush(stdout);
 }
 
 //////////////////////////////////////////////////////////////////////////
 template <typename T>
 void NDArray<T>::printBuffer(const char* msg, Nd4jLong limit) {
-        
+    //TODO: sync buffer with device before
+    // this->validateInternalBuffer();
+    //
+    if (limit == -1)
+        limit = (int) this->lengthOf();
+
+    if (msg != nullptr)
+        printf("%s: [", msg);
+    else
+        printf("[");
+
+    for (Nd4jLong e = 0; e < limit; e++) {
+        printf("%f", (float) this->_buffer[e]);
+        if (e < limit - 1)
+            printf(", ");
+    }
+    printf("]\n");
+    fflush(stdout);
 }
 
 //////////////////////////////////////////////////////////////////////////
