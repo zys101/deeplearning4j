@@ -773,7 +773,19 @@ NDArray<T>* NDArray<T>::tensorAlongDimension(Nd4jLong index, const std::vector<i
 // method makes copy of this array and applies to the copy transpose operation, this array remains unaffected 
 template <typename T>
 NDArray<T>* NDArray<T>::transpose() const {
-	return new NDArray<T>();
+    auto shapeInfoLength = shape::shapeInfoLength(rankOf());
+    Nd4jLong* newShapeInfo;
+
+    ALLOCATE(newShapeInfo , _workspace, shapeInfoLength, Nd4jLong);
+    cudaMemcpy(newShapeInfo, _shapeInfo, shapeInfoLength * sizeof(Nd4jLong), cudaMemcpyHostToHost);
+
+    NDArray<T>* newArr = new NDArray<T>(_buffer, newShapeInfo, _workspace);
+    newArr->_isShapeAlloc = true;
+    newArr->_isBuffAlloc  = false;
+
+    newArr->transposei();
+
+    return newArr;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -781,13 +793,34 @@ NDArray<T>* NDArray<T>::transpose() const {
 template <typename T>
 void NDArray<T>::transpose(NDArray<T>& target) const {
 
+    auto correctShape = ShapeUtils<T>::evalTranspShapeInfo(*this, _workspace);
+    if(!shape::equalsStrict(correctShape, target.getShapeInfo()))
+        throw "NDArray::transpose method: the shapeInfo of target array is wrong !";
+
+    // check whether target has allocated (its own) buffer
+    if (target._isBuffAlloc) {
+        RELEASE(target._buffer, target._workspace);
+        RELEASE_SPECIAL(target._bufferD, target._workspace);
+    }
+
+    target._buffer = _buffer;
+    target._bufferD = _bufferD;
+    // don't forget to indicate that memory for new array was allocated
+    target._isBuffAlloc = false;
+    target._isView = true;
+
+    RELEASE(correctShape, _workspace);
 }
 
 ////////////////////////////////////////////////////////////////////////
 // This method applies in-place transpose to this array, so this array becomes transposed 
 template <typename T>
 void NDArray<T>::transposei() {
+    std::vector<int> perm;
+    for (int e = this->rankOf() - 1; e >= 0; e--)
+        perm.emplace_back(e);
 
+    this->permutei(perm);
 }
 
 ////////////////////////////////////////////////////////////////////////
