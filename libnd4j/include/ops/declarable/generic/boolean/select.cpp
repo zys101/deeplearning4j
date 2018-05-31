@@ -21,9 +21,9 @@ namespace nd4j {
 
                 auto z = OUTPUT_VARIABLE(0);
 
-                T v = cond->getIndexedScalar(0)  == (T) 0.0f ? y->getIndexedScalar(0) : x->getIndexedScalar(0);
+                T v = cond->getScalar(0)  == (T) 0.0f ? y->getScalar(0) : x->getScalar(0);
 
-                z->putIndexedScalar(0, v);
+                z->putScalar(0, v);
             } else {
                 bool same = cond->isSameShape(x);
                 REQUIRE_TRUE(cond->isScalar() || cond->lengthOf() == x->sizeAt(0) || same, 0, "Select: Condition should gave either equal shape to X/Y first dimension or to be scalar");
@@ -31,9 +31,9 @@ namespace nd4j {
                     auto z = OUTPUT_VARIABLE(0);
 
                     for (int e = 0; e < cond->lengthOf(); e++) {
-                        T v = cond->getIndexedScalar(e);
-                        T r = v == (T) 0.0f ? y->getIndexedScalar(e) : x->getIndexedScalar(e);
-                        z->putIndexedScalar(e, r);
+                        T v = cond->getScalar(e);
+                        T r = v == (T) 0.0f ? y->getScalar(e) : x->getScalar(e);
+                        z->putScalar(e, r);
                     }
                 } else {
                     REQUIRE_TRUE(cond->lengthOf() == x->sizeAt(0), 0, "Condition length should be equal to the dim0 of x/y to act as TAD-mask, but got %d instead", cond->lengthOf());
@@ -46,7 +46,7 @@ namespace nd4j {
                     auto tadsZ = NDArrayFactory<T>::allTensorsAlongDimension(z, dims);
 
                     for (int e = 0; e < tadsX->size(); e++) {
-                        T v = cond->getIndexedScalar(e);
+                        T v = cond->getScalar(e);
                         
                         if (v == (T) 0.0f)
                             tadsZ->at(e)->assign(tadsY->at(e));

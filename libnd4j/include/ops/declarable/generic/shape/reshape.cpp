@@ -60,7 +60,7 @@ namespace nd4j {
 
                 std::vector<Nd4jLong> shapeNew(s->lengthOf());
                 for (int e = 0; e < (int) s->lengthOf(); e++)
-                    shapeNew[e] = s->getIndexedScalar(e);
+                    shapeNew[e] = s->getScalar(e);
 
                if (Environment::getInstance()->isDebugAndVerbose()) {
                     nd4j_printv("Reshape: new shape", shapeNew);
@@ -158,7 +158,7 @@ namespace nd4j {
                 int numberNegativesOnes = 0;
 
                 for (int e = 0; e < (int) y->lengthOf(); e++)
-                    shapeNew[e] = (int) y->getIndexedScalar(e);
+                    shapeNew[e] = (int) y->getScalar(e);
 
                 auto shape_ = shapeNew.data();
                 for (int i = 0; i < (int) shapeNew.size(); i++) {

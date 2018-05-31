@@ -25,9 +25,9 @@ namespace nd4j {
                 if (condition->isSameShape(x)) {
                     // FIXME: for perf it might be better to issue memcpy here, and fill only mismatched values from either X or Y
                     for (int e = 0; e < condition->lengthOf(); e++) {
-                        T v = condition->getIndexedScalar(e);
-                        T r = v == (T) 0.0f ? y->getIndexedScalar(e) : x->getIndexedScalar(e);
-                        z->putIndexedScalar(e, r);
+                        T v = condition->getScalar(e);
+                        T r = v == (T) 0.0f ? y->getScalar(e) : x->getScalar(e);
+                        z->putScalar(e, r);
                     }
                 } else {
                     REQUIRE_TRUE(condition->lengthOf() == x->sizeAt(0), 0, "Condition length should be equal to the dim0 of x/y to act as TAD-mask, but got %d instead", condition->lengthOf());
@@ -38,7 +38,7 @@ namespace nd4j {
                     auto tadsZ = NDArrayFactory<T>::allTensorsAlongDimension(z, dims);
 
                     for (int e = 0; e < tadsX->size(); e++) {
-                        T v = condition->getIndexedScalar(e);
+                        T v = condition->getScalar(e);
 
                         if (v == (T) 0.0f)
                             tadsZ->at(e)->assign(tadsY->at(e));
@@ -71,7 +71,7 @@ namespace nd4j {
                     if (v != (T) 0.0f) {
                         auto array = new NDArray<T>('c', {1, condition->rankOf()});
                         for (int f = 0; f < condition->rankOf(); f++)
-                            array->putIndexedScalar(f, (T) idx[f]);
+                            array->putScalar(f, (T) idx[f]);
 
                         list.write(cnt++, array);
                     }

@@ -36,7 +36,7 @@ namespace nd4j {
                 if (idx < 0 || idx >= tad->lengthOf())
                     continue;
 
-                tad->putIndexedScalar(idx, on);
+                tad->putScalar(idx, on);
             }
 
             delete tads;

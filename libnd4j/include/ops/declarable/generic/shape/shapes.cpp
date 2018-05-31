@@ -15,7 +15,7 @@ namespace nd4j {
                 auto z = OUTPUT_VARIABLE(e);
 
                 for (int i = 0; i < x->rankOf(); i++)
-                    z->putIndexedScalar(i, x->sizeAt(i));
+                    z->putScalar(i, x->sizeAt(i));
             }
 
             return ND4J_STATUS_OK;

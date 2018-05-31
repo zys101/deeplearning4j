@@ -147,6 +147,43 @@ namespace nd4j {
         void* operator new(size_t i);
         void operator delete(void* p);
 
+        /** 
+        *  returns array element with given index from linear buffer
+        *  i - element index in array
+        */
+        T& getScalar(const Nd4jLong i) const;
+
+        /** 
+        *  returns element with given indexes from 2D array 
+        *  i - number of row 
+        *  j - number of column
+        */
+        T& getScalar(const Nd4jLong i, const Nd4jLong j) const;
+
+        /** 
+        *  returns element with given indexes from 3D array 
+        *  i - height
+        *  j - width
+        *  k - depth
+        */
+        T& getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const;        
+
+        /** 
+        *  returns element with given indexes from 3D array 
+        *  i - height
+        *  j - width
+        *  k - depth
+        *  v - fourth dim
+        */
+        T& getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const;
+
+        /** 
+        *  assigns given scalar to array element by given index, regards array buffer as linear
+        *  i - element index in array
+        *  value - scalar value to assign
+        */
+        void putScalar(const Nd4jLong i, const T value);
+
         /**
         *  method replaces existing buffer/shapeinfo, AND releases original pointers (if releaseExisting TRUE)
         */
@@ -929,7 +966,7 @@ namespace nd4j {
         /**
         *  calculates the trace of an array, that is sum of elements on main diagonal = sum array[i, i, i, ...]
         */
-        T getTrace() const;
+        T getTrace() const;        
         
         /**
         *  default destructor
@@ -1020,48 +1057,7 @@ namespace nd4j {
         /**
         *  returns true if buffer && shapeInfo were defined (non nullptr)
         */
-        FORCEINLINE bool nonNull() const;
-
-        /** 
-        *  returns array element with given index from linear buffer
-        *  i - element index in array
-        */
-        FORCEINLINE T getScalar(const Nd4jLong i) const;
-
-        /** 
-        *  returns array element with given index, takes into account offset between elements (element-wise-stride)
-        *  i - element index in array
-        */
-        FORCEINLINE T getIndexedScalar(const Nd4jLong i) const;
-        
-        /** 
-        *  returns element with given indexes from 2D array 
-        *  i - number of row 
-        *  j - number of column
-        */
-        FORCEINLINE T getScalar(const Nd4jLong i, const Nd4jLong j) const;
-
-        /** 
-        *  returns element with given indexes from 3D array 
-        *  i - height
-        *  j - width
-        *  k - depth
-        */
-        FORCEINLINE T getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const;
-        
-        /** 
-        *  assigns given scalar to array element by given index, takes into account offset between elements (element-wise-stride)
-        *  i - element index in array
-        *  value - scalar value to assign
-        */
-        FORCEINLINE void putIndexedScalar(const Nd4jLong i, const T value);
-
-        /** 
-        *  assigns given scalar to array element by given index, regards array buffer as linear
-        *  i - element index in array
-        *  value - scalar value to assign
-        */
-        FORCEINLINE void putScalar(const Nd4jLong i, const T value);
+        FORCEINLINE bool nonNull() const;        
 
         /** 
         *  assigns given scalar to 2D array element by given indexes
@@ -1185,8 +1181,6 @@ template<typename T>
 }
 
 
-// #ifndef __CUDABLAS__
-
 template <typename T>
 template <typename T2>
  std::vector<T2> NDArray<T>::asVectorT() {
@@ -1194,7 +1188,7 @@ template <typename T2>
 
 #pragma omp parallel for simd
     for (int e = 0; e < this->lengthOf(); e++)
-        result[e] = (T2) this->getIndexedScalar(e);
+        result[e] = (T2) this->getScalar(e);
 
     return result;
 }
@@ -1216,7 +1210,7 @@ template<typename T>
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
- void NDArray<T>::setBuffer(T* buffer) {
+void NDArray<T>::setBuffer(T* buffer) {
     if(_isBuffAlloc && _workspace == nullptr)
         delete []_buffer;
  
@@ -1323,159 +1317,67 @@ template<typename T>
     return shape::isScalar(this->_shapeInfo);
 }
 
+//////////////////////////////////////////////////////////////////////////
 // accessing operator for matrix, i - absolute index
 template<typename T>
- T NDArray<T>::operator()(const Nd4jLong i) const {
-
-    if (i >= shape::length(_shapeInfo))
-            throw std::invalid_argument("NDArray::operator(i): dinput index is out of array length !");
-
-    auto ews   = shape::elementWiseStride(_shapeInfo);
-    char order = ordering();   
-
-    if(ews == 1 && order == 'c')
-        return _buffer[i];
-    else if(ews > 1 && order == 'c')
-        return _buffer[i*ews];
-    else {
-        Nd4jLong idx[MAX_RANK];
-        shape::ind2subC(rankOf(), shapeOf(), i, static_cast<int>(_length), idx);
-        Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
-        return _buffer[offset];        
-    }
+T NDArray<T>::operator()(const Nd4jLong i) const {
+    
+    return getScalar(i);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // modifying operator for matrix, i - absolute index
 template<typename T>
- T& NDArray<T>::operator()(const Nd4jLong i) {
+T& NDArray<T>::operator()(const Nd4jLong i) {
 
-    if (i >= shape::length(_shapeInfo))
-            throw std::invalid_argument("NDArray::operator(i): input index is out of array length !");
-
-    auto  ews   = shape::elementWiseStride(_shapeInfo);
-    auto order = ordering();
-
-    if(ews == 1 && order == 'c')
-        return _buffer[i];
-    else if(ews > 1 && order == 'c')
-        return _buffer[i*ews];
-    else {
-        Nd4jLong idx[MAX_RANK];
-        shape::ind2subC(rankOf(), shapeOf(), i, static_cast<int>(_length), idx);        
-        auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
-        return _buffer[offset];
-    }    
+    return getScalar(i);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // accessing operator for 2D matrix, i - row, j - column
 template<typename T>
- T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j) const {
-    
-    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
-       throw std::invalid_argument("NDArray::operator(i,j): one of input indexes is out of array length or rank!=2 !");
-    
-    Nd4jLong coords[2] = {i, j};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j) const {
+
+    return getScalar(i, j);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // modifying operator for 2D matrix, i - row, j - column
 template<typename T>
- T& NDArray<T>::operator()(const Nd4jLong  i, const Nd4jLong j) {
+T& NDArray<T>::operator()(const Nd4jLong  i, const Nd4jLong j) {
     
-    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
-       throw std::invalid_argument("NDArray::operator(i,j): one of input indexes is out of array length or rank!=2 !");
-
-    Nd4jLong coords[2] = {i, j};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+    return getScalar(i, j);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // accessing operator for 3D array, i - row, j - column
 template<typename T>
- T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
     
-    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || j >= shapeOf()[2])
-       throw std::invalid_argument("NDArray::operator(i,j,k): one of input indexes is out of array length or rank!=3 !");
-    
-    Nd4jLong coords[3] = {i, j, k};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+    return getScalar(i, j, k);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // modifying operator for 3D array
 template<typename T>
- T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) {
+T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) {
     
-    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
-       throw std::invalid_argument("NDArray::operator(i,j,k): one of input indexes is out of array length or rank!=3 !");
-
-    Nd4jLong coords[3] = {i, j, k};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+    return getScalar(i, j, k);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename T>
- T NDArray<T>::operator()(const Nd4jLong t, const Nd4jLong u, const Nd4jLong v, const Nd4jLong w) const {
+T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
     
-    if (rankOf() != 4 || t >= shapeOf()[0] || u >= shapeOf()[1] || v >= shapeOf()[2] || w >= shapeOf()[3])
-       throw std::invalid_argument("NDArray::operator(t,u,v,w): one of input indexes is out of array length or rank!=4 !");
-
-    Nd4jLong coords[4] = {t, u, v, w};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+    return getScalar(i, j, k, v);
 }
 
+//////////////////////////////////////////////////////////////////////////
 template<typename T>
- T& NDArray<T>::operator()(const Nd4jLong t, const Nd4jLong u, const Nd4jLong v, const Nd4jLong w) {
+T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) {
     
-    if (rankOf() != 4 || t >= shapeOf()[0] || u >= shapeOf()[1] || v >= shapeOf()[2] || w >= shapeOf()[3])
-       throw std::invalid_argument("NDArray::operator(t,u,v,w): one of input indexes is out of array length or rank!=4 !");
-
-    Nd4jLong coords[4] = {t, u, v, w};
-    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
-    return _buffer[xOffset];
+    return getScalar(i, j, k, v);
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Return value from linear buffer
-template<typename T>
- T NDArray<T>::getScalar(const Nd4jLong i) const
-{ return (*this)(i); }
-
-//////////////////////////////////////////////////////////////////////////
-template<typename T>
- T NDArray<T>::getIndexedScalar(const Nd4jLong i) const {
-    return (*this)(i); 
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Returns value from 2D matrix by coordinates/indexes         
-template<typename T>
- T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const
-{ return (*this)(i, j); }
-
-//////////////////////////////////////////////////////////////////////////
-// returns value from 3D tensor by coordinates        
-template<typename T>
- T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const
-{ return (*this)(i, j, k); }
-
-//////////////////////////////////////////////////////////////////////////
-template<typename T>
- void NDArray<T>::putIndexedScalar(const Nd4jLong i, const T value)
-{ (*this)(i) = value; }
-
-//////////////////////////////////////////////////////////////////////////
-// This method sets value in linear buffer to position i        
-template<typename T>
-    void NDArray<T>::putScalar(const Nd4jLong i, const T value)
-{ (*this)(i) = value; }
 
 //////////////////////////////////////////////////////////////////////////
 // This method sets value in 2D matrix to position i, j         
@@ -1539,7 +1441,7 @@ bool NDArray<T>::isSameShapeStrict(const NDArray<T> *other) const {
   return shape::equalsStrict(_shapeInfo, other->_shapeInfo);
 }
 
-// #endif //__CUDABLAS__
+
 
 
 }

@@ -598,8 +598,8 @@ TEST_F(RNGTests, Test_Reproducibility_2) {
                 nd4j_printf("Failed at iteration [%i] for array [%i]\n", e, a);
 
                 for (Nd4jLong f = 0; f < arrayE->lengthOf(); f++) {
-                    double x = arrayE->getIndexedScalar(f);
-                    double y = arrayT->getIndexedScalar(f);
+                    double x = arrayE->getScalar(f);
+                    double y = arrayT->getScalar(f);
 
                     if (nd4j::math::nd4j_re(x, y) > 0.1) {
                         nd4j_printf("E[%lld] %f != T[%lld] %f\n", (long long) f, (float) x, (long long) f, (float) y);

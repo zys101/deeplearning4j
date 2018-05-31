@@ -32,7 +32,7 @@ namespace nd4j {
             auto result = new NDArray<T>('c', shape);
             int skipPosition = 0;
             for (int e = 0; e < indices->lengthOf(); e++) {
-                int idx = (int) indices->getIndexedScalar(e);
+                int idx = (int) indices->getScalar(e);
                 auto array = list->readRaw(idx);
                 
                 IndicesList indicesList;

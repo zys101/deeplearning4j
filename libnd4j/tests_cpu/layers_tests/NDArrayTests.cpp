@@ -219,7 +219,7 @@ TEST_F(NDArrayTest, TestTad3) {
 
     //array->printBuffer();
 
-    row2->putIndexedScalar(2, 1.0);
+    row2->putScalar(2, 1.0);
 
     //array->printBuffer();
 
@@ -298,8 +298,8 @@ TEST_F(NDArrayTest, TestRepeat1) {
 TEST_F(NDArrayTest, TestIndexedPut1) {
     auto array = new NDArray<float>('f', {3, 3});
 
-    array->putIndexedScalar(4, 1.0f);
-    ASSERT_EQ(1.0f, array->getIndexedScalar(4));
+    array->putScalar(4, 1.0f);
+    ASSERT_EQ(1.0f, array->getScalar(4));
     //array->printBuffer();
 
     delete array;
@@ -1264,7 +1264,7 @@ TEST_F(NDArrayTest, BroadcastOpsTest1) {
 TEST_F(NDArrayTest, TestIndexedPut2) {
     NDArray<float> x('f', {2, 2});
     //x.printShapeInfo("x shape");
-    x.putIndexedScalar(1, 1.0f);
+    x.putScalar(1, 1.0f);
 
     //x.printBuffer("after");
     ASSERT_NEAR(x.getBuffer()[2], 1.0, 1e-5);
@@ -1272,7 +1272,7 @@ TEST_F(NDArrayTest, TestIndexedPut2) {
 
 TEST_F(NDArrayTest, TestIndexedPut3) {
     NDArray<float> x('c', {2, 2});
-    x.putIndexedScalar(1, 1.0f);
+    x.putScalar(1, 1.0f);
 
     //x.printBuffer("after");
     ASSERT_NEAR(x.getBuffer()[1], 1.0, 1e-5);
@@ -1341,7 +1341,7 @@ TEST_F(NDArrayTest, TestIndexing2) {
 
     ASSERT_EQ(64, sub->lengthOf());
     ASSERT_NEAR(32, sub->getScalar(0), 1e-5);
-    ASSERT_NEAR(112, sub->getIndexedScalar(32), 1e-5);
+    ASSERT_NEAR(112, sub->getScalar(32), 1e-5);
 
     delete sub;
 }
@@ -1377,7 +1377,7 @@ TEST_F(NDArrayTest, TestIndexing4) {
 
     ASSERT_EQ(64, sub.lengthOf());
     ASSERT_NEAR(32, sub.getScalar(0), 1e-5);
-    ASSERT_NEAR(112, sub.getIndexedScalar(32), 1e-5);
+    ASSERT_NEAR(112, sub.getScalar(32), 1e-5);
 }
 
 TEST_F(NDArrayTest, TestReshapeNegative1) {
@@ -1516,7 +1516,7 @@ TEST_F(NDArrayTest, TestStdDev2) {
     ASSERT_EQ(5, tad->lengthOf());
 
     for (int e = 0; e < tad->lengthOf(); e++)
-        tad->putIndexedScalar(e, e+1);
+        tad->putScalar(e, e+1);
 
     ASSERT_NEAR(15, tad->sumNumber(), 1e-5);
 

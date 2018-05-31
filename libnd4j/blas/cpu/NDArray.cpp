@@ -288,7 +288,93 @@ NDArray<T>& NDArray<T>::operator=(NDArray<T>&& other) noexcept {
     return *this;
 }
 
-    template<typename T>
+//////////////////////////////////////////////////////////////////////////
+// Return value from buffer
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i) const {
+
+    if (i >= shape::length(_shapeInfo))
+            throw std::invalid_argument("NDArray::getScalar(i): input index is out of array length !");
+
+    const auto ews   = shape::elementWiseStride(_shapeInfo);
+    const char order = ordering();   
+
+    if(ews == 1 && order == 'c')
+        return _buffer[i];
+    else if(ews > 1 && order == 'c')
+        return _buffer[i*ews];
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);
+        Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
+        return _buffer[offset];        
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 2D matrix, i - row, j - column
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
+
+    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
+       throw std::invalid_argument("NDArray::getScalar(i,j): one of input indexes is out of array length or rank!=2 !");
+    
+    Nd4jLong coords[2] = {i, j};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 3D matrix, i - row, j - column, k - depth
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+
+    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
+       throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
+    
+    Nd4jLong coords[3] = {i, j, k};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
+
+    if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
+       throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
+
+    Nd4jLong coords[4] = {i, j, k, v};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// This method sets value in linear buffer to position i        
+template<typename T>
+void NDArray<T>::putScalar(const Nd4jLong i, const T value) { 
+    
+    if (i >= shape::length(_shapeInfo))
+            throw std::invalid_argument("NDArray::putScalar(i): input index is out of array length !");
+
+    auto ews   = shape::elementWiseStride(_shapeInfo);
+    auto order = ordering();
+
+    if(ews == 1 && order == 'c')
+        _buffer[i] = value;
+    else if(ews > 1 && order == 'c')
+        _buffer[i * ews] = value;
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);        
+        auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());        
+        _buffer[offset] = value;
+    }        
+}
+
+ 
+ template<typename T>
     void* NDArray<T>::operator new(size_t i) {
         if (nd4j::memory::MemoryRegistrator::getInstance()->hasWorkspaceAttached()) {
             nd4j::memory::Workspace* ws = nd4j::memory::MemoryRegistrator::getInstance()->getWorkspace();
@@ -332,7 +418,7 @@ NDArray<T>& NDArray<T>::operator=(NDArray<T>&& other) noexcept {
         // FIXME: we want to avoid put/get indexed scalars here really
 #pragma omp parallel for
         for (int e = 0; e < l; e++) {
-            result->putIndexedScalar(e, (N) this->getIndexedScalar(e));
+            result->putScalar(e, (N) this->getScalar(e));
         }
 
         return result;
@@ -371,7 +457,7 @@ NDArray<T>& NDArray<T>::operator=(NDArray<T>&& other) noexcept {
             limit = this->lengthOf();
 
         for (Nd4jLong e = 0; e < limit; e++) {
-            os << toStringValue(this->getIndexedScalar(e));
+            os << toStringValue(this->getScalar(e));
 
             if (e < limit - 1)
                 os << ", ";
@@ -916,7 +1002,7 @@ template <typename T>
         
         auto newShape = ShapeUtils<T>::evalReduceShapeInfo('c', copy, *this, keepDims, supportOldShapes, _workspace);
         NDArray<T>* result = new NDArray<T>(newShape, _workspace);
-        RELEASE(newShape, _workspace);        
+        RELEASE(newShape, _workspace);
         
         if(rankOf() == copy.size())
             result->_buffer[0] = functions::reduce::ReduceFunction<T>::template execScalar<OpName>(_buffer, _shapeInfo, nullptr);        
@@ -1147,7 +1233,7 @@ template <typename T>
         else
             printf("[");
         for (Nd4jLong e = 0; e < limit; e++) {
-            printf("%f", (float) this->getIndexedScalar(e));
+            printf("%f", (float) this->getScalar(e));
             if (e < limit - 1)
                 printf(", ");
         }
@@ -1904,9 +1990,9 @@ template<typename T>
         auto retTensor = ret->tensorAlongDimension(i, {dimension});
         int retIdx = 0;
         for (int k = 0; k < thisTensor->lengthOf(); k++) {
-            T s = thisTensor->getIndexedScalar(k);
+            T s = thisTensor->getScalar(k);
             for (int j = 0; j < repeatDelta; j++) {
-                retTensor->putIndexedScalar(retIdx++, s);
+                retTensor->putScalar(retIdx++, s);
             }
         }
 
@@ -1931,9 +2017,9 @@ template<typename T>
         NDArray<T>* retTensor = target.tensorAlongDimension(i, {dimension});
         int retIdx = 0;
         for (int k = 0; k < thisTensor->lengthOf(); k++) {
-            T s = thisTensor->getIndexedScalar(k);
+            T s = thisTensor->getScalar(k);
             for (int j = 0; j < repeatDelta; j++) {
-                retTensor->putIndexedScalar(retIdx++, s);
+                retTensor->putScalar(retIdx++, s);
             }
         }
 

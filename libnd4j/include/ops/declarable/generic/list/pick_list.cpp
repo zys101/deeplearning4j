@@ -16,7 +16,7 @@ namespace nd4j {
             if (block.width() > 1 && block.getVariable(1)->getNDArray()->isVector()) {
                 auto ia = INPUT_VARIABLE(1);
                 for (int e = 0; e < ia->lengthOf(); e++)
-                    indices.emplace_back((int) ia->getIndexedScalar(e));
+                    indices.emplace_back((int) ia->getScalar(e));
             } else if (block.getIArguments()->size() > 0) {
                 indices = *(block.getIArguments());
             } else return ND4J_STATUS_BAD_ARGUMENTS;

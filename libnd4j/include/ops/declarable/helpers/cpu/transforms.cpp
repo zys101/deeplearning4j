@@ -212,27 +212,27 @@ void recursiveLoopForPad(const int mode, NDArray<T>& input, const NDArray<T>& pa
                 case 0:             // CONSTANT mode                    
                     for(int j = 0; j < subArrOut.lengthOf(); ++j)                   
                         if(j < leftOffset || j >= (subArrIn.lengthOf() + leftOffset) )                  // firstly fill with zeros outer ranges
-                            subArrOut.putIndexedScalar(j, (T)0.);
+                            subArrOut.putScalar(j, (T)0.);
                         else
-                            subArrOut.putIndexedScalar(j, subArrIn.getIndexedScalar(j - leftOffset));   // fill middle with elements of input array
+                            subArrOut.putScalar(j, subArrIn.getScalar(j - leftOffset));   // fill middle with elements of input array
                     break;
 
                 case 1:             // REFLECT mode                 
                     for(int j = 1;  j <= leftOffset; ++j)                                               // fill firstly left side 
-                        subArrOut.putIndexedScalar(leftOffset - j, subArrIn.getIndexedScalar(j));                       
+                        subArrOut.putScalar(leftOffset - j, subArrIn.getScalar(j));                       
                     for(int j = 0; j < subArrIn.lengthOf(); ++j)                                        // fill middle
-                        subArrOut.putIndexedScalar(leftOffset + j, subArrIn.getIndexedScalar(j));                   
+                        subArrOut.putScalar(leftOffset + j, subArrIn.getScalar(j));                   
                     for(int j = (subArrOut.lengthOf() - leftOffset); j < subArrOut.lengthOf(); ++j)     // fill right side
-                        subArrOut.putIndexedScalar(j, subArrIn.getIndexedScalar(subArrOut.lengthOf() - j - 1));
+                        subArrOut.putScalar(j, subArrIn.getScalar(subArrOut.lengthOf() - j - 1));
                     break;
 
                 case 2:             // SYMMETRIC mode               
                     for(int j = 1;  j <= leftOffset; ++j)                                               // fill firstly left side 
-                        subArrOut.putIndexedScalar(leftOffset - j, subArrIn.getIndexedScalar(j-1));                             
+                        subArrOut.putScalar(leftOffset - j, subArrIn.getScalar(j-1));                             
                     for(int j = 0; j < subArrIn.lengthOf(); ++j)                                        // fill middle
-                        subArrOut.putIndexedScalar(leftOffset + j, subArrIn.getIndexedScalar(j));                   
+                        subArrOut.putScalar(leftOffset + j, subArrIn.getScalar(j));                   
                     for(int j = (subArrOut.lengthOf() - leftOffset); j < subArrOut.lengthOf(); ++j)     // fill right side
-                        subArrOut.putIndexedScalar(j, subArrIn.getIndexedScalar(subArrOut.lengthOf() - j));     
+                        subArrOut.putScalar(j, subArrIn.getScalar(subArrOut.lengthOf() - j));     
                     break;
             }
         }   

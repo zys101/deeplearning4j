@@ -21,8 +21,7 @@ if(WIN32)
     endforeach()
 endif()
 
-# -fsanitize=address
-# -fsanitize=leak
+
 if (APPLE)
     set(CMAKE_CXX_FLAGS  " -O0 -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -D__APPLE_OS__=true")
 elseif(WIN32)
@@ -33,9 +32,13 @@ elseif(WIN32)
     endif()
 else()
     if ("${_RELEASE}")
-        set(CMAKE_CXX_FLAGS  "-O3 -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -march=native -mtune=native")
+        set(CMAKE_CXX_FLAGS  "-O3 -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -march=native -mtune=native")        
     else()
-        set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -fsanitize=address")
+        if (${_CUDA})
+            set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2")
+        else()
+            set(CMAKE_CXX_FLAGS  " -g -fPIC -std=c++11 -fassociative-math -funsafe-math-optimizations -fmax-errors=2 -fsanitize=address -fsanitize=leak")
+        endif()        
     endif()
 endif()
 

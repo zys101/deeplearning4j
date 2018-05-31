@@ -55,14 +55,14 @@ namespace nd4j {
                 auto row = rows->at(r);
 
                 for (int e = 0; e < numColumns; e += 2) {
-                    int idx = row->getIndexedScalar(e);
+                    int idx = row->getScalar(e);
                     if (idx < 0)
                         break;
 
                     int denseIdx = sparse2dense.at(idx);
 
 
-                    T value = row->getIndexedScalar(e + 1);
+                    T value = row->getScalar(e + 1);
                     T current = z->getScalar(r, denseIdx);
                     z->putScalar(r, denseIdx, value + current);
                 }

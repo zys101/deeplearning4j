@@ -9,28 +9,30 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <pointercast.h>
-
-#include <memory/Workspace.h>
+#include <ops/LegacyOpExecutor.h>
 #include <memory/MemoryRegistrator.h>
-#include <ops.h>
-#include <ops/gemm.h>
-#include <pointercast.h>
-#include <stdexcept>
-#include <memory>
-#include <helpers/logger.h>
-#include <loops/pairwise_transform.h>
-#include <loops/transform.h>
-#include <loops/random.h>
-#include <loops/broadcasting.h>
-#include <indexing/NDIndex.h>
-#include <indexing/IndicesList.h>
-#include <helpers/ShapeUtils.h>
-#include <sstream>
-#include <helpers/ArrayUtils.h>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <pointercast.h>
+// #include <memory/Workspace.h>
+// #include <ops.h>
+// #include <ops/gemm.h>
+// #include <pointercast.h>
+// #include <stdexcept>
+// #include <memory>
+// #include <helpers/logger.h>
+// #include <loops/pairwise_transform.h>
+// #include <loops/transform.h>
+// #include <loops/random.h>
+// #include <loops/broadcasting.h>
+// #include <indexing/NDIndex.h>
+// #include <indexing/IndicesList.h>
+// #include <helpers/ShapeUtils.h>
+// #include <sstream>
+// #include <helpers/ArrayUtils.h>
 
 namespace nd4j {
 
@@ -115,14 +117,10 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
 	const auto bufLen = shape::length(const_cast<Nd4jLong*>(shapeInfo));
     const auto shapeLen = shape::shapeInfoLength(shapeInfo[0]);
 
-
-    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
-    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
-
     ALLOCATE(_shapeInfo, _workspace, shapeLen, Nd4jLong);
-
     ALLOCATE(_buffer, _workspace, bufLen, T);
-
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);    
     
     memcpy(_shapeInfo, shapeInfo, shape::shapeInfoByteLength(shapeInfo[0])); 
     if(!copyStrides)
@@ -133,7 +131,7 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
     
     _length = shape::length(_shapeInfo);
     _isBuffAlloc = true;
-    _isShapeAlloc = true;
+    _isShapeAlloc = true;    
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -281,6 +279,100 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
     _isShapeAlloc = true;    
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Return value from buffer
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i) const {
+    
+    if (i >= shape::length(_shapeInfo))
+            throw std::invalid_argument("NDArray::operator(i): input index is out of array length !");
+
+    T* element = new T();
+    Nd4jLong offset = 0;
+    
+    const Nd4jLong ews = this->ews();
+    const char order = this->ordering();
+
+    if(ews == 1 && order == 'c') {
+        offset = i;
+    }
+    else if(ews > 1 && order == 'c') {
+        offset = ews * i;   
+    }
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);
+        offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());        
+    }
+
+    cudaMemcpy(element, _bufferD + offset, sizeof(T), cudaMemcpyDeviceToHost);        
+    T result = *element;
+    delete element;    
+    return result;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 2D matrix, i - row, j - column
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
+
+    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
+       throw std::invalid_argument("NDArray::getScalar(i,j): one of input indexes is out of array length or rank!=2 !");
+    
+    Nd4jLong coords[2] = {i, j};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 3D matrix, i - row, j - column, k - depth
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+
+    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
+       throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
+    
+    Nd4jLong coords[3] = {i, j, k};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
+template<typename T>
+T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
+
+    if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
+       throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
+
+    Nd4jLong coords[4] = {i, j, k, v};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// This method sets value in linear buffer to position i        
+template<typename T>
+void NDArray<T>::putScalar(const Nd4jLong i, const T value) { 
+    
+    if (i >= shape::length(_shapeInfo))
+            throw std::invalid_argument("NDArray::putScalar(i): input index is out of array length !");
+
+    auto ews   = shape::elementWiseStride(_shapeInfo);
+    auto order = ordering();
+
+    if(ews == 1 && order == 'c')
+        _buffer[i] = value;
+    else if(ews > 1 && order == 'c')
+        _buffer[i * ews] = value;
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);        
+        auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());        
+        _buffer[offset] = value;
+    }        
+}
+
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 void* NDArray<T>::operator new(size_t i) {
@@ -299,12 +391,29 @@ void* NDArray<T>::operator new(size_t i) {
 	}
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 void NDArray<T>::operator delete(void* p) {
 	if (p != nullptr)
 		cudaFreeHost(reinterpret_cast<void *>(p));
+}
+
+////////////////////////////////////////////////////////////////////////
+// This method assigns given value to all elements in this NDArray
+template<typename T>
+void NDArray<T>::assign(const T value) {
+    
+    std::vector<T> extras;
+    LaunchContext context; 
+    LegacyOpExecutor<T>::execScalarOp(context, 13, this, this, value, extras);
+}
+
+////////////////////////////////////////////////////////////////////////
+// This method assigns values of given NDArray to this one, wrt order
+template<typename T>
+void NDArray<T>::assign(const NDArray<T> *other) {
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -495,23 +604,9 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
 }
 
 ////////////////////////////////////////////////////////////////////////
-// This method assigns values of given NDArray to this one, wrt order
-template<typename T>
-void NDArray<T>::assign(const NDArray<T> *other) {
-
-}
-
-////////////////////////////////////////////////////////////////////////
 // This method assigns values of given NDArray to this one
 template<typename T>
 void NDArray<T>::assign(const NDArray<T>& other) {
-
-}
-
-////////////////////////////////////////////////////////////////////////
-// This method assigns given value to all elements in this NDArray
-template<typename T>
-void NDArray<T>::assign(const T value) {
 
 }
 
