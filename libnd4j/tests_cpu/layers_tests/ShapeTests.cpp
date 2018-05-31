@@ -293,6 +293,10 @@ TEST_F(ShapeTests, Tests_Transpose_119_1) {
     NDArray<float> x('c', {3, 2});
     NDArray<float> y('c', {2}, {1.0f, 0.0f});
     NDArray<float> z('c', {2, 3});
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Transpose_119_1 was skipped for cuda.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     NDArrayFactory<float>::linspace(1.0, x);
 
@@ -301,10 +305,6 @@ TEST_F(ShapeTests, Tests_Transpose_119_1) {
 
     nd4j::ops::transpose<float> op;
     auto result = op.execute({&x, &y}, {&z}, {}, {});
-#ifdef __CUDABLAS__
-    nd4j_printf("Test_Transpose_119_1 was skipped for cuda.\n", "");
-    ASSERT_FALSE(true);
-#endif
 
     ASSERT_EQ(Status::OK(), result);
     ASSERT_TRUE(e->isSameShape(z));

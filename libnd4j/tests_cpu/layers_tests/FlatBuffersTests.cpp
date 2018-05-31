@@ -623,6 +623,10 @@ TEST_F(FlatBuffersTest, expand_dims) {
     auto graph = GraphExecutioner<float>::importFromFlatBuffers("./resources/expand_dim.fb");
 
 //    graph->printOut();
+#ifdef __CUDABLAS__
+    nd4j_printf("expand_dims was skipped for cuda testing.\n", "");
+    ASSERT_FALSE(true);
+#endif
 
     auto result = GraphExecutioner<float>::execute(graph);
     ASSERT_EQ(ND4J_STATUS_OK, result);
@@ -644,6 +648,11 @@ TEST_F(FlatBuffersTest, transpose) {
     //graph->printOut();
 
     auto result = GraphExecutioner<float>::execute(graph);
+#ifdef __CUDABLAS__
+    nd4j_printf("transpose was skipped for cuda testing.\n", "");
+    ASSERT_FALSE(true);
+#endif
+
     ASSERT_EQ(ND4J_STATUS_OK, result);
 
     delete graph;

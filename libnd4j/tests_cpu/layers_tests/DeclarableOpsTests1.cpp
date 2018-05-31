@@ -221,6 +221,7 @@ TEST_F(DeclarableOpsTests1, TestTensorDot3) {
 
     for (int i = 0; i < x->lengthOf(); i++) {
         x->putScalar(i, i + 1);
+//        x->getBuffer()[i] = i + 1;
         // y->putScalar(i, i + 1);
         y->getBuffer()[i] = i + 1;
     }
@@ -3637,10 +3638,6 @@ TEST_F(DeclarableOpsTests1, Test_Range_Integer_3) {
 //////////////////////////////////////////////////////////////////////
 TEST_F(DeclarableOpsTests1, softmax_test1) {
     NDArray<double> input('c', {3, 3}, {-1, 1, -2, 2, -3, 3, -4, 4, 5});
-#ifdef __CUDABLAS__
-    nd4j_printf("softmax_test1 was skipped for cuda.\n", "");
-    ASSERT_FALSE(true);
-#endif
     NDArray<double> expOutput('c', {3, 3}, {1.14195199e-01, 8.43794734e-01, 4.20100661e-02, 2.68454951e-01, 1.80883523e-03, 7.29736214e-01, 9.02116571e-05, 2.68917160e-01, 7.30992629e-01});
 
     nd4j::ops::softmax<double> op;

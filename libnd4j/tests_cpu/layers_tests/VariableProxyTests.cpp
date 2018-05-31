@@ -140,6 +140,10 @@ TEST_F(VariableProxyTests, Test_Clone_1) {
     VariableSpace<float> ref;
 
     ref.putVariable(118, x);
+#ifdef __CUDABLAS__
+    nd4j_printf("Test_Clone_1 was skipped with cuda testing.\n", "");
+    ASSERT_TRUE(false);
+#endif
 
     VariableProxy<float> proxy(&ref);
 
