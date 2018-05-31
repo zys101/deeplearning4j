@@ -17,7 +17,9 @@ class LaunchContextTests : public testing::Test {
 
 TEST_F(LaunchContextTests,  Basic_Test_1) {
     //
-//    LaunchContext ctx;
-//    nd4j_printf("Context was created successfully.\n", "");
-    ASSERT_TRUE(true);
+    LaunchContext* context;
+    context = new LaunchContext;
+    nd4j_printf("Context %p was created successfully.\n", context);
+    ASSERT_TRUE(context != nullptr);
+//    delete context; // this line crashes
 }

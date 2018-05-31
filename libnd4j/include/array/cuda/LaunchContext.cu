@@ -8,18 +8,29 @@
 
 #include <helpers/logger.h>
 
-//static cudaStream_t defaultStream;
 namespace nd4j {
     LaunchContext::LaunchContext() {
         // default constructor, just to make clang/ranlib happy
-        _stream = new cudaStream_t;
-        cudaStreamCreate(_stream);
+        //ALLOCATE(_stream, _workspace, sizeof(cudaStream_t), cudaStream_t);
+        _stream = (cudaStream_t*)malloc(sizeof(cudaStream_t));
+        cudaStreamCreate(&_stream[0]);
+        // 10M bytes of device memory for reductionBuffer
+        ALLOCATE_SPECIAL(_reductionBuffer, _workspace, 1250000 * sizeof(Nd4jLong), Nd4jLong) ;
+        // 16 bytes of device memory for scallarPointer
+        ALLOCATE_SPECIAL(_scalarPointer, _workspace, 2 * sizeof(Nd4jLong), Nd4jLong) ;
+        // 10M bytes of device memory for allocationBuffer
+        ALLOCATE_SPECIAL(_allocationBuffer, _workspace, 1250000 * sizeof(Nd4jLong), Nd4jLong) ;
     }
 
     LaunchContext::~LaunchContext() {
         // default constructor, just to make clang/ranlib happy
-        cudaStreamDestroy(*_stream);
-        delete _stream;
+        if (_stream)
+            cudaStreamDestroy(*_stream);
+        //RELEASE(_stream, _workspace);
+        RELEASE_SPECIAL(_allocationBuffer, _workspace);
+        RELEASE_SPECIAL(_reductionBuffer, _workspace);
+        RELEASE_SPECIAL(_scalarPointer, _workspace);
+        free(_stream);
     }
 
     void* LaunchContext::reductionPointer() {
