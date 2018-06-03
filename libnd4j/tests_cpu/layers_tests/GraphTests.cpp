@@ -365,7 +365,7 @@ TEST_F(GraphTests, ReductionsTest1) {
     auto x = new NDArray<float>('c', {5, 5});
     for (int r = 0; r < x->rows(); r++) {
         for (int c = 0; c < x->columns(); c++) {
-            x->putScalar(r, c, -c);
+            (*x)(r, c) = -c;
         }
     }
 
@@ -398,7 +398,7 @@ TEST_F(GraphTests, IndexReductionsTest1) {
     auto x = new NDArray<float>('c', {5, 5});
     for (int r = 0; r < x->rows(); r++) {
         for (int c = 0; c < x->columns(); c++) {
-            x->putScalar(r, c, -c);
+            (*x)(r, c) = -c;
         }
     }
 

@@ -1078,23 +1078,7 @@ namespace nd4j {
         *  returns true if buffer && shapeInfo were defined (non nullptr)
         */
         FORCEINLINE bool nonNull() const;        
-
-        /** 
-        *  assigns given scalar to 2D array element by given indexes
-        *  i - number of row
-        *  j - number of row
-        *  value - scalar value to assign
-        */
-        FORCEINLINE void putScalar(const Nd4jLong i, const Nd4jLong j, const T value);
-
-        /** 
-        *  assigns given scalar to 3D array element by given indexes
-        *  i - height
-        *  j - width
-        *  k - depth
-        *  value - scalar value to assign
-        */
-        FORCEINLINE void putScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const T value);
+        
 
         /**
         *  returns true if array is 2D
@@ -1398,18 +1382,6 @@ T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, 
     
     return getScalarRef(i, j, k, v);
 }
-
-//////////////////////////////////////////////////////////////////////////
-// This method sets value in 2D matrix to position i, j         
-template<typename T>
- void NDArray<T>::putScalar(const Nd4jLong i, const Nd4jLong j, const T value)
-{ (*this)(i,j) = value; }
-
-//////////////////////////////////////////////////////////////////////////
-// This method sets value in 3D matrix to position i,j,k        
-template<typename T>
- void NDArray<T>::putScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const T value)
-{ (*this)(i,j,k) = value; }
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>

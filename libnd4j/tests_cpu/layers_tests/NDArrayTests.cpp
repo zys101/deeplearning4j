@@ -118,12 +118,10 @@ TEST_F(NDArrayTest, TestGetScalar1) {
     ASSERT_EQ(3.0f, arrayF->getScalar(1, 0));
     ASSERT_EQ(4.0f, arrayF->getScalar(1, 1));
 
-
-    arrayF->putScalar(1, 0, 7.0f);
+    (*arrayF)(1, 0) = 7.f;
     ASSERT_EQ(7.0f, arrayF->getScalar(1, 0));
-
-
-    arrayC->putScalar(1, 1, 9.0f);
+    
+    (*arrayC)(1, 1) = 9.f;
     ASSERT_EQ(9.0f, arrayC->getScalar(1, 1));
 
     delete[] c;
@@ -144,19 +142,20 @@ TEST_F(NDArrayTest, EqualityTest1) {
 
     for (int i = 0; i < arrayA->rows(); i++) {
         for (int k = 0; k < arrayA->columns(); k++) {
-            arrayA->putScalar(i, k, (float) i);
+            (*arrayA)(i, k) = (float)i;
         }
     }
 
     for (int i = 0; i < arrayB->rows(); i++) {
-        for (int k = 0; k < arrayB->columns(); k++) {
-            arrayB->putScalar(i, k, (float) i);
+        for (int k = 0; k < arrayB->columns(); k++) {            
+            (*arrayB)(i, k) = (float)i;
         }
     }
 
     for (int i = 0; i < arrayC->rows(); i++) {
         for (int k = 0; k < arrayC->columns(); k++) {
-            arrayC->putScalar(i, k, (float) i+1);
+            (*arrayC)(i, k) = (float)(i+1);
+
         }
     }
 
@@ -1280,7 +1279,7 @@ TEST_F(NDArrayTest, TestIndexedPut3) {
 
 TEST_F(NDArrayTest, TestIndexedPut4) {
     NDArray<float> x('f', {2, 2});
-    x.putScalar(0, 1, 1.0f);
+    x(0, 1) = 1.f;
 
     //x.printBuffer("after");
     ASSERT_NEAR(x.getBuffer()[2], 1.0, 1e-5);
@@ -1289,7 +1288,7 @@ TEST_F(NDArrayTest, TestIndexedPut4) {
 
 TEST_F(NDArrayTest, TestIndexedPut5) {
     NDArray<float> x('c', {2, 2});
-    x.putScalar(0, 1, 1.0f);
+    x(0, 1) = 1.f;
 
     //x.printBuffer("after");
     ASSERT_NEAR(x.getBuffer()[1], 1.0, 1e-5);
