@@ -41,11 +41,9 @@ namespace nd4j {
 template <typename T>
 NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) {
 	
-	_buffer    = buffer;
-	_shapeInfo = shapeInfo;
-	_isBuffAlloc = false;                                  // indicate that memory for array is passed from outside
-	_isShapeAlloc = false;
-	_workspace = workspace;
+	_buffer     = buffer;
+	_shapeInfo  = shapeInfo;
+	_workspace  = workspace;
 	if(_shapeInfo != nullptr)
     	_length = shape::length(_shapeInfo);
 
@@ -64,11 +62,7 @@ NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* wor
 //constructor, create empty array at given workspace
 template <typename T>
 NDArray<T>::NDArray(nd4j::memory::Workspace* workspace)
-    :
-    _buffer(nullptr),
-    _shapeInfo(nullptr),
-    _isBuffAlloc(false),
-    _isShapeAlloc(false),
+    :    
     _workspace(workspace)
 {}
 
@@ -99,7 +93,7 @@ NDArray<T>::NDArray(T scalar) {
     ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
 
     cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
-    cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeOfT(), cudaMemcpyHostToDevice);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -128,6 +122,7 @@ NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::mem
     cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(shapeInfo[0]), cudaMemcpyHostToDevice);
 
     memset(_buffer, 0, bufLen*sizeOfT());          // set all elements in new array to be zeros
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeOfT(), cudaMemcpyHostToDevice);
     
     _length = shape::length(_shapeInfo);
     _isBuffAlloc = true;
@@ -165,24 +160,12 @@ NDArray<T>::NDArray(const char order, const std::vector<Nd4jLong> &shape, const 
 	ALLOCATE(_buffer, _workspace, bufLen, T);
 	ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
 
-	if (!data.empty()) {
-		/**
-		 * FIXME: obviously we dont heed to udpate BOTH buffers here.
-		 * But since that's an example, and we don't have dirty tracking yet - let it be for now
-		 *
-		 * FIXME: once we update signatures, we will be using LaunchContext::stream() and LaunchContext::specialStream()
-		 * and we'll be using cudaMemcpyAsync instead
-		 */
-		// first we copy data to pinned memory, here _buffer already points on pinned-host-memory
-		memcpy(_buffer, data.data(), data.size() * sizeof(T));
+	if (!data.empty())
+		memcpy(_buffer, data.data(), data.size() * sizeOfT());
+	else 
+		memset(_buffer, 0, bufLen * sizeOfT());
 
-		// then we copy data to device buffer
-		cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
-	} 
-	else {
-		// memset should be applied only on one side, and other one should be tagged as dirty
-		memset(_buffer, 0, bufLen * sizeof(T));
-	}
+    cudaMemcpy(_bufferD, _buffer, bufLen * sizeOfT(), cudaMemcpyHostToDevice);
 
 	_length = shape::length(_shapeInfo);
 	_isBuffAlloc = true;
@@ -226,8 +209,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
     // copy data from host _buffer to device _bufferD
 	cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
 
-    _length = shape::length(_shapeInfo);
-    _isBuffAlloc = false;
+    _length = shape::length(_shapeInfo);    
     _isShapeAlloc = true;
 }
 
@@ -271,8 +253,8 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
     shape::updateStrides(_shapeInfo, other.ordering());
     cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
 
-    this->assign(&other);
-    cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeof(T), cudaMemcpyHostToDevice);
+    this->assign(&other);  // on host
+    cudaMemcpy(_bufferD, _buffer, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyHostToDevice);
     
     _length = shape::length(_shapeInfo);
     _isBuffAlloc = true; 
@@ -282,42 +264,53 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
 //////////////////////////////////////////////////////////////////////////
 // Return value from buffer
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i) const {
+T NDArray<T>::getScalar(const Nd4jLong i) const {
     
-    if (i >= shape::length(_shapeInfo))
-            throw std::invalid_argument("NDArray::operator(i): input index is out of array length !");
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
 
-    T* element = new T();
-    Nd4jLong offset = 0;
+    if (i >= shape::length(_shapeInfo))
+        throw std::invalid_argument("NDArray::getScalar(i): input index is out of array length !");
+    
+    if(_buffState == 'd') {
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+        _buffState = 'e';
+    }
     
     const Nd4jLong ews = this->ews();
     const char order = this->ordering();
 
-    if(ews == 1 && order == 'c') {
-        offset = i;
-    }
-    else if(ews > 1 && order == 'c') {
-        offset = ews * i;   
-    }
+     if(ews == 1 && order == 'c')
+        return _buffer[i];
+    else if(ews > 1 && order == 'c')
+        return _buffer[i*ews];
     else {
         Nd4jLong idx[MAX_RANK];
         shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);
-        offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());        
+        Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
+        return _buffer[offset];        
     }
-
-    cudaMemcpy(element, _bufferD + offset, sizeof(T), cudaMemcpyDeviceToHost);        
-    T result = *element;
-    delete element;    
-    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // access elements of 2D matrix, i - row, j - column
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
 
     if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
-       throw std::invalid_argument("NDArray::getScalar(i,j): one of input indexes is out of array length or rank!=2 !");
+       throw std::invalid_argument("NDArray::getScalar(i,j): one of input indexes is out of array length or rank!=2 !");    
+    
+    if(_buffState == 'd') {
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+        _buffState = 'e';
+    }       
     
     Nd4jLong coords[2] = {i, j};
     auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
@@ -327,10 +320,20 @@ T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
 //////////////////////////////////////////////////////////////////////////
 // access elements of 3D matrix, i - row, j - column, k - depth
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
 
     if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
        throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
+    
+    if(_buffState == 'd') {
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+        _buffState = 'e';
+    }           
     
     Nd4jLong coords[3] = {i, j, k};
     auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
@@ -340,10 +343,20 @@ T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) c
 //////////////////////////////////////////////////////////////////////////
 // access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {    
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
 
     if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
        throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
+    
+    if(_buffState == 'd') {
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+        _buffState = 'e';
+    }
 
     Nd4jLong coords[4] = {i, j, k, v};
     auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
@@ -351,12 +364,131 @@ T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, c
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Return value from buffer
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i) {
+    
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
+
+    if (i >= shape::length(_shapeInfo))
+        throw std::invalid_argument("NDArray::getScalarRef(i): input index is out of array length !");
+    
+    if(_buffState == 'd')
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+    
+    if(_buffState != 'h')
+        _buffState = 'h';
+
+    const Nd4jLong ews = this->ews();
+    const char order = this->ordering();
+
+     if(ews == 1 && order == 'c')
+        return _buffer[i];
+    else if(ews > 1 && order == 'c')
+        return _buffer[i*ews];
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);
+        Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
+        return _buffer[offset];        
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 2D matrix, i - row, j - column
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j) {
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
+
+    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j): one of input indexes is out of array length or rank!=2 !");    
+    
+    if(_buffState == 'd')
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+    
+    if(_buffState != 'h')
+        _buffState = 'h';    
+    
+    Nd4jLong coords[2] = {i, j};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 3D matrix, i - row, j - column, k - depth
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) {
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
+
+    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
+    
+    if(_buffState == 'd')
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+    
+    if(_buffState != 'h')
+        _buffState = 'h';    
+
+    Nd4jLong coords[3] = {i, j, k};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) {    
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
+
+    if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
+    
+    if(_buffState == 'd')
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);
+        _buffState = 'e';
+
+    if(_buffState != 'h')
+        _buffState = 'h';
+
+    Nd4jLong coords[4] = {i, j, k, v};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 // This method sets value in linear buffer to position i        
 template<typename T>
 void NDArray<T>::putScalar(const Nd4jLong i, const T value) { 
+
+    if(_shapeState == 'd') {
+        cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+        _shapeState = 'e';
+    }
     
     if (i >= shape::length(_shapeInfo))
-            throw std::invalid_argument("NDArray::putScalar(i): input index is out of array length !");
+        throw std::invalid_argument("NDArray::putScalar(i, T): input index is out of array length !");
+
+    if(_buffState == 'd')
+        cudaMemcpy(_buffer, _bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToHost);        
+
+    if(_buffState != 'h')
+        _buffState = 'h';
 
     auto ews   = shape::elementWiseStride(_shapeInfo);
     auto order = ordering();
@@ -368,9 +500,9 @@ void NDArray<T>::putScalar(const Nd4jLong i, const T value) {
     else {
         Nd4jLong idx[MAX_RANK];
         shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);        
-        auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());        
+        auto offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
         _buffer[offset] = value;
-    }        
+    }    
 }
 
 ////////////////////////////////////////////////////////////////////////

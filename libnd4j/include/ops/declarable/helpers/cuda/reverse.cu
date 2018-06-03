@@ -25,7 +25,8 @@ void reverseSequence(const NDArray<T>* input, const NDArray<T>* seqLengths, NDAr
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
-void reverse(const NDArray<T>* input, NDArray<T>* output, const std::vector<int>* intArgs) {
+void reverse(const NDArray<T>* input, NDArray<T>* output, const std::vector<int>* intArgs, bool isLegacy) {
+
 
 }
 
@@ -37,9 +38,9 @@ template void reverseArray<float>(float *inArr, Nd4jLong *inShapeBuffer, float *
 template void reverseArray<float16>(float16 *inArr, Nd4jLong *inShapeBuffer, float16 *outArr, Nd4jLong *outShapeBuffer, int numOfElemsToReverse);
 template void reverseArray<double>(double *inArr, Nd4jLong *inShapeBuffer, double *outArr, Nd4jLong *outShapeBuffer, int numOfElemsToReverse);
 
-template void reverse<float>(const NDArray<float>* input, NDArray<float>* output, const std::vector<int>* intArgs);
-template void reverse<float16>(const NDArray<float16>* input, NDArray<float16>* output, const std::vector<int>* intArgs);
-template void reverse<double>(const NDArray<double>* input, NDArray<double>* output, const std::vector<int>* intArgs);
+template void reverse<float>(const NDArray<float>* input, NDArray<float>* output, const std::vector<int>* intArgs, bool isLegacy);
+template void reverse<float16>(const NDArray<float16>* input, NDArray<float16>* output, const std::vector<int>* intArgs, bool isLegacy);
+template void reverse<double>(const NDArray<double>* input, NDArray<double>* output, const std::vector<int>* intArgs, bool isLegacy);
 
 
 }

@@ -27,7 +27,7 @@ public:
 
 
 TEST_F(PlaygroundTests, LambdaTest_1) {
-    NDArray<float> array('c', {8192, 1024});
+    NDArray<float> array('c', {8192, 512});
     NDArrayFactory<float>::linspace(1, array);
 
     auto lambda = LAMBDA_F(_x) {
@@ -52,8 +52,8 @@ TEST_F(PlaygroundTests, LambdaTest_1) {
 
 
 TEST_F(PlaygroundTests, LambdaTest_2) {
-    NDArray<float> array('c', {8192, 1024});
-    NDArray<float> row('c', {1, 1024});
+    NDArray<float> array('c', {8192, 512});
+    NDArray<float> row('c', {1, 512});
     NDArrayFactory<float>::linspace(1, array);
 
     auto lambda = LAMBDA_F(_x) {
@@ -77,7 +77,7 @@ TEST_F(PlaygroundTests, LambdaTest_2) {
 
 TEST_F(PlaygroundTests, NoCacheTest_1) {
     std::vector<NDArray<float> *> pool(poolSize);
-    NDArray<float> source('c', {8192, 1024});
+    NDArray<float> source('c', {8192, 512});
     for (int e = 0; e < pool.size(); e++)
         pool[e] = source.dup();
 
@@ -109,7 +109,7 @@ TEST_F(PlaygroundTests, NoCacheTest_1) {
 TEST_F(PlaygroundTests, NoCacheTest_2) {
     std::vector<NDArray<float> *> pool1(poolSize);
     std::vector<NDArray<float> *> pool2(poolSize);
-    NDArray<float> source('c', {8192, 1024});
+    NDArray<float> source('c', {8192, 512});
     for (int e = 0; e < pool1.size(); e++) {
         pool1[e] = source.dup();
         pool2[e] = source.dup();

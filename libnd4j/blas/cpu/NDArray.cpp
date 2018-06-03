@@ -31,8 +31,6 @@ namespace nd4j {
 
         _buffer    = buffer;
         _shapeInfo = shapeInfo;
-        _isBuffAlloc = false;                                  // indicate that memory for array is passed from outside
-        _isShapeAlloc = false;
         _workspace = workspace;
         if(_shapeInfo != nullptr)
             _length = shape::length(_shapeInfo);
@@ -45,8 +43,6 @@ namespace nd4j {
 
         _buffer    = nullptr;
         _shapeInfo = nullptr;
-        _isBuffAlloc = false;                                  // indicate that memory for array is passed from outside
-        _isShapeAlloc = false;
         _workspace = workspace;
     }
 
@@ -199,8 +195,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
             _shapeInfo[i++] = item;
     shape::updateStrides(_shapeInfo, order);
 
-    _length = shape::length(_shapeInfo);
-    _isBuffAlloc = false;
+    _length = shape::length(_shapeInfo);    
     _isShapeAlloc = true;
 }
 
@@ -291,7 +286,7 @@ NDArray<T>& NDArray<T>::operator=(NDArray<T>&& other) noexcept {
 //////////////////////////////////////////////////////////////////////////
 // Return value from buffer
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i) const {
+T NDArray<T>::getScalar(const Nd4jLong i) const {
 
     if (i >= shape::length(_shapeInfo))
             throw std::invalid_argument("NDArray::getScalar(i): input index is out of array length !");
@@ -314,7 +309,7 @@ T& NDArray<T>::getScalar(const Nd4jLong i) const {
 //////////////////////////////////////////////////////////////////////////
 // access elements of 2D matrix, i - row, j - column
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
 
     if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
        throw std::invalid_argument("NDArray::getScalar(i,j): one of input indexes is out of array length or rank!=2 !");
@@ -327,7 +322,7 @@ T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j) const {
 //////////////////////////////////////////////////////////////////////////
 // access elements of 3D matrix, i - row, j - column, k - depth
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const {
 
     if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
        throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
@@ -340,10 +335,72 @@ T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) c
 //////////////////////////////////////////////////////////////////////////
 // access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
 template<typename T>
-T& NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
+T NDArray<T>::getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const {
 
     if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
        throw std::invalid_argument("NDArray::getScalar(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
+
+    Nd4jLong coords[4] = {i, j, k, v};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Return reference on element from buffer
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i) {
+
+    if (i >= shape::length(_shapeInfo))
+            throw std::invalid_argument("NDArray::getScalarRef(i): input index is out of array length !");
+
+    const auto ews   = shape::elementWiseStride(_shapeInfo);
+    const char order = ordering();   
+
+    if(ews == 1 && order == 'c')
+        return _buffer[i];
+    else if(ews > 1 && order == 'c')
+        return _buffer[i*ews];
+    else {
+        Nd4jLong idx[MAX_RANK];
+        shape::ind2subC(rankOf(), shapeOf(), i, _length, idx);
+        Nd4jLong offset = shape::getOffset(0, shapeOf(), stridesOf(), idx, rankOf());
+        return _buffer[offset];        
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 2D matrix, i - row, j - column
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j) {
+
+    if (rankOf() != 2 || i >= shapeOf()[0] || j >= shapeOf()[1])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j): one of input indexes is out of array length or rank!=2 !");
+    
+    Nd4jLong coords[2] = {i, j};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 3D matrix, i - row, j - column, k - depth
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) {
+
+    if (rankOf() != 3 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j,k,v): one of input indexes is out of array length or rank!=3 !");
+    
+    Nd4jLong coords[3] = {i, j, k};
+    auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
+    return _buffer[xOffset];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// access elements of 4D matrix, i - row, j - column, k - depth, v - fourth dim
+template<typename T>
+T& NDArray<T>::getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) {
+
+    if (rankOf() != 4 || i >= shapeOf()[0] || j >= shapeOf()[1] || k >= shapeOf()[2] || v >= shapeOf()[3])
+       throw std::invalid_argument("NDArray::getScalarRef(i,j,k,v): one of input indexes is out of array length or rank!=4 !");
 
     Nd4jLong coords[4] = {i, j, k, v};
     auto xOffset = shape::getOffset(0, shapeOf(), stridesOf(), coords, rankOf());
@@ -356,7 +413,7 @@ template<typename T>
 void NDArray<T>::putScalar(const Nd4jLong i, const T value) { 
     
     if (i >= shape::length(_shapeInfo))
-            throw std::invalid_argument("NDArray::putScalar(i): input index is out of array length !");
+            throw std::invalid_argument("NDArray::putScalar(i, T): input index is out of array length !");
 
     auto ews   = shape::elementWiseStride(_shapeInfo);
     auto order = ordering();

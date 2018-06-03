@@ -71,6 +71,22 @@ namespace nd4j {
         */  
         Nd4jLong _length = 0;
 
+        /**
+        *  this member tells us what buffer (host or device) contains up-to-date elements, possible values:
+        *  'h' - host buffer contains up-to-date elements, device buffer contains out-off-date elements
+        *  'd' - device buffer contains up-to-date elements, host buffer contains out-off-date elements
+        *  'e' - equal, both buffers contains the same elements
+        */  
+        mutable char _buffState = 'e';
+
+        /**
+        *  this member tells us what shapeInfo buffer (host or device) contains up-to-date shape, possible values:
+        *  'h' - host shapeInfo is up-to-date, device shapeInfo is out-off-date 
+        *  'd' - device shapeInfo is up-to-date, host shapeInfo is out-off-date 
+        *  'e' - equal, both shapes are identical
+        */  
+        mutable char _shapeState = 'e';
+
         std::string toStringValue(T value);
     public:        
         
@@ -151,14 +167,16 @@ namespace nd4j {
         *  returns array element with given index from linear buffer
         *  i - element index in array
         */
-        T& getScalar(const Nd4jLong i) const;
+        T getScalar(const Nd4jLong i) const;
+        T& getScalarRef(const Nd4jLong i);
 
         /** 
         *  returns element with given indexes from 2D array 
         *  i - number of row 
         *  j - number of column
         */
-        T& getScalar(const Nd4jLong i, const Nd4jLong j) const;
+        T getScalar(const Nd4jLong i, const Nd4jLong j) const;
+        T& getScalarRef(const Nd4jLong i, const Nd4jLong j);
 
         /** 
         *  returns element with given indexes from 3D array 
@@ -166,7 +184,8 @@ namespace nd4j {
         *  j - width
         *  k - depth
         */
-        T& getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const;        
+        T getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) const;
+        T& getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k);
 
         /** 
         *  returns element with given indexes from 3D array 
@@ -175,7 +194,8 @@ namespace nd4j {
         *  k - depth
         *  v - fourth dim
         */
-        T& getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const;
+        T getScalar(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) const;
+        T& getScalarRef(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v);
 
         /** 
         *  assigns given scalar to array element by given index, regards array buffer as linear
@@ -1330,7 +1350,7 @@ T NDArray<T>::operator()(const Nd4jLong i) const {
 template<typename T>
 T& NDArray<T>::operator()(const Nd4jLong i) {
 
-    return getScalar(i);
+    return getScalarRef(i);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1346,7 +1366,7 @@ T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j) const {
 template<typename T>
 T& NDArray<T>::operator()(const Nd4jLong  i, const Nd4jLong j) {
     
-    return getScalar(i, j);
+    return getScalarRef(i, j);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1362,7 +1382,7 @@ T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) c
 template<typename T>
 T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k) {
     
-    return getScalar(i, j, k);
+    return getScalarRef(i, j, k);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1376,7 +1396,7 @@ T NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, c
 template<typename T>
 T& NDArray<T>::operator()(const Nd4jLong i, const Nd4jLong j, const Nd4jLong k, const Nd4jLong v) {
     
-    return getScalar(i, j, k, v);
+    return getScalarRef(i, j, k, v);
 }
 
 //////////////////////////////////////////////////////////////////////////
