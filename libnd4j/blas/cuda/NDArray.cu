@@ -261,6 +261,109 @@ NDArray<T>::NDArray(const NDArray<T>& other) {
     _isShapeAlloc = true;    
 }
 
+
+////////////////////////////////////////////////////////////////////////
+template <typename T>
+short NDArray<T>::copyDataDH(const short direction, const short flag) {
+
+    if(direction == 0) {    // copy from host to device
+        
+        if(flag == 0) {     // copy buffer            
+            if(_buffState != 'h')
+                return -1;
+            cudaMemcpy(_bufferD, _buffer, _length*ews()*sizeOfT(), cudaMemcpyHostToDevice);        
+            _buffState = 'e';
+            return flag;
+        }
+        
+        if(flag == 1) {    // copy shape
+            if(_shapeState != 'h')
+                return -1;
+            cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
+            _shapeState = 'e';
+            return flag;
+        }
+        
+        if(flag == 2) {    // copy both
+
+            if(_buffState != 'h' && _shapeState != 'h')
+                return -1;
+
+            if(_buffState != 'd' && _shapeState != 'h') {
+                cudaMemcpy(_bufferD, _buffer, _length*ews()*sizeOfT(), cudaMemcpyHostToDevice);        
+                _buffState = 'e';
+                return 0;
+            }
+
+            if(_buffState != 'h' && _shapeState != 'd') {
+                cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
+                _shapeState = 'e';
+                return 1;
+            }
+            
+            cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
+            cudaMemcpy(_bufferD, _buffer, _length*ews()*sizeOfT(), cudaMemcpyHostToDevice);
+            _buffState  = 'e';
+            _shapeState = 'e';
+            return flag;
+        }
+        else {
+            throw std::invalid_argument("NDArray::copyDataDeviceHost method invalid flag argument, legal values are 0, 1, 2 !");
+        }
+        
+    }
+    else if(direction == 1) { // copy from device to host
+
+        if(flag == 0) {     // copy buffer
+            
+            if(_buffState != 'd')
+                return -1;
+
+            cudaMemcpy(_buffer, _bufferD, _length*ews()*sizeOfT(), cudaMemcpyDeviceToHost);        
+            _buffState = 'e';
+            return flag;
+        }
+        else if(flag == 1) {    // copy shape
+
+            if(_shapeState != 'd')
+                return -1;
+
+            cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+            _shapeState = 'e';
+            return flag;
+        }
+        else if(flag == 2) {    // copy both
+
+            if(_buffState != 'd' && _shapeState != 'd')
+                return -1;
+
+            if(_buffState != 'h' && _shapeState != 'd') {
+                cudaMemcpy(_buffer, _bufferD, _length*ews()*sizeOfT(), cudaMemcpyDeviceToHost);        
+                _buffState = 'e';
+                return 0;
+            }
+
+            if(_buffState != 'd' && _shapeState != 'h') {
+                cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+                _shapeState = 'e';
+                return 1;
+            }
+            
+            cudaMemcpy(_shapeInfo, _shapeInfoD, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyDeviceToHost);
+            cudaMemcpy(_buffer, _bufferD, _length*ews()*sizeOfT(), cudaMemcpyDeviceToHost);
+            _buffState  = 'e';
+            _shapeState = 'e';
+            return flag;
+        }
+        else {
+            throw std::invalid_argument("NDArray::copyDataDeviceHost method invalid flag argument, legal values are 0, 1, 2 !");
+        }
+    }
+    else {
+        throw std::invalid_argument("NDArray::copyDataDeviceHost method invalid direction argument, legal values are 0 and 1 !");
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Return value from buffer
 template<typename T>
@@ -690,14 +793,15 @@ Nd4jLong* NDArray<T>::shapeInfo() {
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 T* NDArray<T>::specialBuffer() {
-	return new T();
+	
+    return _buffer;
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 Nd4jLong* NDArray<T>::specialShapeInfo() {
 
-	return new Nd4jLong();
+	return _shapeInfoD;
 }
 
 ////////////////////////////////////////////////////////////////////////

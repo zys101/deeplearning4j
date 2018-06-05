@@ -223,6 +223,7 @@ NDArray<T>::NDArray(NDArray<T>&& other) noexcept {
 // assignment operator
 template<typename T>
     NDArray<T>& NDArray<T>::operator=(const NDArray<T>& other) {
+    
     if (this == &other) return *this;
 
     if (_shapeInfo != nullptr && _buffer != nullptr && shape::equalsSoft(_shapeInfo, other._shapeInfo))
@@ -863,67 +864,48 @@ void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool rele
     }
 }
 
-
-// This method assigns values of given NDArray to this one, wrt order
-    template<typename T>
-    void NDArray<T>::assign(const NDArray<T> *other) {
-        if (this->isScalar() && other->isScalar()) {
-            this ->_buffer[0] = other->_buffer[0];
-            return;
-        } else if (other->isScalar()) {
-            this->assign(other->_buffer[0]);
-            return;;
-        }
-        else if(other->isScalar()) {
-            this->assign(other->_buffer[0]);
-            return;
-        }
-
-        if (other->lengthOf() != lengthOf()) {
-            auto shapeThis = ShapeUtils<T>::shapeAsString(this);
-            auto shapeThat = ShapeUtils<T>::shapeAsString(other);
-            nd4j_printf("Can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
-            throw "Lengths of arrays are mismatched";
-        }
-
-        // memcpy is allowed only for same order && same ews (being equal to 1)
-        if (ordering() == other->ordering() && shape::elementWiseStride(this->_shapeInfo) == 1 && shape::elementWiseStride(other->_shapeInfo) == 1) {
-            memcpy(_buffer, other->_buffer, lengthOf() * sizeOfT());
-        } else {
-            // now we invoke dup pwt against target buffer
-            NativeOpExcutioner<T>::execPairwiseTransform(1, _buffer, _shapeInfo, other->_buffer, other->_shapeInfo, _buffer, _shapeInfo, nullptr);
-        }
-    }
-
+////////////////////////////////////////////////////////////////////////
 // This method assigns values of given NDArray to this one
-    template<typename T>
-    void NDArray<T>::assign(const NDArray<T>& other) {
-        if (this->isScalar() && other.isScalar()) {
-            this->_buffer[0] = other._buffer[0];
-            return;
-        } else if (other.isScalar()) {
-            this->assign(other._buffer[0]);
-            return;;
-        }
+template<typename T>
+void NDArray<T>::assign(const NDArray<T>& other) {
 
-        if (this == &other) 
-            return;
-        if (other.lengthOf() != lengthOf()) {
-            auto shapeThis = ShapeUtils<T>::shapeAsString(this);
-            auto shapeThat = ShapeUtils<T>::shapeAsString(&other);
-            nd4j_printf("Can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
-            throw "Lengths of arrays are mismatched";
-        }
+    if (this == &other) 
+        return;
 
-        // memcpy is allowed only for same order && same ews (being equal to 1)
-        if (ordering() == other.ordering() && shape::elementWiseStride(_shapeInfo) == 1 && shape::elementWiseStride(other._shapeInfo) == 1) {
-            
-            memcpy(_buffer, other._buffer, lengthOf() * sizeOfT());
-        } else {
-            // now we invoke dup pwt against target buffer
-            NativeOpExcutioner<T>::execPairwiseTransform(1, _buffer, _shapeInfo, other._buffer, other._shapeInfo, _buffer, _shapeInfo, nullptr);
-        }
+    if(_buffer == nullptr || other._buffer == nullptr)
+        throw std::runtime_error("NDArray<T>::assign method: array has buffer pointer equal to nullptr !");
+
+    if (this->isScalar() && other.isScalar()) {
+        this->_buffer[0] = other._buffer[0];
+        return;
+    } 
+    else if (other.isScalar()) {
+        this->assign(other._buffer[0]);
+        return;;
     }
+        
+    if (other.lengthOf() != lengthOf()) {
+        auto shapeThis = ShapeUtils<T>::shapeAsString(this);
+        auto shapeThat = ShapeUtils<T>::shapeAsString(&other);
+        nd4j_printf("NDArray<T>::assign method: can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
+        throw std::invalid_argument("NDArray<T>::assign method: lengths of arrays are mismatched");
+    }
+
+    // memcpy is allowed only for same order && same ews (being equal to 1)
+    if (ordering() == other.ordering() && shape::elementWiseStride(_shapeInfo) == 1 && shape::elementWiseStride(other._shapeInfo) == 1)
+        memcpy(_buffer, other._buffer, lengthOf() * sizeOfT());
+    else 
+        // now we invoke dup pwt against target buffer
+        NativeOpExcutioner<T>::execPairwiseTransform(1, _buffer, _shapeInfo, other._buffer, other._shapeInfo, _buffer, _shapeInfo, nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////
+// This method assigns values of given NDArray to this one, wrt order
+template<typename T>
+void NDArray<T>::assign(const NDArray<T> *other) {
+        
+    assign(*other);
+}
 
 // This method assigns given value to all elements in this NDArray
     template<typename T>

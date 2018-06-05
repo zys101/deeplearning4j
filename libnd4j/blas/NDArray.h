@@ -87,7 +87,31 @@ namespace nd4j {
         */  
         mutable char _shapeState = 'e';
 
+        
         std::string toStringValue(T value);
+
+        /**
+        *  Copies data from device to host memory (or vice versa) when it is necessary, for example when data is out-off-date.
+        *  Also this method takes into account case when some of buffers are equal to nullptr. 
+        *  direction:
+        *      0 - copy from host to device
+        *      1 - copy from device to host
+        *  flag:
+        *      0 - copy only buffer
+        *      1 - copy only shapeinfo
+        *      2 - copy both 
+        *  return value:
+        *      0 - for flag=0, means buffer copy has happened
+        *     -1 - for flag=0, means buffer copy is unnecessary 
+        *      1 - for flag=1, means shapeinfo copy has happened
+        *     -1 - for flag=1, means shapeinfo copy is unnecessary
+        *      2 - for flag=2, means both buffer and shapeinfo copies have happened        
+        *      0 - for flag=2, means buffer copy has happened and shapeinfo copy is unnecessary
+        *      1 - for flag=2, means shapeinfo copy has happened and buffer copy is unnecessary
+        *     -1 - for flag=2, means both buffer and shapeinfo copies are unnecessary
+        */
+        short copyDataDH(const short direction, const short flag);
+        
     public:        
         
         /**
@@ -1246,7 +1270,7 @@ Nd4jLong* NDArray<T>::stridesOf() const {
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
 int NDArray<T>::rankOf() const {
-
+    
     return shape::rank(_shapeInfo);
 }
 
