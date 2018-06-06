@@ -240,3 +240,22 @@ TEST_F(NDArrayTestCu, constructor_test7) {
     
     delete []shapeInfoD;        
 }
+
+
+//////////////////////////////////////////////////////////////////////
+TEST_F(NDArrayTestCu, assign_test1) {    
+    
+    const float val = 58.;
+    NDArray<float> arr1('f', {3,4});
+    arr1.assign(val);        
+
+    float* bufferD = new float[arr1.lengthOf()];
+    cudaMemcpy(bufferD, arr1.specialBuffer(),  arr1.lengthOf() * sizeof(float), cudaMemcpyDeviceToHost);
+
+    for(int i=0; i < arr1.lengthOf(); ++i)
+        ASSERT_TRUE(bufferD[i]  == val);
+
+    ASSERT_TRUE(arr1.lengthOf() == 12); 
+    
+    delete []bufferD;
+}

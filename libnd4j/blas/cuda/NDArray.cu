@@ -13,6 +13,7 @@
 #include <memory/MemoryRegistrator.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#include <helpers/ShapeUtils.h>
 
 // #include <stdio.h>
 // #include <stdlib.h>
@@ -30,7 +31,7 @@
 // #include <loops/broadcasting.h>
 // #include <indexing/NDIndex.h>
 // #include <indexing/IndicesList.h>
-// #include <helpers/ShapeUtils.h>
+
 // #include <sstream>
 // #include <helpers/ArrayUtils.h>
 
@@ -359,6 +360,89 @@ short NDArray<T>::copyDataDH(const short direction, const short flag) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////
+// This method assigns given value to all elements in this NDArray
+template<typename T>
+void NDArray<T>::assign(const T value) {
+        
+    LaunchContext context;
+    std::vector<T> extras;
+    LegacyOpExecutor<T>::execScalarOp(context, 13, this, this, value, extras);
+    _buffState = 'd';
+}
+
+////////////////////////////////////////////////////////////////////////
+// This method assigns values of given NDArray to this one
+template<typename T>
+void NDArray<T>::assign(const NDArray<T>& other) {
+
+    if (this == &other) 
+        return;
+
+    if(_buffer == nullptr || other._buffer == nullptr)
+        throw std::runtime_error("NDArray<T>::assign method: array has buffer pointer equal to nullptr !");    
+
+    if (this->isScalar() && other.isScalar()) {
+        if(other._buffState == 'd')
+            cudaMemcpy(_bufferD, other._bufferD, sizeOfT(), cudaMemcpyDeviceToDevice);            
+
+        else
+            cudaMemcpy(_bufferD, other._buffer, sizeOfT(), cudaMemcpyHostToDevice);
+        return;
+    } 
+    else if (other.isScalar()) {
+        
+        if(other._buffState == 'd') {
+            T* value(nullptr);
+            ALLOCATE(value, _workspace, 1, T);
+            cudaMemcpy(value, other._bufferD, sizeOfT(), cudaMemcpyDeviceToHost);
+            assign(*value);
+            RELEASE(value, _workspace);
+        }
+        else {
+            assign(other._buffer[0]);
+        }
+        return;
+    }
+        
+    if (other.lengthOf() != lengthOf()) {
+        auto shapeThis = ShapeUtils<T>::shapeAsString(this);
+        auto shapeThat = ShapeUtils<T>::shapeAsString(&other);
+        nd4j_printf("NDArray<T>::assign method: can't assign new value to the array: this shape %s; other shape: %s\n", shapeThis.c_str(), shapeThat.c_str());
+        throw std::invalid_argument("NDArray<T>::assign method: lengths of arrays are mismatched");
+    }
+
+    if (ordering() == other.ordering() && shape::elementWiseStride(_shapeInfo) == 1 && shape::elementWiseStride(other._shapeInfo) == 1)
+        if(other._buffState == 'd')
+            cudaMemcpy(_bufferD, other._bufferD, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyDeviceToDevice);
+        else
+            cudaMemcpy(_bufferD, other._buffer, shape::length(_shapeInfo) * sizeOfT(), cudaMemcpyHostToDevice);
+    else {
+        LaunchContext context;
+        std::vector<T> extras;
+        LegacyOpExecutor<T>::execPairwiseOp(context, 1, this, const_cast<NDArray<T>*>(&other), this, extras);
+    }
+
+    _buffState = 'd';
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// This method assigns values of given NDArray to this one
+template<typename T>
+void NDArray<T>::assign(const NDArray<T>* other) {
+
+    assign(*other);
+}
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////
 // Return value from buffer
 template<typename T>
@@ -628,23 +712,7 @@ void NDArray<T>::operator delete(void* p) {
 		cudaFreeHost(reinterpret_cast<void *>(p));
 }
 
-////////////////////////////////////////////////////////////////////////
-// This method assigns given value to all elements in this NDArray
-template<typename T>
-void NDArray<T>::assign(const T value) {
-    
-    std::vector<T> extras;
-    LaunchContext context; 
-    LegacyOpExecutor<T>::execScalarOp(context, 13, this, this, value, extras);
-}
 
-////////////////////////////////////////////////////////////////////////
-// This method assigns values of given NDArray to this one, wrt order
-template<typename T>
-void NDArray<T>::assign(const NDArray<T> *other) {
-
-
-}
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
@@ -835,13 +903,6 @@ NDArray<T>& NDArray<T>::operator=(const T scalar) {
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
 void NDArray<T>::replacePointers(T *buffer, Nd4jLong *shapeInfo, const bool releaseExisting ) {
-
-}
-
-////////////////////////////////////////////////////////////////////////
-// This method assigns values of given NDArray to this one
-template<typename T>
-void NDArray<T>::assign(const NDArray<T>& other) {
 
 }
 
