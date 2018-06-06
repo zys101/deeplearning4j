@@ -41,20 +41,20 @@ namespace nd4j {
 template <typename T>
 NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) {
 	
+    if (shapeInfo[0] > MAX_RANK)
+        throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");  
+
 	_buffer     = buffer;
 	_shapeInfo  = shapeInfo;
 	_workspace  = workspace;
 	if(_shapeInfo != nullptr)
     	_length = shape::length(_shapeInfo);
-
-	const auto shapeLen = shape::shapeInfoLength(_shapeInfo);
-    const auto bufLen = shape::length(_shapeInfo);
-
-    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
-    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+	
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shape::shapeInfoLength(_shapeInfo), Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, _length, T);
 
     cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
-    cudaMemcpy(_bufferD, _buffer, bufLen * sizeof(T), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, _length * sizeof(T), cudaMemcpyHostToDevice);
 }
 
 
@@ -86,14 +86,11 @@ NDArray<T>::NDArray(T scalar) {
     _isBuffAlloc = true; 
     _isShapeAlloc = true;
 
-    const auto shapeLen = shape::shapeInfoLength(_shapeInfo);
-    const auto bufLen = shape::length(_shapeInfo);
-
-    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shapeLen, Nd4jLong);
-    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);
+    ALLOCATE_SPECIAL(_shapeInfoD, _workspace, shape::shapeInfoLength(_shapeInfo), Nd4jLong);
+    ALLOCATE_SPECIAL(_bufferD, _workspace, 1, T);
 
     cudaMemcpy(_shapeInfoD, _shapeInfo, shape::shapeInfoByteLength(_shapeInfo), cudaMemcpyHostToDevice);
-    cudaMemcpy(_bufferD, _buffer, bufLen * sizeOfT(), cudaMemcpyHostToDevice);
+    cudaMemcpy(_bufferD, _buffer, sizeof(T), cudaMemcpyHostToDevice);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -101,9 +98,7 @@ NDArray<T>::NDArray(T scalar) {
 template <typename T>
 NDArray<T>::NDArray(const Nd4jLong* shapeInfo, const bool copyStrides, nd4j::memory::Workspace* workspace) {
 
-	const int rank = shapeInfo[0];
-
-	if (rank > MAX_RANK)
+	if (shapeInfo[0] > MAX_RANK)
 		throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");	
 
 	_workspace = workspace;
@@ -188,7 +183,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
     if (rank > MAX_RANK)
         throw std::invalid_argument("NDArray constructor: rank of NDArray can't exceed 32 !");
 
-    _workspace = workspace;        
+    _workspace = workspace;
     _buffer = buffer;
 
     const auto shapeLen = shape::shapeInfoLength(rank);
@@ -198,7 +193,7 @@ NDArray<T>::NDArray(T* buffer, const char order, const std::vector<Nd4jLong> &sh
     int i = 1;
     _shapeInfo[0] = rank;
     for (auto &item: shape)
-            _shapeInfo[i++] = item;
+        _shapeInfo[i++] = item;
     shape::updateStrides(_shapeInfo, order);
 
     // copy information from host _shapeInfo to device _shapeInfoD, _shapeInfoD already points on pinned-host-memory
@@ -229,7 +224,7 @@ NDArray<T>::NDArray(const NDArray<T> *other, const bool copyStrides, nd4j::memor
 
     const auto bufLen = shape::length(other->_shapeInfo);	
     ALLOCATE(_buffer, _workspace, bufLen, T);
-    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T); 
+    ALLOCATE_SPECIAL(_bufferD, _workspace, bufLen, T);      
 
     _length = shape::length(_shapeInfo);
     _isBuffAlloc = true;
@@ -771,30 +766,34 @@ NDArray<T>::NDArray(NDArray<T>&& other) noexcept {
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 T* NDArray<T>::getBuffer() {
-	return new T();
+	
+    return _buffer;
 }
 
 template<typename T>
 T* NDArray<T>::buffer() {
-	return new T();
+	
+    return _buffer;
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 Nd4jLong* NDArray<T>::getShapeInfo() const{
-	return new Nd4jLong();
+	
+    return _shapeInfo;
 }
 
 template<typename T>
 Nd4jLong* NDArray<T>::shapeInfo() {
-	return new Nd4jLong();
+	
+    return _shapeInfo;
 }
 
 ////////////////////////////////////////////////////////////////////////
 template<typename T>
 T* NDArray<T>::specialBuffer() {
 	
-    return _buffer;
+    return _bufferD;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1817,22 +1816,22 @@ NDArray<T>::~NDArray() noexcept {
 	}
 }
 
-	template class ND4J_EXPORT NDArray<float>;
-	template class ND4J_EXPORT NDArray<float16>;
-	template class ND4J_EXPORT NDArray<double>;
+template class ND4J_EXPORT NDArray<float>;
+template class ND4J_EXPORT NDArray<float16>;
+template class ND4J_EXPORT NDArray<double>;
 
 
-	template NDArray<float>* NDArray<float>::asT<float>();
-	template NDArray<float16>* NDArray<float>::asT<float16>();
-	template NDArray<double>* NDArray<float>::asT<double>();
+template NDArray<float>* NDArray<float>::asT<float>();
+template NDArray<float16>* NDArray<float>::asT<float16>();
+template NDArray<double>* NDArray<float>::asT<double>();
 
-	template NDArray<float>* NDArray<float16>::asT<float>();
-	template NDArray<float16>* NDArray<float16>::asT<float16>();
-	template NDArray<double>* NDArray<float16>::asT<double>();
+template NDArray<float>* NDArray<float16>::asT<float>();
+template NDArray<float16>* NDArray<float16>::asT<float16>();
+template NDArray<double>* NDArray<float16>::asT<double>();
 
-	template NDArray<float>* NDArray<double>::asT<float>();
-	template NDArray<float16>* NDArray<double>::asT<float16>();
-	template NDArray<double>* NDArray<double>::asT<double>();
+template NDArray<float>* NDArray<double>::asT<float>();
+template NDArray<float16>* NDArray<double>::asT<float16>();
+template NDArray<double>* NDArray<double>::asT<double>();
 
 
 #ifndef __CLION_IDE__
