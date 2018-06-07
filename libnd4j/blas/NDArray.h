@@ -7,6 +7,7 @@
 #include "NativeOpExcutioner.h"
 #include <memory/Workspace.h>
 #include <indexing/NDIndex.h>
+#include <array/LaunchContext.h>
 #include <indexing/IndicesList.h>
 #include <graph/Intervals.h>
 #include <array/DataType.h>
@@ -47,7 +48,9 @@ namespace nd4j {
         /**
         *  pointer on externally allocated memory where _buffer and _shapeInfo are stored
         */  
-        nd4j::memory::Workspace* _workspace = nullptr;
+        memory::Workspace* _workspace = nullptr;
+
+        LaunchContext* _context = nullptr;
         
         /**
         *  alternative buffers for special computational devices (like GPUs for CUDA)
