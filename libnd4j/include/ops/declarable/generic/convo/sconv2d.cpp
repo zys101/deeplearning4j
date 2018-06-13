@@ -246,11 +246,11 @@ CUSTOM_OP_IMPL(sconv2d_bp, 3, 2, false, 0, 9) {
     if (weightsPoint){
 
         auto resultFFShape = isNCHW ? std::vector<Nd4jLong>({bS, mC*iC, oH, oW}) : std::vector<Nd4jLong>({bS, oH, oW, mC*iC});
-        NDArray<T>* resultFF = new NDArray<T>(input->ordering(), resultFFShape, block.getWorkspace());
+        NDArray<T>* resultFF = new NDArray<T>(input->ordering(), resultFFShape, block.launchContext());
         ConvolutionUtils<T>::sconv2d({input, weightsDepth, nullptr, nullptr}, resultFF, {kH,kW, sH,sW, pH,pW, dH,dW, isSameMode, isNCHW});
 
         auto gradIDepthShape = ShapeUtils<T>::composeShapeUsingDimsAndIdx({bS,iC*mC,oH,oW,  0,indIOioC,indIiH,indIiH+1});
-        NDArray<T>* gradIDepth = new NDArray<T>(resultFF->ordering(), gradIDepthShape, block.getWorkspace());                 // [bS, oH, oW, iC*mC]  (NHWC) or [bS, iC*mC, oH, oW] (NCHW)
+        NDArray<T>* gradIDepth = new NDArray<T>(resultFF->ordering(), gradIDepthShape, block.launchContext());                 // [bS, oH, oW, iC*mC]  (NHWC) or [bS, iC*mC, oH, oW] (NCHW)
 
         ConvolutionUtils<T>::conv2dBP({resultFF, weightsPoint, bias, gradO}, {gradIDepth, gradWP, gradB}, {1,1, 1,1, 0,0, 1,1, isSameMode, isNCHW});    // in this case oH=iH and oW=iW
 

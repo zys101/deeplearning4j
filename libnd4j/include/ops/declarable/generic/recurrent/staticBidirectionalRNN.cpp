@@ -66,21 +66,21 @@ CUSTOM_OP_IMPL(static_bidirectional_rnn, 7, 3, false, 0, 0) {
         REQUIRE_TRUE(ShapeUtils<T>::shapeAsString(maxTimeStep)  == ShapeUtils<T>::shapeAsString({bS}), 0, "STATIC_BIDIRECTIONAL_RNN custom operation: wrong shape of maxTimeStep array, expected is [%i], but got %s instead !", bS, ShapeUtils<T>::shapeAsString(maxTimeStep).c_str()); 
 
     // forward steps
-    NDArray<T>* hFW = new NDArray<T>(x->ordering(), {time, bS, numUnitsFW}, block.getWorkspace());
+    NDArray<T>* hFW = new NDArray<T>(x->ordering(), {time, bS, numUnitsFW}, block.launchContext());
     helpers::rnnTimeLoop<T>({x, WxFW, WhFW, bFW, h0FW, maxTimeStep}, hFW, hFWFinal);
 
     NDArray<T>* seqLen = maxTimeStep;
     if(seqLen == nullptr) {    	
-    	seqLen = new NDArray<T>(x->ordering(), {x->sizeAt(1)}, block.getWorkspace());	// [bS]
+    	seqLen = new NDArray<T>(x->ordering(), {x->sizeAt(1)}, block.launchContext());	// [bS]
     	*seqLen = (T)x->sizeAt(0);														// set each element of seqLen to be equal to time
     }
 
     // reverse x 
-    NDArray<T>* revOut = new NDArray<T>(x, false, block.getWorkspace());
+    NDArray<T>* revOut = new NDArray<T>(x, false, block.launchContext());
     helpers::reverseSequence<T>(x, seqLen, revOut, 0, 1);
 
     // backward steps    
-    NDArray<T>* hBW = new NDArray<T>(x->ordering(), {time, bS, numUnitsBW}, block.getWorkspace());
+    NDArray<T>* hBW = new NDArray<T>(x->ordering(), {time, bS, numUnitsBW}, block.launchContext());
     helpers::rnnTimeLoop<T>({revOut, WxBW, WhBW, bBW, h0BW, maxTimeStep}, hBW, hBWFinal);
 
     // reverse hBW 

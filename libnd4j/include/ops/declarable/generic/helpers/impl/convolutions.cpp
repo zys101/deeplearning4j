@@ -1170,7 +1170,7 @@ void ConvolutionUtils<T>::conv2d(const std::vector<NDArray<T>*>& inArrs, NDArray
     if(isSameMode)                       // SAME        
         ConvolutionUtils<T>::calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW);
 
-    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getWorkspace());        
+    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getContext());        
 
     //----- calculation of output -----//
     std::vector<T> extrasIm2Col({(T) kH, (T) kW, (T) sH, (T) sW, (T) pH, (T) pW, (T) dH, (T) dW});
@@ -1232,7 +1232,7 @@ void ConvolutionUtils<T>::conv2dBP(const std::vector<NDArray<T>*>& inArrs, const
         calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW);
 
     // ----- calculation of gradW and gradB ----- // 
-    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getWorkspace());
+    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getContext());
     std::vector<T> extrasIm2Col({(T) kH, (T) kW, (T) sH, (T) sW, (T) pH, (T) pW, (T) dH, (T) dW});
     input->template applyTransform<simdOps::Im2col<T>>(&columns, extrasIm2Col.data());                          // [bS, iC, iH, iW] is convoluted to [bS, iC, kH, kW, oH, oW]        
     nd4j::NDArrayFactory<T>::tensorDot(&columns, gradO, gradW, {0,4,5}, gradOaxesForDot, permutForGradW);       // [bS, iC, kH, kW, oH, oW] x [bS, oH, oW, oC]/[bS, oC, oH, oW] = [iC, kH, kW, oC]
@@ -1302,7 +1302,7 @@ void ConvolutionUtils<T>::depthwiseConv2d(const std::vector<NDArray<T>*>& inArrs
     if(isSameMode)                       // SAME        
         ConvolutionUtils<T>::calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW);
 
-    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getWorkspace());                
+    NDArray<T> columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getContext());                
     NDArray<T>* outputReshaped = output->reshape(output->ordering(), outReShape);
     std::vector<T> extrasIm2Col({(T) kH, (T) kW, (T) sH, (T) sW, (T) pH, (T) pW, (T) dH, (T) dW});
 
@@ -1369,7 +1369,7 @@ void ConvolutionUtils<T>::depthwiseConv2dBP(const std::vector<NDArray<T>*>& inAr
     if(isSameMode)                       // SAME        
         ConvolutionUtils<T>::calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW);
 
-    NDArray<T>  columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getWorkspace());        
+    NDArray<T>  columns(input->ordering(), {bS, iC, kH, kW, oH, oW}, input->getContext());        
     NDArray<T>* gradOreshaped = gradO->reshape(gradO->ordering(), gradOreShape);
     std::vector<T> extrasIm2Col({(T) kH, (T) kW, (T) sH, (T) sW, (T) pH, (T) pW, (T) dH, (T) dW});
     std::vector<T> extrasCol2Im({(T) sH, (T) sW, (T) pH, (T) pW, (T) iH, (T) iW, (T) dH, (T) dW});

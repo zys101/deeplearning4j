@@ -25,11 +25,11 @@ namespace nd4j {
                 dims.resize(axisVector->lengthOf());
                 helpers::adjustAxis(input, axisVector, dims);
 
-                auto shape = ShapeUtils<T>::evalReduceShapeInfo(input->ordering(), dims, *input, false, true);
-                output = new NDArray<T>(shape, false, block.getWorkspace());
+                auto shape = ShapeUtils<T>::evalReduceShapeInfo(input->ordering(), dims, *input, false, true, block.getWorkspace());
+                output = new NDArray<T>(shape, false, block.launchContext());
 
                 overwrite = true;
-                RELEASE(shape, input->getWorkspace());
+                RELEASE(shape, block.getWorkspace());
             }
 
             switch(mode) {

@@ -180,13 +180,13 @@ void recursiveLoopForPad(const int mode, NDArray<T>& input, const NDArray<T>& pa
     shape::TAD tadOut(output.getShapeInfo(), dimensions.data(), dimensions.size());
     tadOut.createTadOnlyShapeInfo();
     tadOut.createOffsets();
-    NDArray<T> subArrOut(output.getBuffer(), tadOut.tadOnlyShapeInfo, output.getWorkspace());
-    NDArray<T> subArr(output.getBuffer(), tadOut.tadOnlyShapeInfo, output.getWorkspace());
+    NDArray<T> subArrOut(output.getBuffer(), tadOut.tadOnlyShapeInfo, output.getContext());
+    NDArray<T> subArr(output.getBuffer(), tadOut.tadOnlyShapeInfo, output.getContext());
     // build tad basing on input array, also create auxiliary array pointing on required input array range
     shape::TAD tadIn(input.getShapeInfo(), dimensions.data(), dimensions.size());
     tadIn.createTadOnlyShapeInfo();
     tadIn.createOffsets();
-    NDArray<T> subArrIn(input.getBuffer(), tadIn.tadOnlyShapeInfo, output.getWorkspace());
+    NDArray<T> subArrIn(input.getBuffer(), tadIn.tadOnlyShapeInfo, output.getContext());
     // these indices take into account recursion and always point to actual tads numbers
     outIdx = outIdx*output.sizeAt(dim+1);
     inIdx  = inIdx*input.sizeAt(dim+1);

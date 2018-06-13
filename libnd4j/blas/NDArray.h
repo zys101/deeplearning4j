@@ -119,7 +119,7 @@ namespace nd4j {
         /**
         *  default constructor, do not allocate memory, memory for array is passed from outside 
         */
-        NDArray(T *buffer = nullptr, Nd4jLong* shapeInfo = nullptr, const LaunchContext* context = nullptr);
+        NDArray(T *buffer = nullptr, Nd4jLong* shapeInfo = nullptr, LaunchContext* context = nullptr);
        
         /**
          * Constructor for scalar NDArray
@@ -139,34 +139,34 @@ namespace nd4j {
         /**
         *  constructor, create empty array stored at given context/workspace
         */
-        NDArray(const LaunchContext* context);
+        NDArray(LaunchContext* context);
 
         /**
         *  this constructor creates new NDArray with shape matching "other" array, do not copy "other" elements into new array
         */
-        NDArray(const NDArray<T> *other, const bool copyStrides = false, const LaunchContext* context = nullptr);
+        NDArray(const NDArray<T> *other, const bool copyStrides = false, LaunchContext* context = nullptr);
 				
         /**
 		*  constructor creates new NDArray using shape information from "shapeInfo", set all elements in new array to be zeros, if copyStrides is true then use stride values from "shapeInfo", else calculate strides independently 
         */
-		NDArray(const Nd4jLong* shapeInfo, const bool copyStrides = false, const LaunchContext* context = nullptr);
+		NDArray(const Nd4jLong* shapeInfo, const bool copyStrides = false, LaunchContext* context = nullptr);
 
         /**
         *  this constructor creates new array using shape information contained in vector argument    
         */
-        NDArray(const char order, const std::vector<Nd4jLong> &shape, const LaunchContext* context = nullptr);
+        NDArray(const char order, const std::vector<Nd4jLong> &shape, LaunchContext* context = nullptr);
 
         /**
         * This constructor creates new array with elements copied from data and using shape information stored in shape
         *
         * PLEASE NOTE: data will be copied AS IS, without respect to specified order. You must ensure order match here.
         */
-        NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, const LaunchContext* context = nullptr);
+        NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, LaunchContext* context = nullptr);
 
         /**
         *  this constructor creates new array using given buffer (without memory allocating) and shape information stored in shape
         */
-        NDArray(T *buffer, const char order, const std::vector<Nd4jLong> &shape, const LaunchContext* context);
+        NDArray(T *buffer, const char order, const std::vector<Nd4jLong> &shape, LaunchContext* context = nullptr);
 
         /**
         *  copy assignment operator
@@ -271,6 +271,14 @@ namespace nd4j {
         */ 
         NDArray<T>* cast(DataType dtype);
         void cast(NDArray<T>* target, DataType dtype);
+
+        /**
+        *   returns context
+        */
+        LaunchContext* getContext() const {
+            return _context;
+        }
+
 
         /**
         *   returns workspace
@@ -1225,13 +1233,13 @@ template <typename T2>
 
 template<typename T>
  bool NDArray<T>::isAttached() {
-    return this->_context->workspace() != nullptr;
+    return getWorkspace() != nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
  void NDArray<T>::setShapeInfo(Nd4jLong *shapeInfo) {
-    if(_isShapeAlloc && _context->workspace() == nullptr)
+    if(_isShapeAlloc && getWorkspace() == nullptr)
         delete []_shapeInfo;
 
     _shapeInfo = shapeInfo;
@@ -1241,7 +1249,7 @@ template<typename T>
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
 void NDArray<T>::setBuffer(T* buffer) {
-    if(_isBuffAlloc && _context->workspace() == nullptr)
+    if(_isBuffAlloc && getWorkspace() == nullptr)
         delete []_buffer;
  
     _buffer = buffer;

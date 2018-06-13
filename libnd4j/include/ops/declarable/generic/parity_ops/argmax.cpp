@@ -20,13 +20,13 @@ namespace nd4j {
                 axis.resize(axisVector->lengthOf());
                 helpers::adjustAxis(input, axisVector, axis);
 
-                auto shape = ShapeUtils<T>::evalReduceShapeInfo(input->ordering(), axis, *input, false, true);
-                auto output = new NDArray<T>(shape, false, block.getWorkspace());
+                auto shape = ShapeUtils<T>::evalReduceShapeInfo(input->ordering(), axis, *input, false, true, block.getWorkspace());
+                auto output = new NDArray<T>(shape, false, block.launchContext());
                 
                 input->template applyIndexReduce<simdOps::IndexMax<T>>(output, axis);
 
                 OVERWRITE_RESULT(output);
-                RELEASE(shape, input->getWorkspace());
+                RELEASE(shape, block.getWorkspace());
             } else {
                 auto output = OUTPUT_VARIABLE(0);
 

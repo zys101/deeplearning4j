@@ -76,7 +76,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillUniform(block.getRNG(), z, from, to);
 
@@ -149,7 +149,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillGaussian(block.getRNG(), z, mean, stdev);
 
@@ -176,7 +176,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillBernoulli(block.getRNG(), z, prob);
 
@@ -208,7 +208,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillBinomial(block.getRNG(), z, trials, prob);
 
@@ -239,7 +239,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillLogNormal(block.getRNG(), z, mean, stdev);
 
@@ -270,7 +270,7 @@ namespace nd4j {
                     for (int e = 0; e < input->lengthOf(); e++)
                         shape[e] = (Nd4jLong) input->getScalar(e);
 
-                    auto z = new NDArray<T>('c', shape, block.getWorkspace());
+                    auto z = new NDArray<T>('c', shape, block.launchContext());
 
                     RandomLauncher<T>::fillTruncatedNormal(block.getRNG(), z, mean, stdev);
 

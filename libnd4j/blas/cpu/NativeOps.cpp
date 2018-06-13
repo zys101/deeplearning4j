@@ -3511,7 +3511,8 @@ Nd4jStatus execCustomOpWithScope(Nd4jPointer *extraPointers, nd4j::graph::GraphS
         auto buffer = reinterpret_cast<T *>(inputBuffers[e]);
         auto shapeInfo = reinterpret_cast<Nd4jLong *>(inputShapes[e]);
 
-        auto array = new nd4j::NDArray<T>(buffer, shapeInfo, varSpace->workspace());
+        auto array = new nd4j::NDArray<T>(buffer, shapeInfo);
+        array->getContext()->setWorkspace(varSpace->workspace());
         
         // now we just put array to VarSpace
         varSpace->putVariable(0, e, array);
@@ -3539,7 +3540,8 @@ Nd4jStatus execCustomOpWithScope(Nd4jPointer *extraPointers, nd4j::graph::GraphS
         auto buffer = reinterpret_cast<T *>(outputBuffers[e]);
         auto shapeInfo = reinterpret_cast<Nd4jLong *>(outputShapes[e]);
 
-        NDArray<T> array(buffer, shapeInfo, varSpace->workspace());
+        NDArray<T> array(buffer, shapeInfo);        
+        array.getContext()->setWorkspace(varSpace->workspace());
         
         // now we just put array to VarSpace to the same ID
         //varSpace->putVariable(0, e, array);

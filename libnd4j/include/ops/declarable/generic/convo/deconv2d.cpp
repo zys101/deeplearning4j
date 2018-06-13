@@ -55,7 +55,7 @@ CUSTOM_OP_IMPL(deconv2d, 2, 1, false, 0, 9) {
     if(isSameMode)                       // SAME
         ConvolutionUtils<T>::calcPadding2D(pH, pW, oH, oW, iH, iW, kH, kW, sH, sW, dH, dW);
 
-    NDArray<T> columns(input->ordering(), {bS, oC, kH, kW, iH, iW}, block.getWorkspace());
+    NDArray<T> columns(input->ordering(), {bS, oC, kH, kW, iH, iW}, block.launchContext());
     std::vector<T> extrasCol2Im({(T) sH, (T) sW, (T) pH, (T) pW, (T) oH, (T) oW, (T) dH, (T) dW});
 
     //----- calculation of output -----//
@@ -202,7 +202,7 @@ CUSTOM_OP_IMPL(deconv2d_bp, 3, 2, false, 0, 9) {
         inputAxesForDot = {0, 2, 3};                                            // bS, iH, iW
 
     // ----- calculation of gradW ----- //
-    NDArray<T> columns(input->ordering(), {bS, oC, kH, kW, iH, iW}, block.getWorkspace());
+    NDArray<T> columns(input->ordering(), {bS, oC, kH, kW, iH, iW}, block.launchContext());
     std::vector<T> extrasIm2Col({(T) kH, (T) kW, (T) sH, (T) sW, (T) pH, (T) pW, (T) dH, (T) dW});
     gradO->template applyTransform<simdOps::Im2col<T>>(&columns, extrasIm2Col.data());                          // [bS, oC, oH, oW] is convoluted to [bS, oC, kH, kW, iH, iW]
     NDArrayFactory<T>::tensorDot(input, &columns, gradW, inputAxesForDot, {0, 4, 5}, permutForGradW);           // [bS, iC, iH, iW]/[bS, iH, iW, iC] x [bS, oC, kH, kW, iH, iW] = [iC, oC, kH, kW]

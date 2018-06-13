@@ -75,7 +75,7 @@ CUSTOM_OP_IMPL(dynamic_bidirectional_rnn, 7, 4, false, 0, 0) {
 
     NDArray<T>* seqLen = maxTimeStep;
     if(seqLen == nullptr) {    	
-    	seqLen = new NDArray<T>(x->ordering(), {bS}, block.getWorkspace());
+    	seqLen = new NDArray<T>(x->ordering(), {bS}, block.launchContext());
     	*seqLen = time;                                        // set each element of seqLen to be equal to time
     }
 

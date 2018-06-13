@@ -61,7 +61,7 @@ CUSTOM_OP_IMPL(conv3dnew, 2, 1, false, 0, 13) {
     if(isSameMode)                       // SAME
         ConvolutionUtils<T>::calcPadding3D(pD, pH, pW, oD, oH, oW, iD, iH, iW, kD, kH, kW, sD, sH, sW, dD, dH, dW);
 
-    NDArray<T> columns(input->ordering(), {bS, iC, kD, kH, kW, oD, oH, oW}, block.getWorkspace());            
+    NDArray<T> columns(input->ordering(), {bS, iC, kD, kH, kW, oD, oH, oW}, block.launchContext());            
     ConvolutionUtils<T>::vol2col(*input, columns, sD, sH, sW, pD, pH, pW, dD, dH, dW);                 // [bS, iC, iD, iH, iW] is convoluted to [bS, iC, kD, kH, kW, oD, oH, oW]        
     // [bS, iC, kD, kH, kW, oD, oH, oW] x [kD, kH, kW, iC, oC]/[oC, iC, kD, kH, kW] = [bS, oD, oH, oW, oC]
     nd4j::NDArrayFactory<T>::tensorDot(&columns, weights, output, {1,2,3,4}, weightsAxesForDot, permutForGradW);
@@ -211,7 +211,7 @@ CUSTOM_OP_IMPL(conv3dnew_bp, 3, 2, false, 0, 13) {
         ConvolutionUtils<T>::calcPadding3D(pD, pH, pW, oD, oH, oW, iD, iH, iW, kD, kH, kW, sD, sH, sW, dD, dH, dW);    
     
     // ----- calculation of gradW and gradB ----- //                
-    NDArray<T> columns(input->ordering(), {bS, iC, kD, kH, kW, oD, oH, oW}, block.getWorkspace());      
+    NDArray<T> columns(input->ordering(), {bS, iC, kD, kH, kW, oD, oH, oW}, block.launchContext());      
     ConvolutionUtils<T>::vol2col(*input, columns, sD, sH, sW, pD, pH, pW, dD, dH, dW);                         // [bS, iC, iD, iH, iW] is convoluted to [bS, iC, kD, kH, kW, oD, oH, oW]        
     nd4j::NDArrayFactory<T>::tensorDot(&columns, gradO, gradW, {0,5,6,7}, gradOaxesForDot, permutForGradW);     // [bS, iC, kD, kH, kW, oD, oH, oW] x [bS, oD, oH, oW, oC]/[bS, oC, oD, oH, oW] = [iC, kD, kH, kW, oC]
 

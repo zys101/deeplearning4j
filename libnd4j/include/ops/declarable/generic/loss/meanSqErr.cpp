@@ -40,7 +40,7 @@ CUSTOM_OP_IMPL(mean_sqerr_loss, 3, 1, false, 0, 1) {
 		weightsBroad = new NDArray<T>(weights->tile(reps));
 	}
 
-	NDArray<T> weightedLosses(labels->getShapeInfo(), false, block.getWorkspace());
+	NDArray<T> weightedLosses(labels->getShapeInfo(), false, block.launchContext());
 	predictions->template applyPairwiseTransform<simdOps::SquaredSubtract<T>>(labels, &weightedLosses, nullptr);
 
     // multiply weightedLosses on weights

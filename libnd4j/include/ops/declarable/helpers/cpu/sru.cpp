@@ -15,7 +15,7 @@ template <typename T>
 static FORCEINLINE NDArray<T> activation(const NDArray<T>& arr) {    
     
     // return (const_cast<NDArray<T>&>(arr)).template transform<simdOps::Tanh<T>>();    
-    NDArray<T> result(&arr, false, arr.getWorkspace());
+    NDArray<T> result(&arr, false, arr.getContext());
     (const_cast<NDArray<T>&>(arr)).template applyTransform<simdOps::Tanh<T>>(&result);    
     return result;
 }

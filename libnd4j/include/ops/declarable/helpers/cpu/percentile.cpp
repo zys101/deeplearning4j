@@ -30,7 +30,7 @@ void percentile(const NDArray<T>& input, NDArray<T>& output, std::vector<int>& a
     for(int i=0; i<shapeOfSubArr.size(); ++i)
         shapeOfSubArr[i] = listOfSubArrs->at(0)->shapeOf()[i];
 
-    NDArray<T> flattenedArr('c', shapeOfSubArr, input.getWorkspace());    
+    NDArray<T> flattenedArr('c', shapeOfSubArr, input.getContext());    
     const int len = flattenedArr.lengthOf();
     
     const T fraction = 1. - q / 100.;

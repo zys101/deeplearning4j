@@ -26,7 +26,7 @@ NDArray<T>* timestep(const NDArray<T>* const arr, const int t1, const int t2) {
 
 template <typename T>
 NDArray<T> _sigmoid(const NDArray<T>& arr) {
-    NDArray<T> result(arr.getShapeInfo(), arr.getWorkspace());
+    NDArray<T> result(arr.getShapeInfo(), arr.getContext());
     (const_cast<NDArray<T>&>(arr)).template applyTransform<simdOps::Sigmoid<T>>(&result);
 
     return result;
@@ -59,13 +59,13 @@ CUSTOM_OP_IMPL(sru_logic, 5, 2, false, 0, 0) {
     const NDArray<T> bF = (*bias)({ {}, {0,  K} });                       // biases for forget gate [1 x K]
     const NDArray<T> bR = (*bias)({ {}, {K,2*K} });                       // biases for reset  gate [1 x K]    
 
-    NDArray<T> xt(block.getWorkspace());
-    NDArray<T> zt(block.getWorkspace()); 
-    NDArray<T> ft(block.getWorkspace()); 
-    NDArray<T> rt(block.getWorkspace());     
-    NDArray<T> ht(block.getWorkspace());
+    NDArray<T> xt(block.launchContext());
+    NDArray<T> zt(block.launchContext()); 
+    NDArray<T> ft(block.launchContext()); 
+    NDArray<T> rt(block.launchContext());     
+    NDArray<T> ht(block.launchContext());
     NDArray<T> ct = *init;
-    NDArray<T> gct(state->ordering(), {bS, K}, block.getWorkspace());
+    NDArray<T> gct(state->ordering(), {bS, K}, block.launchContext());
     NDArray<T> xmt = *input; 
     //  input = input * mask
     if(applyMask)
@@ -263,7 +263,7 @@ CUSTOM_OP_IMPL(sru, 5, 2, false, 0, 0) {
     //  xm = x * mask
     NDArray<T>* xm = x;
     if(mask) {
-        xm = new NDArray<T>(x->getShapeInfo(), true, block.getWorkspace());
+        xm = new NDArray<T>(x->getShapeInfo(), true, block.launchContext());
         x->template applyBroadcast<simdOps::Multiply<T>>({0, 1}, mask, xm, nullptr);
     }
 
@@ -586,10 +586,10 @@ CUSTOM_OP_IMPL(sru_bp_logic, 8, 4, true, 0, 0) {
 
     const NDArray<T> bF = (*b)({ {}, {0,  inSize} });                                 // biases for forget gate [1 x inSize]
     const NDArray<T> bR = (*b)({ {}, {inSize,2*inSize} });                                 // biases for reset  gate [1 x inSize]
-    NDArray<T> gradBias(x->ordering(),   {bS, 2*inSize, time}, block.getWorkspace());
-    NDArray<T> gradU   (x->ordering(),   {bS, 3*inSize, time}, block.getWorkspace());
-    NDArray<T> gradHX  (x->ordering(),   {bS,   inSize, time}, block.getWorkspace());
-    NDArray<T> gct     (c->ordering(),   {bS, inSize},      block.getWorkspace());
+    NDArray<T> gradBias(x->ordering(),   {bS, 2*inSize, time}, block.launchContext());
+    NDArray<T> gradU   (x->ordering(),   {bS, 3*inSize, time}, block.launchContext());
+    NDArray<T> gradHX  (x->ordering(),   {bS,   inSize, time}, block.launchContext());
+    NDArray<T> gct     (c->ordering(),   {bS, inSize},      block.launchContext());
 
     //  x = x * mask
     if(mask)
@@ -848,8 +848,8 @@ CUSTOM_OP_IMPL(sru_bi_bp, 8, 4, true, 0, 0) {
     // U = x * w
     NDArray<T> wi = mmul(*x, *w);                    //  [time x bS x 2K] * [2K x 6K] = [time x bS x 6K]
 
-    NDArray<T> gradBias(x->ordering(), {bS, 4*inSize},    block.getWorkspace());
-    NDArray<T> gradWi  (x->ordering(), {time, bS, 6*inSize}, block.getWorkspace());
+    NDArray<T> gradBias(x->ordering(), {bS, 4*inSize},    block.launchContext());
+    NDArray<T> gradWi  (x->ordering(), {time, bS, 6*inSize}, block.launchContext());
     
     const int d2      = 2*inSize;
     const int ncols   = bS*d2;     

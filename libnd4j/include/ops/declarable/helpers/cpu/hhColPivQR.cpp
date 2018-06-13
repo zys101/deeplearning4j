@@ -16,9 +16,9 @@ HHcolPivQR<T>::HHcolPivQR(const NDArray<T>& matrix) {
 
     _qr = matrix;
     _diagSize = math::nd4j_min<int>(matrix.sizeAt(0), matrix.sizeAt(1));    
-    _coeffs = NDArray<T>(matrix.ordering(), {1, _diagSize}, matrix.getWorkspace());   
+    _coeffs = NDArray<T>(matrix.ordering(), {1, _diagSize}, matrix.getContext());   
     
-    _permut = NDArray<T>(matrix.ordering(), {matrix.sizeAt(1), matrix.sizeAt(1)}, matrix.getWorkspace());   
+    _permut = NDArray<T>(matrix.ordering(), {matrix.sizeAt(1), matrix.sizeAt(1)}, matrix.getContext());   
 
     evalData();    
 }
@@ -31,9 +31,9 @@ void HHcolPivQR<T>::evalData() {
     int rows = _qr.sizeAt(0);
     int cols = _qr.sizeAt(1);    
         
-    NDArray<T> transp  (_qr.ordering(), {1, cols}, _qr.getWorkspace());
-    NDArray<T> normsUpd(_qr.ordering(), {1, cols}, _qr.getWorkspace());
-    NDArray<T> normsDir(_qr.ordering(), {1, cols}, _qr.getWorkspace());
+    NDArray<T> transp  (_qr.ordering(), {1, cols}, _qr.getContext());
+    NDArray<T> normsUpd(_qr.ordering(), {1, cols}, _qr.getContext());
+    NDArray<T> normsDir(_qr.ordering(), {1, cols}, _qr.getContext());
           
     int transpNum = 0;
 

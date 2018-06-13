@@ -497,14 +497,14 @@ namespace nd4j {
         nd4j::NDArray<T>* tC = result; 
         
         if (needAllocA) {
-            tA = new nd4j::NDArray<T>(A->getBuffer(), A->getShapeInfo(), A->getWorkspace());
+            tA = new nd4j::NDArray<T>(A->getBuffer(), A->getShapeInfo(), A->getContext());
             nd4j_verbose("Matrix A was recreated from view.\n", "");
         }
         else 
             tA = A; 
 
         if (needAllocB) {
-            tB = new nd4j::NDArray<T>(B->getBuffer(), B->getShapeInfo(), B->getWorkspace());
+            tB = new nd4j::NDArray<T>(B->getBuffer(), B->getShapeInfo(), B->getContext());
             nd4j_verbose("Matrix B was recreated from view.\n", "");
         }
         else 
@@ -694,7 +694,7 @@ namespace nd4j {
 
         T* buffer;
         ALLOCATE(buffer, workspace, other->lengthOf(), T);
-        auto result = new NDArray<T>(buffer, newShape, workspace);
+        auto result = new NDArray<T>(buffer, newShape, other->getContext());
         result->triggerAllocationFlag(true, true);
 
         return result;
@@ -782,12 +782,12 @@ NDArray<T>* NDArrayFactory<T>::simpleMMul(const NDArray<T>* a, const NDArray<T>*
 
     NDArray<T>* dot = c;
     if(c == nullptr) 
-        c = new NDArray<T>('f', {a->shapeOf()[0], b->shapeOf()[1]}, a->getWorkspace());        
+        c = new NDArray<T>('f', {a->shapeOf()[0], b->shapeOf()[1]}, a->getContext());        
     else {
         if( c->shapeOf()[0] != a->shapeOf()[0] || c->shapeOf()[1] != b->shapeOf()[1])
             throw "NDArrayFactory::simpleMMul static function: wrong shape of C array !";
         if(beta != (T)0. ) {
-            dot = new NDArray<T>(c->ordering(), {a->shapeOf()[0], b->shapeOf()[1]},  a->getWorkspace());
+            dot = new NDArray<T>(c->ordering(), {a->shapeOf()[0], b->shapeOf()[1]},  a->getContext());
             if( beta != (T)1.)
                 c->template applyScalar<simdOps::Multiply<T>>(beta);            
         }        

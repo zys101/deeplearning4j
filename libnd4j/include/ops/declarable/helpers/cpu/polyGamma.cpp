@@ -55,7 +55,7 @@ static T polyGamma(const int n, const T x) {
 template <typename T>
 NDArray<T> polyGamma(const NDArray<T>& n, const NDArray<T>& x) {
 
-	NDArray<T> result(&x, false, x.getWorkspace());
+	NDArray<T> result(&x, false, x.getContext());
 
 #pragma omp parallel for if(x.lengthOf() > Environment::getInstance()->elementwiseThreshold()) schedule(guided)	
 	for(int i = 0; i < x.lengthOf(); ++i)

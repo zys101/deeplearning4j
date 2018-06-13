@@ -181,7 +181,8 @@ namespace nd4j {
                     std::pair<int, int> pair(ctx.nodeId(), cnt++);
 
                     if (!ctx.isValueAvailable(pair.second)) {
-                        auto outArr = new NDArray<T>(out, true, workspace);
+                        auto outArr = new NDArray<T>(out, true);
+                        outArr->getContext()->setWorkspace(workspace);
 
                         ctx.pushNDArrayToVariableSpace(pair, outArr);
                     } else {
@@ -252,15 +253,18 @@ namespace nd4j {
                 T* buffer;
                 ALLOCATE(buffer, workspace, len, T);
 
-                var->setNDArray(new NDArray<T>(buffer, __shape, workspace));
+                NDArray<T>* newArr = new NDArray<T>(buffer, __shape);
+                newArr->getContext()->setWorkspace(workspace);
+                var->setNDArray(newArr);
                 var->getNDArray()->triggerAllocationFlag(true, true);
             } else if(var->getNDArray()->lengthOf() != len) {
                 // if length not match - lets reallocate array
                 delete var->getNDArray();
                 T* buffer;
                 ALLOCATE(buffer, workspace, len, T);
-
-                var->setNDArray(new NDArray<T>(buffer, __shape, workspace));
+                NDArray<T>* newArr = new NDArray<T>(buffer, __shape);
+                newArr->getContext()->setWorkspace(workspace);
+                var->setNDArray(newArr);
                 var->getNDArray()->triggerAllocationFlag(true, true);
             }
 
@@ -277,12 +281,16 @@ namespace nd4j {
             Nd4jLong len = shape::length(shape);
             // if that's first run - we probably have nothing here
             if (var->getNDArray() == nullptr) {
-                var->setNDArray(new NDArray<T>(order, shape, workspace));
+                NDArray<T>* newArr = new NDArray<T>(order, shape);
+                newArr->getContext()->setWorkspace(workspace);
+                var->setNDArray(newArr);
                 var->getNDArray()->triggerAllocationFlag(true, true);
             } else if(var->getNDArray()->lengthOf() != len) {
                 // if length not match - lets reallocate array
                 delete var->getNDArray();
-                var->setNDArray(new NDArray<T>(order, shape, workspace));
+                NDArray<T>* newArr = new NDArray<T>(order, shape);
+                newArr->getContext()->setWorkspace(workspace);
+                var->setNDArray(newArr);
                 var->getNDArray()->triggerAllocationFlag(true, true);
             }
 

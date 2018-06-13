@@ -86,7 +86,9 @@ namespace nd4j {
                 Variable<T>* var = ctx.variable(pair);
 
                 if (var->getNDArray() == nullptr) {
-                    var->setNDArray(new NDArray<T>('c', {1, 1}, ctx.getWorkspace()));
+                    NDArray<T>* newArr = new NDArray<T>('c', {1, 1});
+                    newArr->getContext()->setWorkspace(ctx.getWorkspace());
+                    var->setNDArray(newArr);
                     var->markRemovable(true);
                 }
             }

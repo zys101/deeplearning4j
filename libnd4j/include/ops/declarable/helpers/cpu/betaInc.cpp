@@ -179,7 +179,7 @@ static T betaInc(const T a, const T b, const T x) {
 template <typename T> 
 NDArray<T> betaInc(const NDArray<T>& a, const NDArray<T>& b, const NDArray<T>& x) {	
 	
-	NDArray<T> result(&x, false, x.getWorkspace());
+	NDArray<T> result(&x, false, x.getContext());
 
 #pragma omp parallel for if(x.lengthOf() > Environment::getInstance()->elementwiseThreshold()) schedule(guided)	
 	for(int i = 0; i < x.lengthOf(); ++i)

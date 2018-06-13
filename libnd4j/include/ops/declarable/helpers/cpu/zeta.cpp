@@ -101,7 +101,7 @@ T zeta(const T x, const T q) {
 template <typename T>
 NDArray<T> zeta(const NDArray<T>& x, const NDArray<T>& q) {
 
-	NDArray<T> result(&x, false, x.getWorkspace());
+	NDArray<T> result(&x, false, x.getContext());
 
 #pragma omp parallel for if(x.lengthOf() > Environment::getInstance()->elementwiseThreshold()) schedule(guided)	
 	for(int i = 0; i < x.lengthOf(); ++i)
