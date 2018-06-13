@@ -4,7 +4,7 @@
 #include "../NDArray.h"
 #include "../NativeOpExcutioner.h"
 #include "../NDArrayFactory.h"
-#include <memory/Workspace.h>
+// #include <memory/Workspace.h>
 #include <memory/MemoryRegistrator.h>
 #include <ops.h>
 #include <ops/gemm.h>
@@ -27,11 +27,14 @@ namespace nd4j {
 ////////////////////////////////////////////////////////////////////////
 // default constructor, do not allocate memory, memory for array is passed from outside 
     template <typename T>
-    NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, nd4j::memory::Workspace* workspace) {
+    NDArray<T>::NDArray(T *buffer, Nd4jLong *shapeInfo, LaunchContext* context) {
 
         _buffer    = buffer;
         _shapeInfo = shapeInfo;
-        _workspace = workspace;
+        
+        if(context == nullptr)
+            _context = LaunchContext::defaultContext();
+
         if(_shapeInfo != nullptr)
             _length = shape::length(_shapeInfo);
     }
@@ -39,21 +42,21 @@ namespace nd4j {
 ////////////////////////////////////////////////////////////////////////
 //constructor, create empty array at given workspace
     template <typename T>
-    NDArray<T>::NDArray(nd4j::memory::Workspace* workspace) {
+    NDArray<T>::NDArray(const LaunchContext* context) {
 
         _buffer    = nullptr;
         _shapeInfo = nullptr;
-        _workspace = workspace;
+        _context   = context;
     }
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T>
 NDArray<T>::NDArray(T scalar) {
     
-    nd4j::memory::Workspace* workspace = nullptr;
+    _context = LaunchContext::defaultContext();
 
-    ALLOCATE(_buffer, workspace, 1, T);
-    ALLOCATE(_shapeInfo, workspace, shape::shapeInfoLength(0), Nd4jLong);
+    ALLOCATE(_buffer, getWorkspace(), 1, T);
+    ALLOCATE(_shapeInfo, getWorkspace(), shape::shapeInfoLength(0), Nd4jLong);
     _shapeInfo[0] = 0;
     _shapeInfo[1] = 0;
     _shapeInfo[2] = 1;

@@ -21,6 +21,7 @@ using namespace nd4j;
 using namespace nd4j::memory;
 
 namespace nd4j {
+    
     class LaunchContext {
     private:
         // memory workspace for this context

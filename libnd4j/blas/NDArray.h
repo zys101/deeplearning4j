@@ -5,7 +5,7 @@
 #include <functional>
 #include <shape.h>
 #include "NativeOpExcutioner.h"
-#include <memory/Workspace.h>
+// #include <memory/Workspace.h>
 #include <indexing/NDIndex.h>
 #include <array/LaunchContext.h>
 #include <indexing/IndicesList.h>
@@ -46,9 +46,8 @@ namespace nd4j {
         Nd4jLong *_shapeInfo = nullptr;
 
         /**
-        *  pointer on externally allocated memory where _buffer and _shapeInfo are stored
+        *  pointer on context, in particular context contains pointer on workspace
         */  
-        memory::Workspace* _workspace = nullptr;
 
         LaunchContext* _context = nullptr;
         
@@ -120,7 +119,7 @@ namespace nd4j {
         /**
         *  default constructor, do not allocate memory, memory for array is passed from outside 
         */
-        NDArray(T *buffer = nullptr, Nd4jLong* shapeInfo = nullptr, nd4j::memory::Workspace* workspace = nullptr);
+        NDArray(T *buffer = nullptr, Nd4jLong* shapeInfo = nullptr, const LaunchContext* context = nullptr);
        
         /**
          * Constructor for scalar NDArray
@@ -138,36 +137,36 @@ namespace nd4j {
         NDArray(NDArray<T>&& other) noexcept;
 
         /**
-        *  constructor, create empty array stored at given workspace
+        *  constructor, create empty array stored at given context/workspace
         */
-        NDArray(nd4j::memory::Workspace* workspace);
+        NDArray(const LaunchContext* context);
 
         /**
         *  this constructor creates new NDArray with shape matching "other" array, do not copy "other" elements into new array
         */
-        NDArray(const NDArray<T> *other, const bool copyStrides = false, nd4j::memory::Workspace* workspace = nullptr);
+        NDArray(const NDArray<T> *other, const bool copyStrides = false, const LaunchContext* context = nullptr);
 				
         /**
 		*  constructor creates new NDArray using shape information from "shapeInfo", set all elements in new array to be zeros, if copyStrides is true then use stride values from "shapeInfo", else calculate strides independently 
         */
-		NDArray(const Nd4jLong* shapeInfo, const bool copyStrides = false, nd4j::memory::Workspace* workspace = nullptr);
+		NDArray(const Nd4jLong* shapeInfo, const bool copyStrides = false, const LaunchContext* context = nullptr);
 
         /**
         *  this constructor creates new array using shape information contained in vector argument    
         */
-        NDArray(const char order, const std::vector<Nd4jLong> &shape, nd4j::memory::Workspace* workspace = nullptr);
+        NDArray(const char order, const std::vector<Nd4jLong> &shape, const LaunchContext* context = nullptr);
 
         /**
         * This constructor creates new array with elements copied from data and using shape information stored in shape
         *
         * PLEASE NOTE: data will be copied AS IS, without respect to specified order. You must ensure order match here.
         */
-        NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, nd4j::memory::Workspace* workspace = nullptr);
+        NDArray(const char order, const std::vector<Nd4jLong> &shape, const std::vector<T> &data, const LaunchContext* context = nullptr);
 
         /**
         *  this constructor creates new array using given buffer (without memory allocating) and shape information stored in shape
         */
-        NDArray(T *buffer, const char order, const std::vector<Nd4jLong> &shape , nd4j::memory::Workspace* workspace = nullptr);
+        NDArray(T *buffer, const char order, const std::vector<Nd4jLong> &shape, const LaunchContext* context);
 
         /**
         *  copy assignment operator
@@ -274,10 +273,10 @@ namespace nd4j {
         void cast(NDArray<T>* target, DataType dtype);
 
         /**
-        *   returns _workspace
+        *   returns workspace
         */
         nd4j::memory::Workspace* getWorkspace() const {
-            return _workspace;
+            return _context->workspace();
         }
 
         /**
@@ -1226,13 +1225,13 @@ template <typename T2>
 
 template<typename T>
  bool NDArray<T>::isAttached() {
-    return this->_workspace != nullptr;
+    return this->_context->workspace() != nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
  void NDArray<T>::setShapeInfo(Nd4jLong *shapeInfo) {
-    if(_isShapeAlloc && _workspace == nullptr)
+    if(_isShapeAlloc && _context->workspace() == nullptr)
         delete []_shapeInfo;
 
     _shapeInfo = shapeInfo;
@@ -1242,7 +1241,7 @@ template<typename T>
 //////////////////////////////////////////////////////////////////////////
 template<typename T>
 void NDArray<T>::setBuffer(T* buffer) {
-    if(_isBuffAlloc && _workspace == nullptr)
+    if(_isBuffAlloc && _context->workspace() == nullptr)
         delete []_buffer;
  
     _buffer = buffer;
