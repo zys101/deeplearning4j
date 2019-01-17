@@ -325,6 +325,42 @@ TEST_F(OneOffTests, test_while_1) {
     delete graph;
 }
 
+TEST_F(OneOffTests, test_while_2) {
+    Environment::getInstance()->setVerbose(true);
+    Environment::getInstance()->setDebug(true);
+
+    auto e = NDArrayFactory::create<int>(10);
+
+    auto graph = GraphExecutioner::importFromFlatBuffers("./resources/while_iter_1.fb");
+    ASSERT_TRUE(graph != nullptr);
+
+    graph->printOut();
+
+
+    //Nd4jStatus status = GraphExecutioner::execute(graph);
+    //ASSERT_EQ(Status::OK(), status);
+
+    delete graph;
+}
+
+TEST_F(OneOffTests, test_while_3) {
+    Environment::getInstance()->setVerbose(true);
+    Environment::getInstance()->setDebug(true);
+
+    auto e = NDArrayFactory::create<int>(10);
+
+    auto graph = GraphExecutioner::importFromFlatBuffers("./resources/while_iter_3.fb");
+    ASSERT_TRUE(graph != nullptr);
+
+    graph->printOut();
+
+
+    //Nd4jStatus status = GraphExecutioner::execute(graph);
+    //ASSERT_EQ(Status::OK(), status);
+
+    delete graph;
+}
+
 
 TEST_F(OneOffTests, test_identity_n_2) {
     auto e = NDArrayFactory::create<float>('c', {2, 3}, {0.77878559f, 0.80119777f, 0.72437465f, 0.23089433f, 0.72714126f, 0.18039072f});
