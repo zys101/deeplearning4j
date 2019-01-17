@@ -115,8 +115,8 @@ public class TFGraphTestAllSameDiff {
             "topk/.*",
 
             //2019/01/15 - failing on expected/actual. Maybe op issue?
-            "lrn/dr3.*",
-            "lrn/dr5.*",
+            //"lrn/dr3.*",
+            // "lrn/dr5.*",
 
             //Still failing as of 2019/01/08 - https://github.com/deeplearning4j/deeplearning4j/issues/6447
             "cnn1d_layers/channels_first_b2_k2_s1_d2_SAME",
