@@ -11170,6 +11170,9 @@ public class SameDiff {
         sb.append("\nExternal variables:\n\n");
         for (int e = 0; e < graph.variablesLength(); e++) {
             val var = graph.variables(e);
+            if (var.ndarray() == null)
+                continue;
+
             val ndarray = Nd4j.createFromFlatArray(var.ndarray());
 
             sb.append(var.id().first())
