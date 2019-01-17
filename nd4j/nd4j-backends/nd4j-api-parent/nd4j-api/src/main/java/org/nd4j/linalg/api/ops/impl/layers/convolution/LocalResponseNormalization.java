@@ -92,7 +92,7 @@ public class LocalResponseNormalization extends DynamicCustomOp {
         val alpha = aAlpha.getF();
         val beta = aBeta.getF();
         val bias = aBias.getF();
-        val depth = aDepth.getF();
+        val depth = aDepth.getI();
 
         LocalResponseNormalizationConfig localResponseNormalizationConfig = LocalResponseNormalizationConfig.builder()
                 .alpha(alpha)
