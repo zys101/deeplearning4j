@@ -11177,7 +11177,7 @@ public class SameDiff {
 
             sb.append(var.id().first())
                     .append(":<").append(var.name()).append("> ")
-                    .append(Arrays.toString(ndarray.shapeInfoDataBuffer().asInt())).append("; Values: ").append(Arrays.toString(ndarray.data().asFloat())).append(";\n");
+                    .append("DataType: [").append(ndarray.dataType().toString()).append("]; Shape: ").append(Arrays.toString(ndarray.shape())).append("; Values: ").append(ndarray.isEmpty() ? "[EMPTY ARRAY]" : Arrays.toString(ndarray.data().asFloat())).append(";\n");
         }
 
         val map = Nd4j.getExecutioner().getCustomOperations();

@@ -1092,9 +1092,10 @@ public class TensorFlowImportTest extends BaseNd4jTest {
     @Test
     public void testG_1() throws Exception {
         Nd4j.create(1);
-        val tg = TFGraphMapper.getInstance().importGraph(new ClassPathResource("tf_graphs/examples/g_08/frozen_model.pb").getInputStream());
+        val tg = TFGraphMapper.getInstance().importGraph(new ClassPathResource("tf_graphs/examples/simple_while/frozen_model.pb").getInputStream());
 
-        val g = tg.asFlatBuffers();
+        val g = tg.asFlatPrint();
+        log.info("Print: {}\n", g);
     }
 
     @Test
