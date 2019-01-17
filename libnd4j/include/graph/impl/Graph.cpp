@@ -1128,7 +1128,13 @@ namespace nd4j {
         };
 
         void Graph::printOutNode(Node* node) {
-            nd4j_printf("%i. ", node->id());
+            nd4j_printf("<%i> ", node->id());
+
+            if (node->name() != nullptr) {
+                nd4j_printf("<%s> ", node->name()->c_str());
+            }
+
+
             switch(node->opType()) {
                 case OpType_CUSTOM: {
                     printf("%s; ", node->getCustomOp()->getOpName()->c_str());
