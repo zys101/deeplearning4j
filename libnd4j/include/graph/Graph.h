@@ -79,6 +79,8 @@ namespace nd4j {
 
             void prepareOutputs();
 
+            void printOutUnmapped();
+
         public:
             Graph(const FlatGraph *flatGraph = nullptr, VariableSpace *variableSpace = nullptr);
 

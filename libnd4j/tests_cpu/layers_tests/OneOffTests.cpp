@@ -300,25 +300,28 @@ TEST_F(OneOffTests, test_cond_false_1) {
 }
 
 TEST_F(OneOffTests, test_while_1) {
-    auto e = NDArrayFactory::create<float>(10.f);
+    Environment::getInstance()->setVerbose(true);
+    Environment::getInstance()->setDebug(true);
+
+    auto e = NDArrayFactory::create<int>(10);
 
     auto graph = GraphExecutioner::importFromFlatBuffers("./resources/simple_while.fb");
     ASSERT_TRUE(graph != nullptr);
 
     graph->printOut();
-/*
+
 
     Nd4jStatus status = GraphExecutioner::execute(graph);
     ASSERT_EQ(Status::OK(), status);
-    ASSERT_TRUE(graph->getVariableSpace()->hasVariable(6));
+    ASSERT_TRUE(graph->getVariableSpace()->hasVariable(9));
 
-    auto z = graph->getVariableSpace()->getVariable(6)->getNDArray();
+    auto z = graph->getVariableSpace()->getVariable(9)->getNDArray();
     ASSERT_TRUE(z != nullptr);
 
     z->printIndexedBuffer("z buffer");
 
     ASSERT_EQ(e, *z);
-*/
+
     delete graph;
 }
 

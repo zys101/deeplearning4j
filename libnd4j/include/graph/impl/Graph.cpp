@@ -957,13 +957,23 @@ namespace nd4j {
                 this->tagInplaceNodes();
         }
 
+        void Graph::printOutUnmapped() {
+            for (const auto &u:_unmapped) {
+                this->printOutNode(u.second);
+            }
+        }
+
 
         void Graph::toposortNodes() {
+            if (Environment::getInstance()->isDebugAndVerbose())
+                this->printOutUnmapped();
+
             int attempts = 0;
 
             // in worst possible case number of rolls equals to the number of nodes
-            int limit = _unmapped.size() + 1;
+            int limit = _unmapped.size() * 3;
 
+            Node *lastMappedNode = nullptr;
             std::vector<int> tbd;
             while (!_unmapped.empty() && attempts < limit) {
                 for (auto np:_unmapped) {
@@ -975,12 +985,57 @@ namespace nd4j {
                 for (auto np:tbd) {
                     auto id = np;
                     auto node = _unmapped[id];
+                    auto cType = node->opType();
+                    auto cNum = node->opNum();
+
+                    bool isExit = node->opType() == OpType_LOGIC && node->opNum() == logic::Exit;
 
                     // this variables contains the layer of maximal dependency
                     int maxDependencyLayer = -1;
 
                     // simple flag
                     bool canMap = true;
+
+                    // LOGIC ops require some special handling, since they can have cyclic dependencies
+                    if (node->opType() == OpType_LOGIC) {
+                        switch (node->opNum()) {
+                            case logic::Exit: {
+                                // Exit node must follow NextIteration node, despite there's no deps control here/
+                                if (lastMappedNode != nullptr && (lastMappedNode->opType() == OpType_LOGIC && lastMappedNode->opNum() == logic::NextIteration)) {
+                                    // do nothing
+                                    nd4j_printf("Doing nothing\n","");
+                                } else // skip cycle otherwise
+                                    continue;
+                            }
+                            break;
+                            case logic::NextIteration:
+                            case logic::Enter: {
+                                // regular rules apply for these ops
+                            }
+                            break;
+                            case logic::Merge: {
+                                // in merge node we're checking only order of first input, because second can be NextIteration, which won't be mapped before merge anyway
+                                auto in = node->input()->at(0);
+                                if (this->hasNode(in.first)) {
+                                    // can map now
+                                    auto dependency = nodeById(in.first);
+                                    auto layer = dependency->getLayer() + 1;
+
+                                    // mapping
+                                    this->expandOnion(layer);
+                                    node->setLayer(layer);
+                                    this->addNode(node);
+                                    this->injectNode(node);
+                                    _unmapped.erase(id);
+                                    lastMappedNode = node;
+
+                                    // skipping regular mapping checks
+                                    continue;
+                                } else // if first input
+                                    continue;
+                            }
+                        }
+                    }
 
                     // looping through inputs, to check if they were already mapped
                     auto inputs = node->input();
@@ -1004,13 +1059,18 @@ namespace nd4j {
                         }
                     }
 
+                    // lastMappedNode can only be followed by Exit node
+                    if (lastMappedNode != nullptr && (lastMappedNode->opType() == OpType_LOGIC && lastMappedNode->opNum() == logic::NextIteration) && !isExit)
+                        canMap = false;
+
                     if (canMap) {
-                        auto layer = maxDependencyLayer + 1;
+                        auto layer = isExit ? lastMappedNode->getLayer() : maxDependencyLayer + 1;
                         this->expandOnion(layer);
                         node->setLayer(layer);
                         this->addNode(node);
                         this->injectNode(node);
                         _unmapped.erase(id);
+                        lastMappedNode = node;
                     }
                 }
 
@@ -1021,8 +1081,13 @@ namespace nd4j {
                 attempts++;
             }
 
-            if (!_unmapped.empty())
+            if (!_unmapped.empty()) {
+                nd4j_printf("Unmapped entries:\n","");
+
+                this->printOutUnmapped();
+
                 throw graph::graph_exception("Graph wasn't toposorted");
+            }
 
             _built = true;
         }
