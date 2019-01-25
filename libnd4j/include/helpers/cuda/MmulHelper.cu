@@ -118,7 +118,14 @@ static __global__ void usualCudaDot(const Nd4jLong length, const void* vX, const
     T2* Y = reinterpret_cast<T2*>(const_cast<void*>(vY));
     T3* Z = reinterpret_cast<T3*>(vZ);
     
-    extern __shared__ T3 pairwiseMul[];
+    extern __shared__ char shmem[];
+    __shared__ T3 *pairwiseMul;
+    if (threadIdx.x == 0) {
+        pairwiseMul = reinterpret_cast<T3*>(shmem);
+    }
+    __syncthreads();
+
+
     const int tid = blockIdx.x * blockDim.x + threadIdx.x;    
     if(tid < length)
         pairwiseMul[tid] = X[tid * incx] * Y[tid * incy];
