@@ -112,19 +112,14 @@ __host__ static void usualGemv(const dim3 &blocksPerGrid, const dim3 &threadsPer
 
 //////////////////////////////////////////////////////////////////////////////
 template <typename T1, typename T2, typename T3>
-static __global__ void usualCudaDot(const Nd4jLong length, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, void* vZ) {
+static __global__ void usualCudaDot(const Nd4jLong length, const double alpha, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, const double beta, void* vZ) {
 
     T1* X = reinterpret_cast<T1*>(const_cast<void*>(vX));
     T2* Y = reinterpret_cast<T2*>(const_cast<void*>(vY));
     T3* Z = reinterpret_cast<T3*>(vZ);
     
     extern __shared__ char shmem[];
-    __shared__ T3 *pairwiseMul;
-    if (threadIdx.x == 0) {
-        pairwiseMul = reinterpret_cast<T3*>(shmem);
-    }
-    __syncthreads();
-
+    auto pairwiseMul = reinterpret_cast<T3*>(shmem);
 
     const int tid = blockIdx.x * blockDim.x + threadIdx.x;    
     if(tid < length)
@@ -136,15 +131,15 @@ static __global__ void usualCudaDot(const Nd4jLong length, const void* vX, const
         T3 sum = 0;
         for(Nd4jLong i = 0; i < length; ++i)
             sum = sum + pairwiseMul[i];
-        *Z = sum;
+        *Z = (T3)alpha * sum + (T3)beta * *Z;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////
 template <typename T1, typename T2, typename T3>    
-__host__ static void usualDot(const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const Nd4jLong length, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, void* vZ) {
+__host__ static void usualDot(const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const Nd4jLong length, const double alpha, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, const double beta, void* vZ) {
     
-    usualCudaDot<T1,T2,T3><<<blocksPerGrid, threadsPerBlock, length*sizeof(T3) + 128, *stream>>>(length, vX, incx, vY, incy, vZ);
+    usualCudaDot<T1,T2,T3><<<blocksPerGrid, threadsPerBlock, length*sizeof(T3) + 128, *stream>>>(length, alpha, vX, incx, vY, incy, beta, vZ);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -372,7 +367,7 @@ NDArray* MmulHelper::mmulMxV(const NDArray* A, const NDArray* X, nd4j::NDArray* 
 
 ////////////////////////////////////////////////////////////////////////////
 // (X * Y) = Z[0]
-NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z) {
+NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z, const double alpha, const double beta) {
 
     int xLenDim(0), yLenDim(0);
 
@@ -404,13 +399,12 @@ NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z) {
     
     cudaStream_t* stream = X->getContext()->getCudaStream();
 
-    dim3 threadsPerBlock(length);
+    dim3 threadsPerBlock(512);
     dim3 blocksPerGrid(1);
-    if (length > 512){
-        threadsPerBlock.x = 512;             
-        blocksPerGrid.x = math::nd4j_ceil<double, int>(static_cast<double>(length) / threadsPerBlock.x);
-    }        
-    BUILD_TRIPLE_SELECTOR(xType, yType, zType, usualDot, (blocksPerGrid, threadsPerBlock, stream, length, X->getSpecialBuffer(), incx, Y->getSpecialBuffer(), incy, Z->getSpecialBuffer()), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
+    if (length > 512)        
+        threadsPerBlock.x = math::nd4j_ceil<double, int>(static_cast<double>(length) / 512);
+
+    BUILD_TRIPLE_SELECTOR(xType, yType, zType, usualDot, (blocksPerGrid, threadsPerBlock, stream, length, alpha, X->getSpecialBuffer(), incx, Y->getSpecialBuffer(), incy, beta, Z->getSpecialBuffer()), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
         
     auto cudaResult = cudaStreamSynchronize(*stream);
     if (cudaResult != 0) throw cuda_exception::build("MmulHelper::dot cuda failed !", cudaResult);       
@@ -424,6 +418,6 @@ NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z) {
 
 BUILD_TRIPLE_TEMPLATE(template void usualGemm, (const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const bool transA, const bool transB, const int M, const int N, const int K, const double alpha, const void* vA, const int lda, const void* vB, const int ldb, const double beta, void* vC, const int ldc), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
 BUILD_TRIPLE_TEMPLATE(template void usualGemv, (const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const bool transA, const int M, const int N, const double alpha, const void* vA, const int lda, const void* vB, const int incx, const double beta, void* vC, const int incy), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
-BUILD_TRIPLE_TEMPLATE(template void usualDot,  (const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const Nd4jLong length, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, void* vZ), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
+BUILD_TRIPLE_TEMPLATE(template void usualDot,  (const dim3 &blocksPerGrid, const dim3 &threadsPerBlock, cudaStream_t *stream, const Nd4jLong length, const double alpha, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, const double beta, void* vZ), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
 
 }

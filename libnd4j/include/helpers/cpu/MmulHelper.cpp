@@ -96,7 +96,7 @@ static void usualGemv(const char aOrder, const int M, const int N, const double 
 //////////////////////////////////////////////////////////////////////////////
 // (X*Y) = Z[0]
 template <typename T1, typename T2, typename T3>
-static void usualDot(const Nd4jLong length, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, void* vZ) {
+static void usualDot(const Nd4jLong length, const double alpha, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, const double beta, void* vZ) {
 
     T1* X = reinterpret_cast<T1*>(const_cast<void*>(vX));
     T2* Y = reinterpret_cast<T2*>(const_cast<void*>(vY));
@@ -106,7 +106,7 @@ static void usualDot(const Nd4jLong length, const void* vX, const Nd4jLong incx,
     #pragma omp parallel for if(length > Environment::getInstance()->elementwiseThreshold()) schedule(guided) reduction(sumT:sum)
     for(int i = 0; i < length; ++i)
             sum = sum + X[i * incx] * Y[i * incy];        
-    *Z = sum;
+    *Z = (T3)alpha * sum + (T3)beta * *Z;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -257,7 +257,7 @@ NDArray* MmulHelper::mmulMxV(const NDArray* A, const NDArray* X, nd4j::NDArray* 
 
 ////////////////////////////////////////////////////////////////////////////
 // (X * Y) = Z[0]
-NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z) {
+NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z, const double alpha, const double beta) {
 
     int xLenDim(0), yLenDim(0);
 
@@ -283,13 +283,13 @@ NDArray* MmulHelper::dot(const NDArray* X, const NDArray* Y, nd4j::NDArray* Z) {
     const auto yType = Y->dataType();
     const auto zType = Z->dataType();
     
-    BUILD_TRIPLE_SELECTOR(xType, yType, zType, usualDot, (length, X->getBuffer(), incx, Y->getBuffer(), incy, Z->getBuffer()), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);        
+    BUILD_TRIPLE_SELECTOR(xType, yType, zType, usualDot, (length, alpha, X->getBuffer(), incx, Y->getBuffer(), incy, beta, Z->getBuffer()), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);        
 
     return Z;
 }
 
 BUILD_TRIPLE_TEMPLATE(template void usualGemm, (const char cOrder, const bool transA, const bool transB, const int M, const int N, const int K, const double alpha, const void* A, const int lda, const void* B, const int ldb, const double beta, void* C, const int ldc), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
 BUILD_TRIPLE_TEMPLATE(template void usualGemv, (const char aOrder, const int M, const int N, const double alpha, const void* A, const int lda, const void* B, const int incx, const double beta, void* C, const int incy), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
-BUILD_TRIPLE_TEMPLATE(template void usualDot,  (const Nd4jLong length, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, void* vZ), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
+BUILD_TRIPLE_TEMPLATE(template void usualDot,  (const Nd4jLong length, const double alpha, const void* vX, const Nd4jLong incx, const void* vY, const Nd4jLong incy, const double beta, void* vZ), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
 }
 

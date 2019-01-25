@@ -1078,3 +1078,67 @@ TEST_F(CudaBasicsTests2, mmulMxV_28) {
     nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_1) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray x('c', {N}, {1, 2, 3, 4}, nd4j::DataType::INT32);
+    NDArray y('f', {N}, {0.1, 0.2, 0.3, 0.4}, nd4j::DataType::FLOAT32);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_2) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray x('c', {1,1,N}, {1,2, 3, 4}, nd4j::DataType::INT32);
+    NDArray y('f', {1,1,N,1,1,1}, {0.1, 0.2, 0.3, 0.4}, nd4j::DataType::FLOAT32);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_3) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray xBig('c', {4,2}, {1, 0, 2, 0, 3, 0, 4, 0}, nd4j::DataType::INT32);
+    NDArray yBig('c', {4,3}, {0.1, 0, 0, 0.2, 0, 0, 0.3, 0, 0, 0.4, 0,0}, nd4j::DataType::FLOAT32);
+    NDArray x = xBig(0, {1}, true);
+    NDArray y = yBig(0, {1}, true);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);    
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_4) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray xBig('f', {4,2}, {1, 2, 3, 4, 0, 0, 0, 0}, nd4j::DataType::INT32);
+    NDArray yBig('c', {4,3}, {0.1, 0, 0, 0.2, 0, 0, 0.3, 0, 0, 0.4, 0,0}, nd4j::DataType::FLOAT32);
+    NDArray x = xBig(0, {1}, true);
+    NDArray y = yBig(0, {1});
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);    
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
