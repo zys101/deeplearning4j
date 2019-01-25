@@ -404,39 +404,38 @@ NDArray* nd4j::MmulHelper::tensorDot(const nd4j::NDArray* a, const nd4j::NDArray
 // }
 
 //////////////////////////////////////////////////////////////////////////
-NDArray* MmulHelper::mmulNxN(NDArray* A, NDArray* B, NDArray* C, double alpha, double beta) {
+NDArray* MmulHelper::mmulNxN(const NDArray* A, const NDArray* B, NDArray* C, const double alpha, const double beta, const char outOrder) {
 
     const int aRank = A->rankOf();
     const int bRank = B->rankOf();
 
     // input ranks validation
     if(aRank > bRank && bRank != 2)
-        throw std::runtime_error("Rank of B array should be equal 2 !");
+        throw std::runtime_error("MmulHelper::mmulNxN: rank of B array should be equal 2 !");
     else if(bRank > aRank && aRank != 2)
-        throw std::runtime_error("Rank of A array should be equal 2 !");
+        throw std::runtime_error("MmulHelper::mmulNxN: rank of A array should be equal 2 !");
     else if (aRank == bRank ) {
         for(int i = 0; i < aRank - 2; ++i)
             if(A->sizeAt(i) != B->sizeAt(i))
-                throw std::runtime_error("MmulHelper<T>::mmulNxN op: shapes of A and B arrays are not suitable for matrix multiplication !");
+                throw std::runtime_error("MmulHelper::mmulNxN: shapes of A and B arrays are not suitable for matrix multiplication !");
     }
 
     if(A->sizeAt(-1) != B->sizeAt(-2))
-        throw std::runtime_error("MmulHelper<T>::mmulNxN op: shapes of A and B arrays are not suitable for matrix multiplication !");
+        throw std::runtime_error("MmulHelper::mmulNxN: shapes of A and B arrays are not suitable for matrix multiplication !");
 
     // validation of C array
     std::vector<Nd4jLong> cExpectedShape = aRank > bRank ? A->getShapeAsVector() : B->getShapeAsVector();
     cExpectedShape[cExpectedShape.size() - 2] = A->sizeAt(-2);
     cExpectedShape[cExpectedShape.size() - 1] = B->sizeAt(-1);
 
-    if(C != nullptr ) {
+    if(C != nullptr )
         if(!C->isSameShape(cExpectedShape))
-            throw std::runtime_error("MmulHelper<T>::mmulNxN op: shape of C array is not suitable for AxB matrix multiplication !");
-    }
+            throw std::runtime_error("MmulHelper::mmulNxN: shape of C array is not suitable for AxB matrix multiplication !");
     else
-        C = new NDArray('c', cExpectedShape, B->dataType());
+        C = new NDArray(outOrder, cExpectedShape, B->dataType());
 
     // multiplication
-    std::vector<int> dimsToExclude = ShapeUtils::evalDimsToExclude(C->rankOf(), {-2, -1});
+    const std::vector<int> dimsToExclude = ShapeUtils::evalDimsToExclude(C->rankOf(), {-2, -1});
     const Nd4jLong numOfSubArrs = ShapeUtils::getNumOfSubArrs(C->getShapeInfo(), dimsToExclude);
     std::vector<Nd4jLong> idxRanges(2 * C->rankOf());
 
@@ -444,24 +443,21 @@ NDArray* MmulHelper::mmulNxN(NDArray* A, NDArray* B, NDArray* C, double alpha, d
         for(Nd4jLong i = 0; i < numOfSubArrs; ++i) {
 
             ShapeUtils::evalIdxRangesForSubArr(i, C->getShapeInfo(), dimsToExclude, idxRanges.data());
-            NDArray cSubArr = (*C)(idxRanges);
-            NDArray* c = nullptr;
+            NDArray cSubArr = (*C)(idxRanges);            
 
             if(aRank > bRank) {
                 NDArray aSubArr = (*A)(idxRanges);
-                c = mmulMxM(&aSubArr, B, &cSubArr, 1., 0.);
+                mmulMxM(&aSubArr, B, &cSubArr, 1., 0., outOrder);
             }
             else if(bRank > aRank) {
                 NDArray bSubArr = (*B)(idxRanges);
-                c = mmulMxM(A, &bSubArr, &cSubArr, 1., 0);
+                mmulMxM(A, &bSubArr, &cSubArr, 1., 0, outOrder);
             }
             else {
                 NDArray aSubArr = (*A)(idxRanges);
                 NDArray bSubArr = (*B)(idxRanges);
-                c = mmulMxM(&aSubArr, &bSubArr, &cSubArr, 1., 0.);
+                mmulMxM(&aSubArr, &bSubArr, &cSubArr, 1., 0., outOrder);
             }
-
-            if (c != &cSubArr) { cSubArr.assign(c); delete c; }
         }
 
     return C;
@@ -480,7 +476,7 @@ nd4j::NDArray* MmulHelper::mmul(nd4j::NDArray* A, nd4j::NDArray* B, nd4j::NDArra
     if (A->rankOf() > 2 || B->rankOf() > 2) {
         return mmulNxN(A, B, C, alpha, beta);
     } else if ((A->isMatrix() && B->isRowVector()) || (A->isMatrix() && B->isColumnVector())) {        
-        BUILD_TRIPLE_SELECTOR(xType, yType, zType, return mmulMxV, (A, B, C, alpha, beta), LIBND4J_TYPES, FLOAT_TYPES, FLOAT_TYPES);
+        return mmulMxV(A, B, C, alpha, beta);
     } else if ((A->isRowVector() && B->isRowVector()) || (A->isColumnVector() && B->isColumnVector())) {
         // dot
         if (A->lengthOf() != B->lengthOf())
