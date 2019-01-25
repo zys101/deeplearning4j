@@ -604,7 +604,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_1) {
 
 	NDArray exp('f', {M}, {0.1, 0.3, 0.5}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -620,7 +620,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_2) {
 
 	NDArray exp('f', {M}, {-1.6, -0.7, 0.2}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -636,7 +636,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_3) {
 
 	NDArray exp('f', {M}, {-1.6, -0.7, 0.2}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -652,7 +652,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_4) {
 
 	NDArray exp('c', {M}, {-1.6, -0.7, 0.2}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -668,7 +668,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_5) {
 
 	NDArray exp('c', {M}, {0.1, 0.3, 0.5}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -685,7 +685,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_6) {
     
 	NDArray exp('f', {M}, {5.5, 5.1, 4.7}, nd4j::DataType::DOUBLE);
 
-	nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -703,7 +703,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_7) {
     
     NDArray exp('f', {M}, {5.1, 3.3, 1.5}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));    
 }
 
@@ -721,7 +721,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_8) {
     
     NDArray exp('f', {M}, {6.2, 4.5, 1.7}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -739,7 +739,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_9) {
     
     NDArray exp('f', {M}, {1.5, 1.8, 1.5}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -757,7 +757,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_10) {
     
     NDArray exp('f', {M}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -775,7 +775,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_11) {
     
     NDArray exp('f', {M}, {-12.1, -10.9, -9.7}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -793,7 +793,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_12) {
     
     NDArray exp('c', {M}, {3.3, 3.3, 3.3}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));    
 }
 
@@ -811,7 +811,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_13) {
     
     NDArray exp('f', {M}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -829,7 +829,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_14) {
     
     NDArray exp('c', {M}, {3.3, 3.3, 3.3}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));    
 }
 
@@ -847,7 +847,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_15) {
     
     NDArray exp('f', {M}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -866,7 +866,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_16) {
     
     NDArray exp('c', {M}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -885,7 +885,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_17) {
     
     NDArray exp('f', {1,M,1}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);    
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);    
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -904,7 +904,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_18) {
     
     NDArray exp('c', {1,M,1}, {-0.3, 0.3, 0.9}, nd4j::DataType::DOUBLE);
 
-    nd4j::MmulHelper::mmulMxV<double,double,double>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -920,7 +920,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_19) {
 
 	NDArray exp('f', {M}, {0.1, 0.3, 0.5}, nd4j::DataType::FLOAT32);
 
-	nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -935,7 +935,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_20) {
 	NDArray y('f', {M}, nd4j::DataType::FLOAT32);
 	NDArray exp('f', {M}, {-1.6, -0.7, 0.2}, nd4j::DataType::FLOAT32);
 
-	nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -950,7 +950,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_21) {
 	NDArray y('c', {M}, nd4j::DataType::FLOAT32);
 	NDArray exp('c', {M}, {-1.6, -0.7, 0.2}, nd4j::DataType::FLOAT32);
 
-	nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);	
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);	
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -967,7 +967,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_22) {
     
 	NDArray exp('f', {M}, {5.5, 5.1, 4.7}, nd4j::DataType::FLOAT32);
 
-	nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -985,7 +985,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_23) {
     
     NDArray exp('f', {M}, {1.5, 1.8, 1.5}, nd4j::DataType::FLOAT32);
 
-    nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -1002,7 +1002,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_24) {
     
 	NDArray exp('f', {M}, {5.5, 5.1, 4.7}, nd4j::DataType::FLOAT32);
 
-	nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
+	nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
 	ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -1020,7 +1020,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_25) {
     
     NDArray exp('f', {M}, {1.5, 1.8, 1.5}, nd4j::DataType::FLOAT32);
 
-    nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -1039,7 +1039,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_26) {
     
     NDArray exp('c', {M}, {-0.3, 0.3, 0.9}, nd4j::DataType::FLOAT32);
 
-    nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -1058,7 +1058,7 @@ TEST_F(CudaBasicsTests2, mmulMxV_27) {
     
     NDArray exp('c', {1,M,1}, {-0.3, 0.3, 0.9}, nd4j::DataType::FLOAT32);
 
-    nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);    
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);    
     ASSERT_TRUE(y.equalsTo(&exp));
 }
 
@@ -1075,6 +1075,70 @@ TEST_F(CudaBasicsTests2, mmulMxV_28) {
     
     NDArray exp('f', {M}, {5.1, 3.3, 1.5}, nd4j::DataType::FLOAT32);
 
-    nd4j::MmulHelper::mmulMxV<float,double,float>(&a, &x, &y, 1., 0.);
-    y.printIndexedBuffer();
+    nd4j::MmulHelper::mmulMxV(&a, &x, &y, 1., 0.);
+    ASSERT_TRUE(y.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_1) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray x('c', {N}, {1, 2, 3, 4}, nd4j::DataType::INT32);
+    NDArray y('f', {N}, {0.1, 0.2, 0.3, 0.4}, nd4j::DataType::FLOAT32);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_2) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray x('c', {1,1,N}, {1,2, 3, 4}, nd4j::DataType::INT32);
+    NDArray y('f', {1,1,N,1,1,1}, {0.1, 0.2, 0.3, 0.4}, nd4j::DataType::FLOAT32);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_3) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray xBig('c', {4,2}, {1, 0, 2, 0, 3, 0, 4, 0}, nd4j::DataType::INT32);
+    NDArray yBig('c', {4,3}, {0.1, 0, 0, 0.2, 0, 0, 0.3, 0, 0, 0.4, 0,0}, nd4j::DataType::FLOAT32);
+    NDArray x = xBig(0, {1}, true);
+    NDArray y = yBig(0, {1}, true);
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);    
+    ASSERT_TRUE(z.equalsTo(&exp));
+}
+
+//////////////////////////////////////////////////////////////////////////
+TEST_F(CudaBasicsTests2, mmulDot_4) {
+    
+    const Nd4jLong N = 4;   
+
+    NDArray xBig('f', {4,2}, {1, 2, 3, 4, 0, 0, 0, 0}, nd4j::DataType::INT32);
+    NDArray yBig('c', {4,3}, {0.1, 0, 0, 0.2, 0, 0, 0.3, 0, 0, 0.4, 0,0}, nd4j::DataType::FLOAT32);
+    NDArray x = xBig(0, {1}, true);
+    NDArray y = yBig(0, {1});
+    NDArray z(nd4j::DataType::DOUBLE);
+        
+    NDArray exp('c', {0}, {3}, nd4j::DataType::DOUBLE);
+
+    nd4j::MmulHelper::dot(&x, &y, &z);    
+    ASSERT_TRUE(z.equalsTo(&exp));
 }

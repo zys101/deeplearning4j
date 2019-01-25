@@ -27,28 +27,22 @@ namespace nd4j {
     class MmulHelper {
 
     private:
-        // helpers for helper 
-        // multiptication N-dimensions tensor on other N-dimensions one
-        //template <typename X, typename Y, typename Z>
-        static nd4j::NDArray* mmulNxN(nd4j::NDArray* A, nd4j::NDArray* B, nd4j::NDArray* C, double alpha = 1.0, double beta = 0.0);        
         
-
-        template <typename X, typename Y, typename Z>
-        static void _dot(void* vA, void* vB, void* vC, Nd4jLong length);
-
-        // this method requires all three arrays to have continuous buffers and f (column-major) order        
-        static void basicGemm(const NDArray* A, const NDArray* B, NDArray* C, double alpha, double beta);
-        
+        // multiptication N-dimensions tensor on other N-dimensions one        
+        static nd4j::NDArray* mmulNxN(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C, const double alpha = 1.0, const double beta = 0.0, const char outOrder = 'f');
+                
     public:
+        
+        // dot product of vectors (X * Y) = Z[0]
+        static nd4j::NDArray* dot(const nd4j::NDArray* X, const nd4j::NDArray* Y, nd4j::NDArray* Z, const double alpha = 1.0, const double beta = 0.0);
 
         // multiptication Matrix to Matrix        
         static nd4j::NDArray* mmulMxM(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C, double alpha = 1.0, double beta = 0.0, const char outOrder = 'f');
 
-        // multiptication Matrix to vector
-        template <typename X, typename Y, typename Z>
+        // multiptication Matrix to vector        
         static nd4j::NDArray* mmulMxV(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C, double alpha = 1.0, double beta = 0.0, const char outOrder = 'f');
 
-        static nd4j::NDArray* mmul(nd4j::NDArray* A, nd4j::NDArray* B, nd4j::NDArray* C = nullptr, double alpha = 1.0, double beta = 0.0);
+        static nd4j::NDArray* mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C = nullptr, const double alpha = 1.0, const double beta = 0.0, const char outOrder = 'f');
 
         static nd4j::NDArray* tensorDot(const nd4j::NDArray* A, const nd4j::NDArray* B, const std::initializer_list<int>& axesA, const std::initializer_list<int>& axesB = {});
 
