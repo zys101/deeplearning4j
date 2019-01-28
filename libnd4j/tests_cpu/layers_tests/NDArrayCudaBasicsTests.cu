@@ -577,7 +577,7 @@ TEST_F(NDArrayCudaBasicsTests, TestPrimitiveNeg_01) {
     NativeOpExecutioner::execTransformSame(x.getContext(), transform::Neg, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo(), y.buffer(), y.shapeInfo(), y.specialBuffer(), y.specialShapeInfo(), nullptr, nullptr, nullptr);
     auto res = cudaStreamSynchronize(*stream);
     ASSERT_EQ(0, res);
-//    y.syncToHost();
+    y.tickWriteDevice();
 
     x.printBuffer("X = ");
     y.printBuffer("Y = ");
@@ -783,8 +783,10 @@ TEST_F(NDArrayCudaBasicsTests, TestRawBroadcast_2) {
                                        nullptr, nullptr);
 
     cudaResult = cudaStreamSynchronize(stream); ASSERT_EQ(0, cudaResult);
+    z.tickWriteDevice();
     z.lazyAllocateBuffer();
     z.printBuffer("Result with Broadcast2 (multiply)");
+    exp.printBuffer("Expect with Broadcast2 (multiply)");
     // verify results
     for (int e = 0; e < z.lengthOf(); e++)
         ASSERT_NEAR(exp.e<double>(e), z.e<double>(e), 1e-5);
@@ -916,6 +918,7 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_01) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x.applyTrueBroadcast(BroadcastOpsTuple::Multiply(), &y, &z);// *= y;
+    z.lazyAllocateBuffer();
     z.printBuffer("53Result out");
 
     //
@@ -1160,7 +1163,10 @@ TEST_F(NDArrayCudaBasicsTests, TestDup1) {
     array.printBuffer("Array at start");
     auto arrC = array.dup('c');
     auto arrF = array.dup('f');
+    arrC->lazyAllocateBuffer();
     arrC->printBuffer("arrC");
+
+    arrF->lazyAllocateBuffer();
     arrF->printBuffer("arrF");
     //arrC->printShapeInfo("C shape");
     //arrF->printShapeInfo("F shape");
@@ -1786,13 +1792,12 @@ TEST_F(NDArrayCudaBasicsTests, BroadcastOpsTest1) {
     
     ASSERT_TRUE(row->equalsTo(&expRow));
             
-    x.syncToDevice();
-    x.applyBroadcast(broadcast::Add, {1}, row, &z, nullptr);    
-    z.syncToHost();    
+    x.applyBroadcast(broadcast::Add, {1}, row, &z, nullptr);
     x += *row;
     
-    ASSERT_TRUE(z.equalsTo(&exp));
-   
+    ASSERT_TRUE(x.equalsTo(z));
+    //ASSERT_TRUE(z.equalsTo(&exp));
+
     delete row;
 }
 
@@ -1831,9 +1836,9 @@ TEST_F(NDArrayCudaBasicsTests, TestFloat16_1) {
 TEST_F(NDArrayCudaBasicsTests, TestFloat16_2) {
     auto x = NDArrayFactory::create<float16>('c', {9}, {1,2,3,4,5,7,8,9});
     auto y = NDArrayFactory::create<float16>('c', {9}, {1,2,3,4,5,7,8,9});
-    //ASSERT_TRUE(x.equalsTo(&y));
-    for (int e = 0; e < x.lengthOf(); e++)
-        ASSERT_NEAR(x.e<float16>(e), y.e<float16>(e), 1.e-5f);
+    ASSERT_TRUE(x.equalsTo(y));
+    //for (int e = 0; e < x.lengthOf(); e++)
+    //    ASSERT_NEAR(x.e<float16>(e), y.e<float16>(e), 1.e-5f);
 }
 
 TEST_F(NDArrayCudaBasicsTests, TestFloat16_3) {
@@ -1925,6 +1930,8 @@ TEST_F(NDArrayCudaBasicsTests, Tile_Test_2_1)
     auto y = x.tile({1,2,1});
     auto exp = NDArrayFactory::create<float>('c', {2, 2, 2});
     exp = 10.;
+    y.lazyAllocateBuffer();
+    exp.lazyAllocateBuffer();
     y.printShapeInfo("Output SHAPE");
     y.printBuffer("Output TILE");
     exp.printBuffer("Expect TILE");
@@ -1987,7 +1994,8 @@ TEST_F(NDArrayCudaBasicsTests, assign_2)
     NDArray expected('c', {4}, {1,2,3,4}, nd4j::DataType::INT32);
     
     y.assign(x);
-    y.printBuffer();
+    y.lazyAllocateBuffer();
+    y.printBuffer("ASSIGN VECTOR");
     
     ASSERT_TRUE(expected.equalsTo(&y));
 }
@@ -2124,7 +2132,7 @@ TEST_F(NDArrayCudaBasicsTests, Test_diagonal_1) {
             tmp.buffer(), tmp.shapeInfo(), tmp.specialBuffer(), tmp.specialShapeInfo());
     cudaStream_t* stream = x.getContext()->getCudaStream();
     auto res = cudaStreamSynchronize(*stream);
-    tmp.syncToHost();
+    tmp.lazyAllocateBuffer();
     tmp.printBuffer("Compare result is (expected 0)");
     ASSERT_TRUE(exp.isSameShape(diag));
     ASSERT_TRUE(exp.equalsTo(diag));

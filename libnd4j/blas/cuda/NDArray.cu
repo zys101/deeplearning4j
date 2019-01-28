@@ -1702,8 +1702,9 @@ NDArray NDArray::e(const Nd4jLong i) const {
 
         if (!scalar->isActualOnDeviceSide())
             scalar->syncToDevice();
-        NDArray::registerSpecialUse({target}, {this, scalar});
+        //NDArray::registerSpecialUse({target}, {this, scalar});
         NativeOpExecutioner::execScalarBool(_context, op, _buffer, _shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, scalar->_buffer, scalar->_shapeInfo, scalar->_bufferD, scalar->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(target->dataType()): nullptr);
+        target->tickWriteDevice();
     }
 
     template <typename T>
@@ -1741,8 +1742,9 @@ NDArray NDArray::e(const Nd4jLong i) const {
 
         if (!scalar->isActualOnDeviceSide())
             scalar->syncToDevice();
-        NDArray::registerSpecialUse({target}, {this,scalar});
+        //NDArray::registerSpecialUse({target}, {this,scalar});
         NativeOpExecutioner::execScalar(_context, op, _buffer, _shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, scalar->getBuffer(), scalar->getShapeInfo(), scalar->_bufferD, scalar->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(target->dataType()) : nullptr);
+        target->tickWriteDevice();
     }
 
     template <typename T>
