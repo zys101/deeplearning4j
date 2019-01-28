@@ -262,6 +262,10 @@ nd4j::NDArray* MmulHelper::mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, 
     const bool isAVector = shape::isCommonVector(A->getShapeInfo(), lenDim);
     const bool isBVector = shape::isCommonVector(B->getShapeInfo(), lenDim);
 
+    // dot product of 2 vectors
+    if(isAVector && isBVector && (aRank != 2 || aRank == 2 && (A->isSameShape(B) || bRank == 1 && A->sizeAt(1) == 1)))  // (1x4 * 1*4) or (4x1 * 4x1) or (4x1 * 4)
+        return dot(A, B, C, alpha, beta);
+
     // matrix x matrix
     if(aRank == 2 && bRank == 2)
         return mmulMxM(A, B, C, alpha, beta, outOrder);            
@@ -269,12 +273,7 @@ nd4j::NDArray* MmulHelper::mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, 
     // matrix x vector
     if(aRank == 2 && isBVector)
         return mmulMxV(A, B, C, alpha, beta, outOrder);
-
-    // dot product of 2 vectors
-    if(isAVector && isBVector)
-        return dot(A, B, C, alpha, beta);    
-
-
+    
     // batched matrix multiplication
     return mmulNxN(A, B, C, alpha, beta, outOrder);
 }
