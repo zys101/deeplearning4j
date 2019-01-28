@@ -45,7 +45,11 @@ else()
         set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS}")
     endif()
 
-    set(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+    if (CUDA_BLAS)
+        ## ?
+    else()
+        set(CMAKE_CXX_FLAGS_DEBUG " ${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+    endif()
 endif()
 
 # TODO: get rid of this once problem confirmed solved
