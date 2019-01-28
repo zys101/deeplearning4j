@@ -56,7 +56,7 @@ namespace nd4j {
 
             STORE_RESULT(*z);
 
-            return ND4J_STATUS_OK;
+            return Status::OK();
         }
 
         /**

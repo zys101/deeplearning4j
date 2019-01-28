@@ -53,7 +53,7 @@ namespace nd4j {
 
                 REQUIRE_TRUE(dims.size() > 0, 0, "Some dimensions requuired for reduction!");
 
-                NativeOpExecutioner::execSummaryStats(nullptr, opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(), block.getTArguments()->data(),
+                NativeOpExecutioner::execSummaryStats(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(), block.getTArguments()->data(),
                         z->getBuffer(), z->getShapeInfo(), z->specialBuffer(), z->specialShapeInfo(), dims.data(), (int) dims.size(), nullptr, nullptr, biasCorrected);
             }
 
