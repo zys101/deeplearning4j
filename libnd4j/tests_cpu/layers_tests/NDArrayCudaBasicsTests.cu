@@ -2220,6 +2220,32 @@ TEST_F(NDArrayCudaBasicsTests, Test_PermuteEquality_3) {
     ASSERT_TRUE(exp.equalsTo(&x));
 }
 
+TEST_F(NDArrayCudaBasicsTests, Test_Empty_1) {
+    auto x = NDArrayFactory::empty<float>();
+
+    ASSERT_TRUE(x.isEmpty());
+}
+
+TEST_F(NDArrayCudaBasicsTests, Test_Empty_2) {
+    auto x = NDArrayFactory::empty_<float>();
+
+    ASSERT_TRUE(x->isEmpty());
+    delete x;
+}
+
+TEST_F(NDArrayCudaBasicsTests, Test_Empty_3) {
+    auto x = NDArrayFactory::empty(nd4j::DataType::FLOAT32);
+
+    ASSERT_TRUE(x.isEmpty());
+}
+
+TEST_F(NDArrayCudaBasicsTests, Test_Empty_4) {
+    auto x = NDArrayFactory::empty_(nd4j::DataType::FLOAT32);
+
+    ASSERT_TRUE(x->isEmpty());
+    delete x;
+}
+
 // printCudaGlobal<double><<<1,1,0,*stream>>>(dX, 6);
 //     printCudaGlobal<Nd4jLong><<<1,1,0,*stream>>>(dXShapeInfo, 8);
 //     printCudaGlobal<double><<<1,1,0,*stream>>>(dZ, 2);
