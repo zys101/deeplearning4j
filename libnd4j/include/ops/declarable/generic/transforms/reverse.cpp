@@ -46,13 +46,13 @@ namespace ops  {
         else {
             // check the consistency of input dimensions to reverse along
             shape::checkDimensions(input->rankOf(), axis);
-            helpers::reverse(input, output, &axis, false);
+            helpers::reverse(block.launchContext(), input, output, &axis, false);
         }
 
         if (input->rankOf() == 1) // there are no axis can be used for 1D tensor
             axis.clear();
             
-        helpers::reverse(block.launchContext(), input, output, &axis, isLegacy);
+        helpers::reverse(block.launchContext(), input, output, &axis, false);
    
         return Status::OK();
     }

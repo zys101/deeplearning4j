@@ -23,8 +23,8 @@
 #include <Status.h>
 #include <helpers/ShapeUtils.h>
 #include <NDArrayFactory.h>
-#include <graph/exceptions/graph_exception.h>
-#include <graph/exceptions/unresolved_input_exception.h>
+#include <exceptions/graph_exception.h>
+#include <exceptions/unresolved_input_exception.h>
 
 namespace nd4j {
     namespace ops {
@@ -248,7 +248,7 @@ namespace nd4j {
                 int8_t * buffer;
                 ALLOCATE(buffer, workspace, len, int8_t);
 
-                var->setNDArray(new NDArray(buffer, __shape, block.getVariableSpace()->launchContext()));
+                var->setNDArray(new NDArray(buffer, __shape, block.launchContext()));
                 var->getNDArray()->triggerAllocationFlag(true, true);
             } else if(var->getNDArray()->lengthOf() != len) {
                 // if length not match - lets reallocate array
@@ -256,7 +256,7 @@ namespace nd4j {
                 int8_t * buffer;
                 ALLOCATE(buffer, workspace, len, int8_t);
 
-                var->setNDArray(new NDArray(buffer, __shape, block.getVariableSpace()->launchContext()));
+                var->setNDArray(new NDArray(buffer, __shape, block.launchContext()));
                 var->getNDArray()->triggerAllocationFlag(true, true);
             }
 
@@ -271,12 +271,12 @@ namespace nd4j {
             Nd4jLong len = shape::length(shape);
             // if that's first run - we probably have nothing here
             if (var->getNDArray() == nullptr) {
-                var->setNDArray(NDArrayFactory::create_(order, shape, block.dataType(), block.getVariableSpace()->launchContext()));
+                var->setNDArray(NDArrayFactory::create_(order, shape, block.dataType(), block.launchContext()));
                 var->getNDArray()->triggerAllocationFlag(true, true);
             } else if(var->getNDArray()->lengthOf() != len) {
                 // if length not match - lets reallocate array
                 delete var->getNDArray();
-                var->setNDArray(NDArrayFactory::create_(order, shape, block.dataType(), block.getVariableSpace()->launchContext()));
+                var->setNDArray(NDArrayFactory::create_(order, shape, block.dataType(), block.launchContext()));
                 var->getNDArray()->triggerAllocationFlag(true, true);
             }
 

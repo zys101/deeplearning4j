@@ -95,7 +95,7 @@ namespace nd4j {
                 newShape[7] = 99;
             } else {
                 // in this case we're building proper shape for reduction
-                auto array = new NDArray(nullptr, inShape, block.getVariableSpace()->launchContext());
+                auto array = new NDArray(nullptr, inShape, block.launchContext());
                 array->triggerAllocationFlag(false, false);
 
                 newShape = ShapeUtils::evalReduceShapeInfo('c', *block.getIArguments(), *array, false, true);

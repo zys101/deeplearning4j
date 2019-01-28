@@ -21,7 +21,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include "../NativeOps.h"
-#include "NativeOpExecutioner.h"
+#include "../NativeOpExecutioner.h"
 #include "../NDArray.h"
 #include "../GraphExecutioner.h"
 #include <graph/GraphHolder.h>
@@ -761,7 +761,7 @@ void NativeOps::execSummaryStats(Nd4jPointer *extraPointers,
     auto dimension = reinterpret_cast<int *>(hDimension);
     int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
-    NativeOpExcutioner::execSummaryStats(nullptr,
+    NativeOpExecutioner::execSummaryStats(nullptr,
             opNum,
             hX,
             hXShapeInfo,
@@ -938,7 +938,7 @@ void NativeOps::execReduce3All(Nd4jPointer *extraPointers,
     int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
 
-    NativeOpExcutioner::execReduce3All(nullptr, opNum, hX, hXShapeInfo, extraParamsVals, hY, hYShapeInfo, hZ, hZShapeInfo, dimension, dimensionLength, xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
+    NativeOpExecutioner::execReduce3All(nullptr, opNum, hX, hXShapeInfo, dX, dXShapeInfo, extraParamsVals, hY, hYShapeInfo, dY, dYShapeInfo, hZ, hZShapeInfo, dZ, dZShapeInfo, dimension, dimensionLength, xTadShapeInfo, xOffsets, yTadShapeInfo, yOffsets);
 }
 
 
@@ -1637,7 +1637,7 @@ void NativeOps::execScalar(Nd4jPointer *extraPointers,
     auto dimension = reinterpret_cast<int *>(hDimension);
     int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
-    NativeOpExcutioner::execScalar(nullptr,
+    NativeOpExecutioner::execScalar(nullptr,
             opNum,
             hX,
             hXShapeInfo,
@@ -1677,7 +1677,7 @@ void NativeOps::execScalarBool(Nd4jPointer *extraPointers,
     auto dimension = reinterpret_cast<int *>(hDimension);
     int dimensionLength = static_cast<int>(shape::length(hDimensionShape));
 
-    NativeOpExcutioner::execScalarBool(nullptr,
+    NativeOpExecutioner::execScalarBool(nullptr,
             opNum,
             hX,
             hXShapeInfo,

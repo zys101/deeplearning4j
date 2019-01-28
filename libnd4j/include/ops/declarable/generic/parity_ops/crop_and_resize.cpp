@@ -51,8 +51,8 @@ namespace nd4j {
                 extrapolationVal = T_ARG(0);
             }
 
-            helpers::cropAndResizeFunctor(image, boxes, boxIndexes, newImageSize, method, extrapolationVal, output);
-            return ND4J_STATUS_OK;
+            helpers::cropAndResizeFunctor(block.launchContext(), image, boxes, boxIndexes, newImageSize, method, extrapolationVal, output);
+            return Status::OK();
         }
 
         DECLARE_SHAPE_FN(crop_and_resize) {

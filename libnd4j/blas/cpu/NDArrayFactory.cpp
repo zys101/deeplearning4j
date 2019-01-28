@@ -476,10 +476,10 @@ template NDArray NDArrayFactory::create(const std::vector<bool> &values, nd4j::g
 
 ////////////////////////////////////////////////////////////////////////
     template <typename T>
-    NDArray* NDArrayFactory::empty_(nd4j::memory::Workspace* workspace) {
-        return empty_(DataTypeUtils::fromT<T>(), workspace);
+    NDArray* NDArrayFactory::empty_(nd4j::graph::LaunchContext* context) {
+        return empty_(DataTypeUtils::fromT<T>(), context);
     }
-    BUILD_SINGLE_TEMPLATE(template NDArray* NDArrayFactory::empty_, (nd4j::memory::Workspace* workspace), LIBND4J_TYPES);
+    BUILD_SINGLE_TEMPLATE(template NDArray* NDArrayFactory::empty_, (nd4j::graph::LaunchContext* context), LIBND4J_TYPES);
 
     NDArray* NDArrayFactory::empty_(nd4j::DataType dataType, nd4j::graph::LaunchContext* context) {
         if (context == nullptr)
@@ -494,15 +494,15 @@ template NDArray NDArrayFactory::create(const std::vector<bool> &values, nd4j::g
 
 ////////////////////////////////////////////////////////////////////////
     template <typename T>
-    NDArray NDArrayFactory::empty(nd4j::memory::Workspace* workspace) {
-        return empty(DataTypeUtils::fromT<T>(), workspace);
+    NDArray NDArrayFactory::empty(nd4j::graph::LaunchContext* context) {
+        return empty(DataTypeUtils::fromT<T>(), context);
     }
     BUILD_SINGLE_TEMPLATE(template NDArray NDArrayFactory::empty, (nd4j::graph::LaunchContext* context), LIBND4J_TYPES);
 
-    NDArray NDArrayFactory::empty(nd4j::DataType dataType, nd4j::memory::Workspace* workspace) {
-        auto shapeInfo = ShapeBuilders::createScalarShapeInfo(dataType, workspace);
+    NDArray NDArrayFactory::empty(nd4j::DataType dataType, nd4j::graph::LaunchContext* context) {
+        auto shapeInfo = ShapeBuilders::createScalarShapeInfo(dataType, context->getWorkspace());
         ArrayOptions::setPropertyBit(shapeInfo, ARRAY_EMPTY);
-        NDArray result(nullptr, shapeInfo, workspace);
+        NDArray result(nullptr, shapeInfo, context);
         result.triggerAllocationFlag(false, true);
 
         return result;

@@ -982,43 +982,6 @@ NDArray::NDArray(const char order, const std::vector<Nd4jLong> &shape, nd4j::Dat
             NativeOpExecutioner::execTransformAny(_context, transform::Assign, other._buffer, other._shapeInfo, nullptr, nullptr, _buffer, _shapeInfo, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
 
-////////////////////////////////////////////////////////////////////////
-std::vector<int64_t> NDArray::getShapeInfoAsFlatVector() {
-    int magicNumber = shape::shapeInfoLength(this->rankOf());
-    std::vector<int64_t> vector;
-
-    for (int e = 0; e < magicNumber; e++)
-        vector.emplace_back(static_cast<int64_t>(_shapeInfo[e]));
-
-    return vector;
-}
-
-std::vector<int64_t> NDArray::getShapeAsFlatVector() {
-    std::vector<int64_t> vector;
-
-    for (int e = 0; e < this->rankOf(); e++)
-        vector.emplace_back(static_cast<int64_t>(this->sizeAt(e)));
-
-        auto result = new NDArray(outBuffer, outShapeInfo, _context, true, true);
-        result->assign(this);
-
-        return result;
-    }
-
-////////////////////////////////////////////////////////////////////////
-    std::vector<Nd4jLong> NDArray::getShapeInfoAsVector() {
-        int magicNumber = shape::shapeInfoLength(this->rankOf());
-        std::vector<Nd4jLong> vector;
-
-        for (int e = 0; e < magicNumber; e++)
-            vector.emplace_back(this->_shapeInfo[e]);
-
-        auto rp = getOffset(i);
-
-        BUILD_SINGLE_PARTIAL_SELECTOR(this->dataType(), return templatedGet<, T>(this->_buffer, rp), LIBND4J_TYPES);
-//        return static_cast<T>(119);
-    }
-    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong) const, LIBND4J_TYPES);
 
 ////////////////////////////////////////////////////////////////////////
 #ifndef __JAVACPP_HACK__
@@ -1383,55 +1346,6 @@ std::vector<int64_t> NDArray::getShapeAsFlatVector() {
         NativeOpExecutioner::execTransformBool(_context, op, this->_buffer, this->_shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(this->dataType()) : nullptr, nullptr, nullptr);
     }
 
-////////////////////////////////////////////////////////////////////////
-    std::vector<int8_t> NDArray::asByteVector() {
-        // string tensors require special treatment
-        if (this->dataType() == UTF8) {
-            // length + number of elements + last offset
-            auto prefixLength = 1 + this->lengthOf() + 1;
-            std::vector<Nd4jLong> prefix(prefixLength);
-
-            // total number of string elements goes first
-            prefix[0] = this->lengthOf();
-
-            // now rolling through elements, to fill cumulative
-            auto dataLength = 0;
-            for (Nd4jLong e = 0; e < lengthOf(); e++) {
-                auto s = this->e<utf8string>(e);
-                prefix[e+1] = dataLength;
-                dataLength += s._length;
-            }
-
-            // final prefix
-            prefix[lengthOf()+1] = dataLength;
-
-            // preallocating all at once
-            std::vector<int8_t> result((prefixLength * sizeof(Nd4jLong)) + dataLength);
-            auto charPtr = result.data() + (prefixLength * sizeof(Nd4jLong));
-            for (int e = 0; e < this->lengthOf(); e++) {
-                auto s = this->e<utf8string>(e);
-                auto cPtr = charPtr + prefix[e+1];
-                memcpy(cPtr, s._buffer, s._length);
-            }
-
-            // copying prefix data to result buffer
-            memcpy(result.data(), prefix.data(), prefix.size() * sizeof(Nd4jLong));
-
-            return result;
-        } else {
-            std::vector<int8_t> result((unsigned long long) this->lengthOf() * sizeOfT());
-
-            if (target == nullptr)
-                target = this;
-
-        if (!this->isR() || !target->isR() || (this->dataType() != target->dataType()))
-            throw std::runtime_error("NDArray::applyTransform StrictOps: both Source and Target array must have same FLOAT type !");
-
-        NDArray::registerSpecialUse({target}, {this});
-        NativeOpExecutioner::execTransformStrict(_context, op, this->_buffer, this->_shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(target->dataType()) : nullptr, nullptr, nullptr);
-    }
-}
-
     //////////////////////////////////////////////////////////////////////////
 // perform array transformation
     // void NDArray::applyTransform(nd4j::transform::FloatOps op, void *extraParams) {
@@ -1461,7 +1375,7 @@ std::vector<int64_t> NDArray::getShapeAsFlatVector() {
 
         NDArray result(this->ordering(), getShapeAsVector(), DataTypeUtils::pickFloatingType(dataType()), this->_context);
         NativeOpExecutioner::execTransformFloat(_context, op, this->_buffer, this->_shapeInfo, this->_bufferD, this->_shapeInfoD, result._buffer, result._shapeInfo, result._bufferD, result._shapeInfoD, extraParams, nullptr, nullptr);
-        return result;}
+        return result;
     }
 
     NDArray NDArray::transform(nd4j::transform::SameOps op, void *extraParams) const {
@@ -2157,6 +2071,16 @@ void NDArray::reduceAlongDimension(nd4j::reduce::LongOps op, NDArray* target, co
     }
 
 
+    template <typename T>
+    T NDArray::e(const Nd4jLong i) const {
+
+        auto xType = this->dataType();
+        auto xOffset = shape::getIndexOffset(i, _shapeInfo, _length);
+        BUILD_SINGLE_PARTIAL_SELECTOR(xType, return templatedGet<, T>(this->_buffer, xOffset), LIBND4J_TYPES);
+        return static_cast<T>(119);
+    }
+    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong, const Nd4jLong) const, LIBND4J_TYPES);
+
 //////////////////////////////////////////////////////////////////////////
 // Returns value from 2D matrix by coordinates/indexes
     template <typename T>
@@ -2171,7 +2095,7 @@ void NDArray::reduceAlongDimension(nd4j::reduce::LongOps op, NDArray* target, co
         BUILD_SINGLE_PARTIAL_SELECTOR(xType, return templatedGet<, T>(this->_buffer, xOffset), LIBND4J_TYPES);
         return static_cast<T>(119);
     }
-    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong, const Nd4jLong) const, LIBND4J_TYPES);
+    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong) const, LIBND4J_TYPES);
 
 //////////////////////////////////////////////////////////////////////////
 // returns value from 3D tensor by coordinates
