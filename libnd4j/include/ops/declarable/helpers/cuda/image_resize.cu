@@ -93,6 +93,12 @@ namespace helpers {
     int resizeNeighborFunctor_(NDArray const* images, int width, int height, bool center, NDArray* output) {
         return Status::OK();
     }
+
+    void
+    cropAndResizeFunctor(graph::LaunchContext *context, NDArray const *images, NDArray const *boxes, NDArray const *indices, NDArray const *cropSize, int method, double extrapolationVal, NDArray *crops) {
+
+    }
+
     void resizeImage(NDArray const* images, Nd4jLong batchSize, Nd4jLong inHeight, Nd4jLong inWidth, Nd4jLong outHeight,
                      Nd4jLong outWidth, Nd4jLong channels,
                      std::vector<BilinearInterpolationData> const& xs,

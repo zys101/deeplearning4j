@@ -48,11 +48,13 @@ namespace helpers {
 	    return result;
     }
 
-	NDArray zeta(graph::LaunchContext* context, const NDArray& x, const NDArray& q) {
-		BUILD_SINGLE_SELECTOR(x.dataType(), return zeta_, (x, q), FLOAT_TYPES);
-	}
+    NDArray zeta(graph::LaunchContext* context, const NDArray& x, const NDArray& q, NDArray* output) {
+        //BUILD_SINGLE_SELECTOR(x.dataType(), return zeta_, (context, x, q, output), FLOAT_TYPES);
+        return *output;
+    }
 
-	BUILD_SINGLE_TEMPLATE(template NDArray zeta_, (const NDArray& x, const NDArray& q), FLOAT_TYPES);
+    //BUILD_SINGLE_TEMPLATE(template NDArray zeta_, (graph::LaunchContext* context, const NDArray& x, const NDArray& q, NDArray* output), FLOAT_TYPES);
+
 
 
     template bfloat16 zeta(bfloat16, bfloat16);
