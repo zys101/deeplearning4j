@@ -2210,9 +2210,13 @@ void NDArray::operator*=(const NDArray& other) {
 
     if (!this->isScalar() && other.isScalar()) {
         NativeOpExecutioner::execScalar(_context, nd4j::scalar::Multiply, this->_buffer, this->_shapeInfo, this->_bufferD, this->_shapeInfoD, this->_buffer, this->_shapeInfo, this->_bufferD, this->_shapeInfoD, other._buffer, other._shapeInfo, other._bufferD, other._shapeInfoD, nullptr);
+        this->tickWriteHost();
+        this->tickWriteDevice();
     }
     else if (other.lengthOf() == lengthOf() && this->rankOf() == other.rankOf()) {
         NativeOpExecutioner::execPairwiseTransform(_context, nd4j::pairwise::Multiply, this->_buffer, this->_shapeInfo, this->_bufferD, this->_shapeInfoD, other._buffer, other._shapeInfo, other._bufferD, other._shapeInfoD, this->_buffer, this->_shapeInfo, this->_bufferD, this->_shapeInfoD, nullptr);
+        this->tickWriteHost();
+        this->tickWriteDevice();
     }
     else{
         Nd4jLong *bShape = nullptr;

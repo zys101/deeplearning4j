@@ -315,9 +315,9 @@ TEST_F(NDArrayCudaBasicsTests, TestAdd_4) {
     //res = cudaMalloc(reinterpret_cast<void **>(&devShapePtrX), shape::shapeInfoByteLength(x.shapeInfo()));
     //ASSERT_EQ(0, res);
     x.applyPairwiseTransform(pairwise::Add, &y, &z, nullptr);
-    z.syncToHost();
     x.printBuffer("3X = ");
     y.printBuffer("3Y = ");
+    z.lazyAllocateBuffer();
     z.printBuffer("3Result out");
 
     //
@@ -450,7 +450,7 @@ TEST_F(NDArrayCudaBasicsTests, TestMultiply_1) {
     //res = cudaMalloc(reinterpret_cast<void **>(&devShapePtrX), shape::shapeInfoByteLength(x.shapeInfo()));
     //ASSERT_EQ(0, res);
     x.applyPairwiseTransform(pairwise::Multiply, &y, &z, nullptr);
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     x.printBuffer("3X = ");
     y.printBuffer("3Y = ");
     z.printBuffer("3Result out");
@@ -485,7 +485,7 @@ TEST_F(NDArrayCudaBasicsTests, TestMultiply_2) {
     x.applyPairwiseTransform(pairwise::Multiply, &y, &z, nullptr);
     x.printBuffer("3X = ");
     y.printBuffer("3Y = ");
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     z.printBuffer("3Result out");
 
     //
@@ -518,7 +518,7 @@ TEST_F(NDArrayCudaBasicsTests, TestMultiply_3) {
     x.applyPairwiseTransform(pairwise::Multiply, &y, &z, nullptr);
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     z.printBuffer("23Result out");
 
     //
@@ -552,7 +552,7 @@ TEST_F(NDArrayCudaBasicsTests, TestMultiply_4) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x *= y;
-    x.syncToHost();
+    //x.tickWriteDevice();
     x.printBuffer("33Result out");
 
     //
@@ -577,7 +577,7 @@ TEST_F(NDArrayCudaBasicsTests, TestPrimitiveNeg_01) {
     NativeOpExecutioner::execTransformSame(x.getContext(), transform::Neg, x.buffer(), x.shapeInfo(), x.specialBuffer(), x.specialShapeInfo(), y.buffer(), y.shapeInfo(), y.specialBuffer(), y.specialShapeInfo(), nullptr, nullptr, nullptr);
     auto res = cudaStreamSynchronize(*stream);
     ASSERT_EQ(0, res);
-    y.syncToHost();
+//    y.syncToHost();
 
     x.printBuffer("X = ");
     y.printBuffer("Y = ");
@@ -602,7 +602,7 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveNeg_2) {
     //ASSERT_TRUE(y->isActualOnHostSide());
     //auto res = cudaStreamSynchronize(*y.getContext()->getCudaStream());
     //ASSERT_EQ(0, res);
-    y.syncToHost();
+    y.lazyAllocateBuffer();
     y.printBuffer("Negatives2");
     //delete x;
     //delete y;
@@ -644,7 +644,7 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveAssign_1) { // strict
     //ASSERT_TRUE(y->isActualOnHostSide());
     //auto res = cudaStreamSynchronize(*y.getContext()->getCudaStream());
     //ASSERT_EQ(0, res);
-    y.syncToHost();
+    y.lazyAllocateBuffer();
     printf("Assigned to another array\n");
     y.printBuffer("OUput");
     ASSERT_TRUE(y.equalsTo(x));
@@ -657,6 +657,7 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveAssign_1) { // strict
 TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveCosine_1) { // strict
     auto x = NDArrayFactory::create<double>('c', {5}, {1, 2, 3, 4, 5});
     auto y = NDArrayFactory::create<double>('c', {5});
+    auto exp = NDArrayFactory::create<double>('c', {5}, {0.540302, -0.416147, -0.989992, -0.653644, 0.283662});
 
     ASSERT_TRUE(x.isActualOnDeviceSide());
     ASSERT_TRUE(x.isActualOnHostSide());
@@ -669,7 +670,8 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveCosine_1) { // strict
     //ASSERT_TRUE(y->isActualOnHostSide());
     //auto res = cudaStreamSynchronize(*y.getContext()->getCudaStream());
     //ASSERT_EQ(0, res);
-    y.syncToHost();
+    ASSERT_TRUE(exp.isSameShape(y));
+    ASSERT_TRUE(exp.dataType() == y.dataType());
     //y.printBuffer("Cosine2");
     //delete x;
     //delete y;
@@ -690,7 +692,6 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveCosine_2) {
     //ASSERT_TRUE(y->isActualOnHostSide());
     //auto res = cudaStreamSynchronize(*y.getContext()->getCudaStream());
     //ASSERT_EQ(0, res);
-    y.syncToHost();
     //exp.syncToHost();
     //y.printBuffer("PrimitiveCosine2");
     //exp.printBuffer("Primitive Cosine exp");
@@ -720,7 +721,6 @@ TEST_F(NDArrayCudaBasicsTests, Test_PrimitiveCosine_3) {
     //ASSERT_TRUE(y->isActualOnHostSide());
     //auto res = cudaStreamSynchronize(*y.getContext()->getCudaStream());
     //ASSERT_EQ(0, res);
-    y.syncToHost();
     //exp.syncToHost();
 //    y.printBuffer("PrimitiveCosine3");
 //    exp.printBuffer("Primitive Cosine3 exp");
@@ -783,7 +783,7 @@ TEST_F(NDArrayCudaBasicsTests, TestRawBroadcast_2) {
                                        nullptr, nullptr);
 
     cudaResult = cudaStreamSynchronize(stream); ASSERT_EQ(0, cudaResult);
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     z.printBuffer("Result with Broadcast2 (multiply)");
     // verify results
     for (int e = 0; e < z.lengthOf(); e++)
@@ -848,7 +848,7 @@ TEST_F(NDArrayCudaBasicsTests, TestRawBroadcast_3) {
                                        nullptr, nullptr);
 
     //cudaResult = cudaStreamSynchronize(stream); ASSERT_EQ(0, cudaResult);
-    z.syncToHost();
+    //z.syncToHost();
     z.printBuffer("Result with Broadcast3 (multiply)");
     // verify results
     for (int e = 0; e < z.lengthOf(); e++)
@@ -883,7 +883,7 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_1) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x *= y;
-    x.syncToHost();
+    //x.syncToHost();
     x.printBuffer("54Result out");
 
     //
@@ -916,7 +916,6 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_01) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x.applyTrueBroadcast(BroadcastOpsTuple::Multiply(), &y, &z);// *= y;
-    z.syncToHost();
     z.printBuffer("53Result out");
 
     //
@@ -950,15 +949,14 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_02) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x.applyTrueBroadcast(BroadcastOpsTuple::Multiply(), &y, &z);// *= y;
-    //z.lazyAllocateBuffer();
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     z.printBuffer("52Result out");
 
     //
     // cudaFree(devBufferPtrX);
     //cudaFree(devBufferPtrZ);
     //cudaFree(devShapePtrX);
-    //ASSERT_TRUE(exp.equalsTo(z));
+    ASSERT_TRUE(exp.equalsTo(z));
 
 //    for (int e = 0; e < x.lengthOf(); e++) {
 //        ASSERT_NEAR(exp.e<double>(e), z.e<double>(e), 1e-5);
@@ -985,15 +983,14 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_002) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x.applyPairwiseTransform(pairwise::Multiply, &y, &z);// *= y;
-    //z.lazyAllocateBuffer();
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     z.printBuffer("51Result out");
 
     //
     // cudaFree(devBufferPtrX);
     //cudaFree(devBufferPtrZ);
     //cudaFree(devShapePtrX);
-    //ASSERT_TRUE(exp.equalsTo(z));
+    ASSERT_TRUE(exp.equalsTo(z));
 
 //    for (int e = 0; e < x.lengthOf(); e++) {
 //        ASSERT_NEAR(exp.e<double>(e), z.e<double>(e), 1e-5);
@@ -1051,7 +1048,7 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastRaw_1) {
                                        nullptr, nullptr);
 
     cudaResult = cudaStreamSynchronize(*stream); ASSERT_EQ(0, cudaResult);
-    z.syncToHost();
+    z.lazyAllocateBuffer();
     x.printIndexedBuffer(" X");
     y.printIndexedBuffer("+Y");
     z.printBuffer("ADD broadcasted output");
@@ -1087,7 +1084,6 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply) {
     //x.printBuffer("23X = ");
     //y.printBuffer("23Y = ");
     x *= y;
-    x.syncToHost();
     x.printBuffer("55Result out");
 
     //
@@ -1123,7 +1119,6 @@ TEST_F(NDArrayCudaBasicsTests, TestBroadcastMultiply_2) {
     //y.printBuffer("23Y = ");
     //void NDArray::applyTrueBroadcast(nd4j::BroadcastOpsTuple op, const NDArray* other, NDArray* target, const bool checkTargetShape, ExtraArguments *extraArgs)
     x.applyTrueBroadcast(BroadcastOpsTuple::Multiply(), &y, &exp);
-    exp.syncToHost();
     exp.printBuffer("56Result out");
 
     //
