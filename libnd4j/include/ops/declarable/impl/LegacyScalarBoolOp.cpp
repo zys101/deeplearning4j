@@ -37,7 +37,7 @@ namespace nd4j {
             return new LegacyScalarBoolOp(this->_opNum, this->_scalar);
         }
 
-        LegacyScalarBoolOp::LegacyScalarBoolOp(int opNum, double scalar)  : LegacyOp::LegacyOp(1, opNum){
+        LegacyScalarBoolOp::LegacyScalarBoolOp(int opNum, NDArray &scalar)  : LegacyOp::LegacyOp(1, opNum){
             _scalar = scalar;
         }
 
@@ -64,7 +64,7 @@ namespace nd4j {
                         z->getBuffer(), z->getShapeInfo(), z->specialBuffer(), z->specialShapeInfo(), y->buffer(), y->shapeInfo(), y->specialBuffer(), y->specialShapeInfo(),
                         block.getTArguments()->data() + offset);
             } else if (block.getTArguments()->size() > 0) {
-                auto y = NDArrayFactory::create(T_ARG(0), block.getVariableSpace()->launchContext());
+                auto y = NDArrayFactory::create(T_ARG(0), block.launchContext());
                 offset++;
                 NativeOpExecutioner::execScalarBool(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),z->getBuffer(), z->getShapeInfo(),z->specialBuffer(), z->specialShapeInfo(), y.buffer(), y.shapeInfo(), y.specialBuffer(), y.specialShapeInfo(),block.getTArguments()->data() + offset);
             } else {

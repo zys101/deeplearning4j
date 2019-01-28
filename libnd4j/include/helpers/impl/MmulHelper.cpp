@@ -26,7 +26,7 @@
 #include <helpers/BlasHelper.h>
 #include <NDArrayFactory.h>
 
-namespace nd4j { 
+namespace nd4j {
     
 //////////////////////////////////////////////////////////////////////////
 nd4j::NDArray* nd4j::MmulHelper::tensorDot(const nd4j::NDArray* A, const nd4j::NDArray* B, const std::initializer_list<int>& axesA, const std::initializer_list<int>& axesB) {
@@ -230,7 +230,7 @@ NDArray* MmulHelper::mmulNxN(const NDArray* A, const NDArray* B, NDArray* C, con
         for(Nd4jLong i = 0; i < numOfSubArrs; ++i) {
 
             ShapeUtils::evalIdxRangesForSubArr(i, C->getShapeInfo(), dimsToExclude, idxRanges.data());
-            NDArray cSubArr = (*C)(idxRanges);            
+            NDArray cSubArr = (*C)(idxRanges);
 
             if(aRank > bRank) {
                 NDArray aSubArr = (*A)(idxRanges);
@@ -252,7 +252,7 @@ NDArray* MmulHelper::mmulNxN(const NDArray* A, const NDArray* B, NDArray* C, con
 
 //////////////////////////////////////////////////////////////////////////
 nd4j::NDArray* MmulHelper::mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C , const double alpha, const double beta, const char outOrder) {
-    
+
     int lenDim;
     const int aRank = A->rankOf();
     const int bRank = B->rankOf();
@@ -262,7 +262,7 @@ nd4j::NDArray* MmulHelper::mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, 
     // dot product of 2 svectors
     if(isAVector && isBVector)
         return dot(A, B, C, alpha, beta);
-    
+
     // matrix x vector
     if(aRank == 2 && isBVector)
         return mmulMxV(A, B, C, alpha, beta, outOrder);

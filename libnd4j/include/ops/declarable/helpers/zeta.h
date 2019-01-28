@@ -30,12 +30,11 @@ namespace helpers {
 
 
 	// calculate the Hurwitz zeta function for arrays
-    NDArray zeta(graph::LaunchContext* context, const NDArray& x, const NDArray& q);
+    NDArray zeta(graph::LaunchContext* context, const NDArray& x, const NDArray& q, NDArray* output);
 
     // calculate the Hurwitz zeta function for scalars
 	template <typename T>
 	T zeta(graph::LaunchContext* context, const T x, const T q);
-
 
 }
 }
