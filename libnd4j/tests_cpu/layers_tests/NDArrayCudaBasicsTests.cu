@@ -2222,7 +2222,7 @@ TEST_F(NDArrayCudaBasicsTests, Test_PermuteEquality_3) {
 
 TEST_F(NDArrayCudaBasicsTests, Test_Empty_1) {
     auto x = NDArrayFactory::empty<float>();
-
+    ASSERT_TRUE(x.isActualOnHostSide());
     ASSERT_TRUE(x.isEmpty());
 }
 

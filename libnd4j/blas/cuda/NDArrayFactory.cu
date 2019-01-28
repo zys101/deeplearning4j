@@ -602,8 +602,8 @@ template NDArray NDArrayFactory::create(const std::vector<bool> &values, nd4j::g
         cudaMemcpy(res.specialBuffer(), res.buffer(), bufferSize, cudaMemcpyHostToDevice);
         cudaMemcpy(res.specialShapeInfo(), res.shapeInfo(), shapeSize, cudaMemcpyHostToDevice);
         res.tickWriteDevice();
+        res.tickReadHost();
         res.triggerAllocationFlag(true, true);
-//        res.tickReadHost();
         return res;
     }
     template NDArray NDArrayFactory::create(const char order, const std::vector<Nd4jLong> &shape, const std::vector<double> &data, nd4j::graph::LaunchContext* context);

@@ -125,7 +125,9 @@ NDArray::NDArray(void *buffer, Nd4jLong *shapeInfo, graph::LaunchContext* contex
     _isShapeAlloc = true;
 
     if (this->isEmpty()) {
-        _length = 0;                
+        _length = 0;
+        tickReadDevice();
+        tickReadHost();
     }
     else {        
         _buffer = reinterpret_cast<int8_t *>(buffer);            
