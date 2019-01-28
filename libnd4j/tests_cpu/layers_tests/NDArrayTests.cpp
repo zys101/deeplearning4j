@@ -1132,12 +1132,9 @@ TEST_F(NDArrayTest, TestMmulHelper_ND_1) {
 
     NDArray exp(_expB, _expS);    
 
-    auto c = MmulHelper::mmul(&a, &b);
+    auto c = MmulHelper::mmul(&a, &b, nullptr, 1., 0., 'c');
 
     ASSERT_TRUE(exp.isSameShapeStrict(c));
-    //c->printShapeInfo("Result shape");
-    //c->printBuffer("Result buffer");
-
     ASSERT_TRUE(exp.equalsTo(c));
 
     delete c;
@@ -1158,7 +1155,7 @@ TEST_F(NDArrayTest, TestMmulHelper_ND_2) {
 
     NDArray exp(_expB, _expS);
 
-    auto c = MmulHelper::mmul(&a, &b);
+    auto c = MmulHelper::mmul(&a, &b, nullptr, 1., 0., 'c');
 
     ASSERT_TRUE(exp.isSameShapeStrict(c));
     //c->printShapeInfo("Result shape");

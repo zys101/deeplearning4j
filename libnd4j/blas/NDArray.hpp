@@ -2408,11 +2408,11 @@ template void NDArray::operator/=(const bool scalar);
 
     ////////////////////////////////////////////////////////////////////////
     // mathematical multiplication of two arrays
-    NDArray mmul(const NDArray& left, const NDArray& right) {
+    NDArray mmul(const NDArray& left, const NDArray& right, const char outOrder) {
         if (left.isS() || right.isS())
             throw std::runtime_error("mmul friend function: you can't use this function on String array!");
-        auto ptr = MmulHelper::mmul(const_cast<NDArray*>(&left), const_cast<NDArray*>(&right), nullptr, 1., 0.);
-        NDArray result(*ptr);
+        auto ptr = MmulHelper::mmul(const_cast<NDArray*>(&left), const_cast<NDArray*>(&right), nullptr, 1., 0., outOrder);
+        NDArray result(std::move(*ptr));
         delete ptr;
         return result;
     }

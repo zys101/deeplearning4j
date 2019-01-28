@@ -160,6 +160,10 @@ NDArray* MmulHelper::mmulMxM(const NDArray* A, const NDArray* B, NDArray* C, dou
 	const auto M = A->sizeAt(0);
 	const auto K = A->sizeAt(1);
 	const auto N = B->sizeAt(1);
+    const auto bRows = B->sizeAt(0);
+
+    if(M == 1 && bRows == 1 && K == N)  // 1x6 * 1x6 
+        return dot(A, B, C, alpha, beta);
 
 	if(B->sizeAt(0) != K)
 		throw std::runtime_error("MmulHelper::mmulMxM cuda: B array has wrong number of rows !");
@@ -284,6 +288,9 @@ NDArray* MmulHelper::mmulMxV(const NDArray* A, const NDArray* X, nd4j::NDArray* 
 
     const auto M = A->sizeAt(0);    
     const auto N = A->sizeAt(1);
+
+    if(M == 1)
+        return dot(A, X, Y, alpha, beta);
 
     if(X->lengthOf() != N)
         throw std::runtime_error("MmulHelper::mmulMxV cuda: X vector has wrong length !");

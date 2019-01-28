@@ -215,11 +215,14 @@ NDArray* MmulHelper::mmulNxN(const NDArray* A, const NDArray* B, NDArray* C, con
     cExpectedShape[cExpectedShape.size() - 2] = A->sizeAt(-2);
     cExpectedShape[cExpectedShape.size() - 1] = B->sizeAt(-1);
 
-    if(C != nullptr )
+    if(C != nullptr ) {
         if(!C->isSameShape(cExpectedShape))
             throw std::runtime_error("MmulHelper::mmulNxN: shape of C array is not suitable for AxB matrix multiplication !");
-    else
+    }
+    else {
         C = new NDArray(outOrder, cExpectedShape, B->dataType());
+    }
+
 
     // multiplication
     const std::vector<int> dimsToExclude = ShapeUtils::evalDimsToExclude(C->rankOf(), {-2, -1});
@@ -259,63 +262,23 @@ nd4j::NDArray* MmulHelper::mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, 
     const bool isAVector = shape::isCommonVector(A->getShapeInfo(), lenDim);
     const bool isBVector = shape::isCommonVector(B->getShapeInfo(), lenDim);
 
-    // dot product of 2 svectors
-    if(isAVector && isBVector)
-        return dot(A, B, C, alpha, beta);
+    // matrix x matrix
+    if(aRank == 2 && bRank == 2)
+        return mmulMxM(A, B, C, alpha, beta, outOrder);            
 
     // matrix x vector
     if(aRank == 2 && isBVector)
         return mmulMxV(A, B, C, alpha, beta, outOrder);
 
-    // matrix x matrix
-    if(aRank == 2 && bRank == 2)
-        return mmulMxM(A, B, C, alpha, beta, outOrder);
+    // dot product of 2 vectors
+    if(isAVector && isBVector)
+        return dot(A, B, C, alpha, beta);    
+
 
     // batched matrix multiplication
     return mmulNxN(A, B, C, alpha, beta, outOrder);
 }
 
-//////////////////////////////////////////////////////////////////////////
-NDArray* MmulHelper::simpleMMul(const NDArray* a, const NDArray* b, NDArray* c, const double alpha, const double beta) {
-    
-    if(a->rankOf() != 2 || b->rankOf() != 2)
-        throw std::runtime_error("NDArrayFactory::simpleMMul static function: some of input arrays has rank not equal to 2 !");
-
-    if(a->shapeOf()[1] != b->shapeOf()[0])
-        throw std::runtime_error("NDArrayFactory::simpleMMul static function: the number of A columns is not equal to number of B rows !");
-
-    NDArray* dot = c;
-    if(c == nullptr) 
-        c = NDArrayFactory::create_('f', {a->shapeOf()[0], b->shapeOf()[1]}, b->dataType(), a->getContext());
-    else {
-        if( c->shapeOf()[0] != a->shapeOf()[0] || c->shapeOf()[1] != b->shapeOf()[1])
-            throw std::runtime_error("NDArrayFactory::simpleMMul static function: wrong shape of C array !");
-        if(beta != 0. ) {
-            dot = NDArrayFactory::create_(c->ordering(), {a->shapeOf()[0], b->shapeOf()[1]}, c->dataType(), a->getContext());
-            if( beta != 1.)
-                c->applyScalar(scalar::Multiply, beta, c, nullptr);
-        }        
-    }
-    int M = a->shapeOf()[0];
-    int N = b->shapeOf()[1];
-    int K = a->shapeOf()[1];
-
-    // FIXME: double?
-    for(int row = 0; row < M; ++row)
-        for(int col = 0; col < N; ++col)
-            for(int j = 0; j < K; ++j)
-                    dot->p(row,col, a->e<double>(row,j) * b->e<double>(j,col));
-
-    if(alpha != 1.)
-        dot->applyScalar(scalar::Multiply, alpha, dot, nullptr);
-
-    if(beta != 0.) {
-        c->applyPairwiseTransform(pairwise::Add, dot, nullptr, nullptr);
-        delete dot;
-    }
-    
-    return c;
-}
 
 //////////////////////////////////////////////////////////////////////////
     void MmulHelper::matmul(const nd4j::NDArray* x, const nd4j::NDArray* y, nd4j::NDArray* z, const bool transX, const bool transY) {

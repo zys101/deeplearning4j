@@ -111,11 +111,7 @@ static void usualDot(const Nd4jLong length, const double alpha, const void* vX, 
 
 //////////////////////////////////////////////////////////////////////////////
 // MXK x KxN = MxN
-NDArray* MmulHelper::mmulMxM(const NDArray* A, const NDArray* B, NDArray* C, const double alpha, const double beta, const char outOrder) {
-
-    int bLenDim;
-    if(shape::isCommonVector(B->getShapeInfo(), bLenDim))   // for example this is the case {4,3} x {3,1} 
-        return mmulMxV(A, B, C, alpha, beta, outOrder);
+NDArray* MmulHelper::mmulMxM(const NDArray* A, const NDArray* B, NDArray* C, const double alpha, const double beta, const char outOrder) {    
 
     if(A->rankOf() != 2)
         throw std::runtime_error("MmulHelper::mmulMxM: rank of A array is not equal 2 !");
@@ -124,11 +120,15 @@ NDArray* MmulHelper::mmulMxM(const NDArray* A, const NDArray* B, NDArray* C, con
     if(C != nullptr && C->rankOf() != 2)
         throw std::runtime_error("MmulHelper::mmulMxM: rank of C array is not equal 2 !");
 
-    const auto M = A->sizeAt(0);
-    const auto K = A->sizeAt(1);
-    const auto N = B->sizeAt(1);
+    const auto M     = A->sizeAt(0);
+    const auto K     = A->sizeAt(1);
+    const auto N     = B->sizeAt(1);
+    const auto bRows = B->sizeAt(0);
 
-    if(B->sizeAt(0) != K)
+    if(M == 1 && bRows == 1 && K == N)  // 1x6 * 1x6 
+        return dot(A, B, C, alpha, beta);
+    
+    if(bRows != K)
         throw std::runtime_error("MmulHelper::mmulMxM: B array has wrong number of rows !");
     if(C != nullptr && C->sizeAt(0) != M)
         throw std::runtime_error("MmulHelper::mmulMxM: C array has wrong number of rows !");
@@ -209,6 +209,9 @@ NDArray* MmulHelper::mmulMxV(const NDArray* A, const NDArray* X, nd4j::NDArray* 
 
     const auto M = A->sizeAt(0);    
     const auto N = A->sizeAt(1);
+
+    if(M == 1)
+        return dot(A, X, Y, alpha, beta);
 
     if(X->lengthOf() != N)
         throw std::runtime_error("MmulHelper::mmulMxV: X vector has wrong length !");

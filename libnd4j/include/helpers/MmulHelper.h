@@ -30,9 +30,7 @@ namespace nd4j {
         
         // multiptication N-dimensions tensor on other N-dimensions one        
         static nd4j::NDArray* mmulNxN(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C, const double alpha = 1.0, const double beta = 0.0, const char outOrder = 'f');
-                
-    public:
-        
+
         // dot product of vectors (X * Y) = Z[0]
         static nd4j::NDArray* dot(const nd4j::NDArray* X, const nd4j::NDArray* Y, nd4j::NDArray* Z, const double alpha = 1.0, const double beta = 0.0);
 
@@ -41,6 +39,8 @@ namespace nd4j {
 
         // multiptication Matrix to vector        
         static nd4j::NDArray* mmulMxV(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C, double alpha = 1.0, double beta = 0.0, const char outOrder = 'f');
+                
+    public:                
 
         static nd4j::NDArray* mmul(const nd4j::NDArray* A, const nd4j::NDArray* B, nd4j::NDArray* C = nullptr, const double alpha = 1.0, const double beta = 0.0, const char outOrder = 'f');
 
@@ -57,8 +57,6 @@ namespace nd4j {
         static void tensorDot(const nd4j::NDArray* a, const nd4j::NDArray* b, nd4j::NDArray* c, const std::vector<std::vector<Nd4jLong>>& modifA, const std::vector<std::vector<Nd4jLong>>& modifB, const std::vector<std::vector<Nd4jLong>>& modifC);
         static nd4j::NDArray* tensorDot(const nd4j::NDArray* a, const nd4j::NDArray* b, const std::vector<std::vector<Nd4jLong>>& modifA, const std::vector<std::vector<Nd4jLong>>& modifB);
 #endif
-
-        static NDArray* simpleMMul(const nd4j::NDArray* a, const nd4j::NDArray* b, nd4j::NDArray* c , const double alpha = 1.0, const double beta = 1.0);
 
         static void matmul(const nd4j::NDArray* x, const nd4j::NDArray* y, nd4j::NDArray* z, const bool transX, const bool transY);
     };
