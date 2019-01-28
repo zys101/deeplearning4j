@@ -357,7 +357,7 @@ namespace helpers {
 
 
     void
-    cropAndResizeFunctor(NDArray const *images, NDArray const *boxes, NDArray const *indices, NDArray const *cropSize,
+    cropAndResizeFunctor(graph::LaunchContext *context, NDArray const *images, NDArray const *boxes, NDArray const *indices, NDArray const *cropSize,
                          int method, double extrapolationVal, NDArray *crops) {
         BUILD_SINGLE_SELECTOR(images->dataType(), cropAndResizeFunctor_,
                               (images, boxes, indices, cropSize, method, extrapolationVal, crops), NUMERIC_TYPES);

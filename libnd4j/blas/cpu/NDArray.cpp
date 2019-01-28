@@ -1346,6 +1346,20 @@ NDArray::NDArray(const char order, const std::vector<Nd4jLong> &shape, nd4j::Dat
         NativeOpExecutioner::execTransformBool(_context, op, this->_buffer, this->_shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(this->dataType()) : nullptr, nullptr, nullptr);
     }
 
+    void NDArray::applyTransform(nd4j::transform::StrictOps op, NDArray *target, ExtraArguments *extraParams) {
+        if (isS())
+            throw std::runtime_error("NDArray::applyTransform StrictOps: you can't use this method on String array!");
+
+        if (target == nullptr)
+            target = this;
+
+        if (!this->isR() || !target->isR() || (this->dataType() != target->dataType()))
+            throw std::runtime_error("NDArray::applyTransform StrictOps: both Source and Target array must have same FLOAT type !");
+
+        NDArray::registerSpecialUse({target}, {this});
+        NativeOpExecutioner::execTransformStrict(_context, op, this->_buffer, this->_shapeInfo, _bufferD, _shapeInfoD, target->_buffer, target->_shapeInfo, target->_bufferD, target->_shapeInfoD, extraParams != nullptr ? extraParams->argumentsAsT(target->dataType()) : nullptr, nullptr, nullptr);
+    }
+
     //////////////////////////////////////////////////////////////////////////
 // perform array transformation
     // void NDArray::applyTransform(nd4j::transform::FloatOps op, void *extraParams) {
@@ -2071,17 +2085,81 @@ void NDArray::reduceAlongDimension(nd4j::reduce::LongOps op, NDArray* target, co
     }
 
 
+    ////////////////////////////////////////////////////////////////////////
+    // This method returns new copy of this NDArray, optionally in different order
+    NDArray* NDArray::dup(const char newOrder) {
+
+        char order = newOrder == 'a' ? ordering() : newOrder;
+
+        auto outShapeInfo = ShapeBuilders::createShapeInfo(_dataType, order, getShapeAsVector(), _context->getWorkspace());
+        void* outBuffer = nullptr;
+        ALLOCATE(outBuffer, _context->getWorkspace(), _length * sizeOfT(), int8_t);
+
+        auto result = new NDArray(outBuffer, outShapeInfo, _context, true, true);
+        result->assign(this);
+
+        return result;
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    // This method returns true if two arrays are equal, with custom or default Eps value of 1e-5, false otherwise
+    bool NDArray::equalsTo(const NDArray *other, double eps) const {
+
+        if (this->dataType() != other->dataType() || lengthOf() != other->lengthOf())
+            return false;
+
+        // we need to be able to compare [1, len] to [len]
+        if ((rankOf() == 1 && other->rankOf() == 2) || (rankOf() == 2 && other->rankOf() == 1)) {
+            // FIXME: do something here?
+        }
+        else if (!shape::equalsSoft(_shapeInfo, other->_shapeInfo))
+            return false;
+
+        NDArray tmp(nd4j::DataType::FLOAT32, _context); // scalar = 0
+
+        ExtraArguments extras({eps});
+        NativeOpExecutioner::execReduce3Scalar(_context, reduce3::EqualsWithEps, _buffer, _shapeInfo, _bufferD, _shapeInfoD, extras.argumentsAsT(DataType::FLOAT32), other->_buffer, other->_shapeInfo, other->_bufferD, other->_shapeInfoD, tmp.buffer(), tmp.shapeInfo(), tmp._bufferD, tmp._shapeInfoD);
+
+        if (tmp.e<int>(0) > 0)
+            return false;
+
+        return true;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    template <>
+    utf8string NDArray::e(const Nd4jLong i) const {
+        if (i >= _length)
+            throw std::invalid_argument("NDArray::e(i): input index is out of array length !");
+
+        if (!isS())
+            throw std::runtime_error("This method is available for String arrays only");
+
+        auto rp = getOffset(i);
+        return *(reinterpret_cast<utf8string**>(_buffer)[rp]);
+    }
+
+    template <>
+    std::string NDArray::e(const Nd4jLong i) const {
+        auto u = e<utf8string>(i);
+        std::string r(u._buffer);
+        return r;
+    }
+
     template <typename T>
     T NDArray::e(const Nd4jLong i) const {
 
-        auto xType = this->dataType();
-        auto xOffset = shape::getIndexOffset(i, _shapeInfo, _length);
-        BUILD_SINGLE_PARTIAL_SELECTOR(xType, return templatedGet<, T>(this->_buffer, xOffset), LIBND4J_TYPES);
-        return static_cast<T>(119);
-    }
-    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong, const Nd4jLong) const, LIBND4J_TYPES);
+        if (i >= _length)
+            throw std::invalid_argument("NDArray::e(i): input index is out of array length !");
 
-//////////////////////////////////////////////////////////////////////////
+        auto rp = getOffset(i);
+
+        BUILD_SINGLE_PARTIAL_SELECTOR(this->dataType(), return templatedGet<, T>(this->_buffer, rp), LIBND4J_TYPES);
+//        return static_cast<T>(119);
+    }
+    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong) const, LIBND4J_TYPES);
+
+    //////////////////////////////////////////////////////////////////////////
 // Returns value from 2D matrix by coordinates/indexes
     template <typename T>
     T NDArray::e(const Nd4jLong i, const Nd4jLong j) const {
@@ -2095,7 +2173,7 @@ void NDArray::reduceAlongDimension(nd4j::reduce::LongOps op, NDArray* target, co
         BUILD_SINGLE_PARTIAL_SELECTOR(xType, return templatedGet<, T>(this->_buffer, xOffset), LIBND4J_TYPES);
         return static_cast<T>(119);
     }
-    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong) const, LIBND4J_TYPES);
+    BUILD_SINGLE_UNCHAINED_TEMPLATE(template , NDArray::e(const Nd4jLong, const Nd4jLong) const, LIBND4J_TYPES);
 
 //////////////////////////////////////////////////////////////////////////
 // returns value from 3D tensor by coordinates
