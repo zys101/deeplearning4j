@@ -117,7 +117,7 @@ namespace nd4j {
             if (block.width() == 1) {
                 if (block.getAxis()->size() == 0) {
                     // scalar
-                    NativeOpExecutioner::execIndexReduceScalar(nullptr, opNum, x->getBuffer(), x->getShapeInfo(),
+                    NativeOpExecutioner::execIndexReduceScalar(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(),
                                                                          x->getSpecialBuffer(), x->getSpecialShapeInfo(),
                                                                          block.getTArguments()->data(),
                                                                          z->getBuffer(), z->getShapeInfo(),
@@ -136,7 +136,7 @@ namespace nd4j {
                     tad.createTadOnlyShapeInfo();
                     tad.createOffsets();
 
-                    NativeOpExecutioner::execIndexReduce(nullptr, opNum, x->getBuffer(), x->getShapeInfo(),
+                    NativeOpExecutioner::execIndexReduce(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(),
                                                          x->getSpecialBuffer(), x->getSpecialShapeInfo(),
                             block.getTArguments()->data(),
                                                         reinterpret_cast<Nd4jLong *>(z->getBuffer()), z->getShapeInfo(),
@@ -158,7 +158,7 @@ namespace nd4j {
                 }
 
                 if (allAxes) {
-                    NativeOpExecutioner::execIndexReduceScalar(nullptr, opNum, x->getBuffer(), x->getShapeInfo(),
+                    NativeOpExecutioner::execIndexReduceScalar(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(),
                                                               x->getSpecialBuffer(), x->getSpecialShapeInfo(),
                                                               block.getTArguments()->data(),
                                                               z->getBuffer(), z->getShapeInfo(), z->getSpecialBuffer(),
@@ -174,7 +174,7 @@ namespace nd4j {
                     tad.createTadOnlyShapeInfo();
                     tad.createOffsets();
 
-                    NativeOpExecutioner::execIndexReduce(nullptr, opNum,
+                    NativeOpExecutioner::execIndexReduce(block.launchContext(), opNum,
                             x->getBuffer(), x->getShapeInfo(), x->getSpecialBuffer(), x->getSpecialShapeInfo(),
                             block.getTArguments()->data(),
                             reinterpret_cast<Nd4jLong *>(z->getBuffer()),

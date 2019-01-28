@@ -54,7 +54,7 @@ namespace nd4j {
                 if ((block.getIArguments()->size() == 0) ||
                     (block.getIArguments()->size() == 1 && INT_ARG(0) == MAX_INT) || allAxes) {
                     // scalar
-                    NativeOpExecutioner::execReduceBoolScalar(nullptr, opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
+                    NativeOpExecutioner::execReduceBoolScalar(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
                             block.getTArguments()->data(), z->buffer(), z->shapeInfo(), z->specialBuffer(), z->specialShapeInfo());
                 } else {
                     // TAD
@@ -72,7 +72,7 @@ namespace nd4j {
                     tad.createTadOnlyShapeInfo();
                     tad.createOffsets();
 
-                    NativeOpExecutioner::execReduceBool(nullptr, opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
+                    NativeOpExecutioner::execReduceBool(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
                             block.getTArguments()->data(),
                             z->getBuffer(), z->getShapeInfo(), z->specialBuffer(), z->specialShapeInfo(),
                             dims.data(), (int) dims.size(), tad.tadOnlyShapeInfo, tad.tadOffsets);
@@ -103,7 +103,7 @@ namespace nd4j {
                     //x->printIndexedBuffer("x");
 
                     // scalar
-                    NativeOpExecutioner::execReduceBoolScalar(nullptr, opNum, b, s, x->specialBuffer(), x->specialShapeInfo(), e,
+                    NativeOpExecutioner::execReduceBoolScalar(block.launchContext(), opNum, b, s, x->specialBuffer(), x->specialShapeInfo(), e,
                             z->buffer(), z->shapeInfo(), z->specialBuffer(), z->specialShapeInfo());
                 } else {
                     // TAD
@@ -119,7 +119,7 @@ namespace nd4j {
                     auto newShape = ShapeUtils::evalReduceShapeInfo(x->ordering(), axis, *x);
                     auto z = new NDArray(newShape, x->getContext());
 
-                    NativeOpExecutioner::execReduceBool(nullptr, opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
+                    NativeOpExecutioner::execReduceBool(block.launchContext(), opNum, x->getBuffer(), x->getShapeInfo(), x->specialBuffer(), x->specialShapeInfo(),
                             block.getTArguments()->data(), z->getBuffer(), z->getShapeInfo(), z->specialBuffer(), z->specialShapeInfo(),
                             axis.data(), (int) axis.size(), tad.tadOnlyShapeInfo, tad.tadOffsets);
 
