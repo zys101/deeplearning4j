@@ -1847,6 +1847,24 @@ TEST_F(NDArrayCudaBasicsTests, TestFloat16_3) {
     ASSERT_TRUE(x.equalsTo(&y));
 }
 
+TEST_F(NDArrayCudaBasicsTests, TestFloat_4) {
+    auto x = NDArrayFactory::create<float>({1,2,3,4,5,7,8,9});
+    auto y = NDArrayFactory::create<float>({2,4,5,5,6,7,8,9});
+    ASSERT_FALSE(x.equalsTo(&y));
+}
+
+TEST_F(NDArrayCudaBasicsTests, TestFloat_5) {
+    auto x = NDArrayFactory::create<float>('c', {3,3}, {1,2,3,4,5,7,8,9});
+    auto y = NDArrayFactory::create<float>('c', {3,3}, {2,4,5,5,6,7,8,9});
+    ASSERT_FALSE(x.equalsTo(&y));
+}
+
+TEST_F(NDArrayCudaBasicsTests, TestFloat_6) {
+    auto x = NDArrayFactory::create<float>('f', {3,3}, {1,2,3,4,5,7,8,9});
+    auto y = NDArrayFactory::create<float>('f', {3,3}, {2,4,5,5,6,7,8,9});
+    ASSERT_FALSE(x.equalsTo(&y));
+}
+
 //////////////////////////////////////////////////////////////////////
 TEST_F(NDArrayCudaBasicsTests, Operator_Plus_Test_05)
 {

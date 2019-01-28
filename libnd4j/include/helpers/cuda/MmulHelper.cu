@@ -156,9 +156,6 @@ NDArray* MmulHelper::mmulMxM(const NDArray* A, const NDArray* B, NDArray* C, dou
 	const auto N = B->sizeAt(1);
     const auto bRows = B->sizeAt(0);
 
-    if(A->isSameShape(B) && (M == 1 || K == 1))  // 1x6 * 1x6  or 6x1 * 6x1
-        return dot(A, B, C, alpha, beta);
-
     if(C != nullptr && C->rankOf() != 2)
         throw std::runtime_error("MmulHelper::mmulMxM cuda: rank of C array is not equal 2 !");
 	if(B->sizeAt(0) != K)
@@ -282,9 +279,6 @@ NDArray* MmulHelper::mmulMxV(const NDArray* A, const NDArray* X, nd4j::NDArray* 
 
     const auto M = A->sizeAt(0);    
     const auto N = A->sizeAt(1);
-
-    if(M == 1 || N == 1)      // 1x4 * 4 or 4x1 * 4
-        return dot(A, X, Y, alpha, beta);
 
     if(Y != nullptr && !shape::isCommonVector(Y->getShapeInfo(), yLenDim))
         throw std::runtime_error("MmulHelper::mmulMxV cuda: Y array must be vector !");
