@@ -232,6 +232,11 @@ public class SequenceVectors<T extends SequenceElement> extends WordVectorsImpl<
         if (iterator == null)
             throw new IllegalStateException("You can't fit() data without SequenceIterator defined");
 
+        if ((this.vocab == null || this.vocab.numWords() == 0) && existingModel != null) {
+            this.vocab = existingModel.vocab();
+            this.lookupTable = existingModel.lookupTable();
+        }
+
         if (resetModel || (lookupTable != null && vocab != null && vocab.numWords() == 0)) {
             // build vocabulary from scratches
             buildVocab();
