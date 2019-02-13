@@ -640,6 +640,9 @@ public class Word2VecTests {
         assertTrue(!configuration.isUseHierarchicSoftmax());
         assertEquals(configuration.getMinLearningRate(), 0.002, 1e-5f);
         assertTrue(configuration.isUseUnknown());
+
+        word2Vec.setElementsLearningAlgorithm(new SkipGram<VocabWord>());
+        assertEquals(word2Vec.getConfiguration().getElementsLearningAlgorithm(), SkipGram.class.getCanonicalName());
     }
 
     @Test
