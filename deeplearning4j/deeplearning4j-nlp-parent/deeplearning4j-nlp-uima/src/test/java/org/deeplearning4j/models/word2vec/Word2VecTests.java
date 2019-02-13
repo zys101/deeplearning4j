@@ -641,7 +641,10 @@ public class Word2VecTests {
         assertEquals(configuration.getMinLearningRate(), 0.002, 1e-5f);
         assertTrue(configuration.isUseUnknown());
 
-        word2Vec.setElementsLearningAlgorithm(new SkipGram<VocabWord>());
+
+        word2Vec = new Word2Vec.Builder(configuration)
+                .elementsLearningAlgorithm(new SkipGram<VocabWord>())
+                .build();
         assertEquals(word2Vec.getConfiguration().getElementsLearningAlgorithm(), SkipGram.class.getCanonicalName());
     }
 
