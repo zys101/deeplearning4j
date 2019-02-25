@@ -665,7 +665,7 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
         Nd4jLong ttl = std::chrono::duration_cast<std::chrono::milliseconds> (tX - tA).count();
         Nd4jLong x6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t0).count();
 
-        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n x6: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, (Nd4jLong) x6,  (Nd4jLong) ttl);
+        nd4j_printf("Timings:\n t1: [%i];\n t2: [%i];\n t3: [%i];\n t4: [%i];\n t5: [%i];\n t6: [%i];\n t7: [%i];\n x6: [%i];\n ttl: [%i];\n ", (int) d1, (int) d2, (int) d3, (int) d4, (int) d5, (int) d6, (int) d7, (int) x6, (int) ttl);
 
         return;
     }
