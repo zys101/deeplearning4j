@@ -6028,11 +6028,10 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
 
             public Context(ContextPrototype prototype, VariableSpace variableSpace) { super((Pointer)null); allocate(prototype, variableSpace); }
             private native void allocate(ContextPrototype prototype, VariableSpace variableSpace);
-
-            public Context(int nodeId, VariableSpace variableSpace/*=nullptr*/) { super((Pointer)null); allocate(nodeId, variableSpace); }
-            private native void allocate(int nodeId, VariableSpace variableSpace/*=nullptr*/);
             public Context(int nodeId) { super((Pointer)null); allocate(nodeId); }
             private native void allocate(int nodeId);
+            public Context(int nodeId, VariableSpace variableSpace) { super((Pointer)null); allocate(nodeId, variableSpace); }
+            private native void allocate(int nodeId, VariableSpace variableSpace);
             public Context(int nodeId, VariableSpace variableSpace, @Cast("bool") boolean isInplace) { super((Pointer)null); allocate(nodeId, variableSpace, isInplace); }
             private native void allocate(int nodeId, VariableSpace variableSpace, @Cast("bool") boolean isInplace);
 
@@ -6215,10 +6214,14 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
                 return (ContextPrototype)super.position(position);
             }
         
-            public ContextPrototype(OpDescriptor opDescriptor/*=nullptr*/, int nodeId/*=1*/, @Cast("bool") boolean inPlace/*=false*/) { super((Pointer)null); allocate(opDescriptor, nodeId, inPlace); }
-            private native void allocate(OpDescriptor opDescriptor/*=nullptr*/, int nodeId/*=1*/, @Cast("bool") boolean inPlace/*=false*/);
             public ContextPrototype() { super((Pointer)null); allocate(); }
             private native void allocate();
+            public ContextPrototype(int nodeId) { super((Pointer)null); allocate(nodeId); }
+            private native void allocate(int nodeId);
+            public ContextPrototype(OpDescriptor opDescriptor, int nodeId/*=1*/, @Cast("bool") boolean inPlace/*=false*/) { super((Pointer)null); allocate(opDescriptor, nodeId, inPlace); }
+            private native void allocate(OpDescriptor opDescriptor, int nodeId/*=1*/, @Cast("bool") boolean inPlace/*=false*/);
+            public ContextPrototype(OpDescriptor opDescriptor) { super((Pointer)null); allocate(opDescriptor); }
+            private native void allocate(OpDescriptor opDescriptor);
 
             public native int getNodeId();
             public native int nodeId();
