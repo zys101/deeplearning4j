@@ -22,5 +22,7 @@
     Example: jenkinsBuilder platforms: []
  */
 
+@Library('skymind@feature/add-ci-for-documentation') _
+
 jenkinsBuilder()
 
