@@ -73,8 +73,7 @@ namespace nd4j {
             cudaStream_t* _stream;
 #endif
 
-            Context(ContextPrototype* prototype, VariableSpace* variableSpace);
-
+            explicit Context(ContextPrototype* prototype, VariableSpace* variableSpace);
             explicit Context(int nodeId);
             explicit Context(int nodeId, VariableSpace *variableSpace);
             explicit Context(int nodeId, VariableSpace *variableSpace, bool isInplace);

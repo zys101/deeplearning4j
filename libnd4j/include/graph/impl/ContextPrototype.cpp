@@ -25,6 +25,11 @@
 
 namespace nd4j {
     namespace graph {
+        ContextPrototype::ContextPrototype(int nodeId) {
+            _nodeId = nodeId;
+            _isInplace = false;
+        }
+
         ContextPrototype::ContextPrototype(nd4j::ops::OpDescriptor* opDescriptor, int nodeId, bool inPlace) {
             _nodeId = nodeId;
             _isInplace = inPlace;

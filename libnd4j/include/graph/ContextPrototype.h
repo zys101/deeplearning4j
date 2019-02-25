@@ -54,7 +54,9 @@ namespace nd4j {
             bool _useMKLDNN = nd4j::Environment::getInstance()->isUseMKLDNN();
 
         public:
-            explicit ContextPrototype(nd4j::ops::OpDescriptor* opDescriptor = nullptr, int nodeId = 1, bool inPlace = false);
+            explicit ContextPrototype() = default;
+            explicit ContextPrototype(int nodeId);
+            explicit ContextPrototype(nd4j::ops::OpDescriptor* opDescriptor, int nodeId = 1, bool inPlace = false);
             ~ContextPrototype() = default;
 
             int getNodeId();
