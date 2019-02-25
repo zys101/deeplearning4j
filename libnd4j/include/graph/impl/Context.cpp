@@ -26,7 +26,6 @@
 namespace nd4j {
     namespace graph {
         Context::Context(ContextPrototype* prototype, VariableSpace* variableSpace) : ContextPrototype() {
-            nd4j_printf("Contstructor %i\n", 0);
             _variableSpace = variableSpace;
             _dataType = prototype->dataType();
 
@@ -77,7 +76,6 @@ namespace nd4j {
         }
 
         Context::Context(int nodeId) : ContextPrototype(nodeId) {
-            nd4j_printf("Creating new context...\n","");
             this->_workspace = nullptr;
 
             this->_executionTime.first = 0;
@@ -85,7 +83,6 @@ namespace nd4j {
         }
 
         Context::Context(int nodeId, VariableSpace *variableSpace) : ContextPrototype(nodeId) {
-            nd4j_printf("Contstructor %i\n", 1);
             this->_variableSpace = variableSpace;
             this->_workspace = nullptr;
 
@@ -100,7 +97,6 @@ namespace nd4j {
         }
 
         Context::Context(int nodeId, VariableSpace *variableSpace, bool isInplace) : Context(nodeId, variableSpace) {
-            nd4j_printf("Contstructor %i\n", 2);
             this->_isInplace = isInplace;
         }
 
