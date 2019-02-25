@@ -21,16 +21,22 @@ import lombok.val;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOp;
 import org.nd4j.linalg.api.ops.DynamicCustomOp;
+import org.nd4j.linalg.api.ops.OpContext;
 import org.nd4j.linalg.api.ops.custom.ScatterUpdate;
 import org.nd4j.linalg.api.ops.executioner.OpExecutioner;
 import org.nd4j.linalg.api.ops.executioner.OpStatus;
+import org.nd4j.linalg.api.ops.impl.layers.convolution.Conv2D;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.AddOp;
 import org.nd4j.linalg.api.ops.random.compat.RandomStandardNormal;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.nativeblas.NativeOpsHolder;
+import org.nd4j.nativeblas.Nd4jCpu;
+
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
@@ -466,5 +472,49 @@ public class CustomOpsTests {
 
         assertEquals(exp, arrayZ);
         assertTrue(arrayZ == output[0]);
+    }
+
+    @Test
+    public void testMklDnn() {
+        val list = new ArrayList<INDArray>();
+        int n = 2;
+        for(boolean useMklDnn : new boolean[]{false, true}) {
+            Nd4jCpu.Environment.getInstance().setUseMKLDNN(useMklDnn);
+            INDArray in = Nd4j.create(DataType.FLOAT, 8, 32, 64, 64);
+            INDArray w = Nd4j.create(DataType.FLOAT, 2, 2, 32, 32);
+            INDArray b = Nd4j.create(DataType.FLOAT, 32);
+            INDArray out = in.like();
+            in.assign(1);
+            w.assign(2);
+            b.assign(3);
+
+            OpContext c = Nd4j.getExecutioner().buildContext();
+            c.setIArguments(2, 2,    //Kernel
+                    1, 1,    //Stride
+                    0, 0,    //Padding
+                    1, 1,    //Dilation
+                    1,      //SAME
+                    0);       //NCHW
+            c.setInputArray(0, in);
+            c.setInputArray(1, w);
+            c.setInputArray(2, b);
+            c.setOutputArray(0, out);
+
+            Conv2D conv2D = new Conv2D();
+
+            Nd4j.exec(conv2D, c);
+            list.add(out.dup());
+
+            long start = System.currentTimeMillis();
+            for (int i = 0; i < n; i++) {
+                Nd4j.exec(conv2D, c);
+            }
+            long end = System.currentTimeMillis();
+            double avg = (end - start) / (double) n;
+            System.out.println("conv2d op (use mkl=" + useMklDnn + "): average " + avg + " ms");
+        }
+
+        for (int e = 0; e < list.size(); e++)
+            assertEquals(list.get(0), list.get(e));
     }
 }

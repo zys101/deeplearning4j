@@ -6007,6 +6007,7 @@ NDArray& NDArray::operator()(const Nd4jLong* idx) {
 // #include <memory/Workspace.h>
 
 // #ifdef HAVE_MKLDNN
+// #include <MKLDNNStream.h>
 // #endif
 
 // CUDA-specific includes
