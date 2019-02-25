@@ -650,7 +650,7 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
             d2 = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1).count();
             d3 = std::chrono::duration_cast<std::chrono::milliseconds> (t3 - t2).count();
             d4 = std::chrono::duration_cast<std::chrono::milliseconds> (t4 - t3).count();
-            d5 = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1).count();
+            d5 = std::chrono::duration_cast<std::chrono::milliseconds> (t5 - t4).count();
         }
 
         auto t6 = std::chrono::system_clock::now();
@@ -662,8 +662,9 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
         auto d6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t1).count();
         auto d7 = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t6).count();
         auto ttl = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t0).count();
+        auto x6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t0).count();
 
-        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, (Nd4jLong) ttl);
+        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, (Nd4jLong) x6,  (Nd4jLong) ttl);
 
         return;
     }
