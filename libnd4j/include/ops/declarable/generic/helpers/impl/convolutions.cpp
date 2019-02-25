@@ -22,6 +22,7 @@
 #include <ops/declarable/helpers/im2col.h>
 #include <ops/declarable/helpers/col2im.h>
 #include <NDArrayFactory.h>
+#include <chrono>
 #include <MmulHelper.h>
 
 namespace nd4j {
@@ -597,12 +598,19 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
 
 #ifdef HAVE_MKLDNN
     if (block.isUseMKLDNN() && nd4j::MKLDNNStream::isSupported<X, Y>()) {
+
+        auto t0 = std::chrono::system_clock::now();
         std::vector<nd4j::MKLDNNStream>& streams = block.getMKLDNNStreams();
         if (streams.empty()) {
             streams.push_back(MKLDNNStream("conv2d"));
         }
 
+        Nd4jLong d2, d3, d4, d5;
+        auto t1 = std::chrono::system_clock::now();
+
         if (streams[0].checkAndReset({input, weights, bias}, {output}, {}, {kH, kW, sH, sW, pH, pW, dH, dW, isSameMode, isNCHW})) {
+            auto t2 = std::chrono::system_clock::now();
+
             mkldnn_memory_desc_t empty;
             mkldnn::memory::desc conv_src_md(empty), conv_weights_md(empty), conv_bias_md(empty), conv_dst_md(empty);
             mkldnn::memory::dims conv_strides, conv_padding, conv_padding_r;
@@ -612,6 +620,8 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
                     &conv_src_md, nullptr, &conv_weights_md, nullptr, &conv_bias_md, &conv_dst_md,
                     conv_strides, conv_padding, conv_padding_r);
 
+            auto t3 = std::chrono::system_clock::now();
+
             auto conv_desc = bias != nullptr
                     ? convolution_forward::desc(prop_kind::forward,
                             convolution_direct, conv_src_md, conv_weights_md, conv_bias_md,
@@ -619,6 +629,8 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
                     : convolution_forward::desc(prop_kind::forward,
                             convolution_direct, conv_src_md, conv_weights_md,
                             conv_dst_md, conv_strides, conv_padding, conv_padding_r, padding_kind::zero);
+
+            auto t4 = std::chrono::system_clock::now();
 
             auto conv_prim_desc = convolution_forward::primitive_desc(conv_desc, streams[0].getEngine());
             auto conv_src_memory = mkldnn::memory(conv_prim_desc.src_primitive_desc(), const_cast<NDArray*>(input)->buffer());
@@ -632,9 +644,27 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
                 streams[0].setMemory({conv_src_memory, conv_weights_memory, conv_dst_memory});
                 streams[0].setOperation(convolution_forward(conv_prim_desc, conv_src_memory, conv_weights_memory, conv_dst_memory));
             }
+
+            auto t5 = std::chrono::system_clock::now();
+
+            d2 = std::chrono::duration_cast<std::chrono::microseconds> (t2 - t1).count();
+            d3 = std::chrono::duration_cast<std::chrono::microseconds> (t3 - t2).count();
+            d4 = std::chrono::duration_cast<std::chrono::microseconds> (t4 - t3).count();
+            d5 = std::chrono::duration_cast<std::chrono::microseconds> (t2 - t1).count();
         }
 
+        auto t6 = std::chrono::system_clock::now();
         streams[0].submitAndWait();
+
+        auto t7 = std::chrono::system_clock::now();
+
+        auto d1 = std::chrono::duration_cast<std::chrono::microseconds> (t1 - t0).count();
+        auto d6 = std::chrono::duration_cast<std::chrono::microseconds> (t6 - t1).count();
+        auto d7 = std::chrono::duration_cast<std::chrono::microseconds> (t7 - t6).count();
+        auto ttl = std::chrono::duration_cast<std::chrono::microseconds> (t7 - t0).count();
+
+        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, ttl);
+
         return;
     }
 #endif
