@@ -598,7 +598,7 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
 
 #ifdef HAVE_MKLDNN
     if (block.isUseMKLDNN() && nd4j::MKLDNNStream::isSupported<X, Y>()) {
-
+        auto tA = std::chrono::system_clock::now();
         auto t0 = std::chrono::system_clock::now();
         std::vector<nd4j::MKLDNNStream>& streams = block.getMKLDNNStreams();
         if (streams.empty()) {
@@ -657,11 +657,12 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
         streams[0].submitAndWait();
 
         auto t7 = std::chrono::system_clock::now();
+        auto tX = std::chrono::system_clock::now();
 
         Nd4jLong d1 = std::chrono::duration_cast<std::chrono::milliseconds> (t1 - t0).count();
         Nd4jLong d6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t1).count();
-        Nd4jLong d7 = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t6).count();
-        Nd4jLong ttl = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t0).count();
+        Nd4jLong d7 = std::chrono::duration_cast<std::chrono::microseconds> (t7 - t6).count();
+        Nd4jLong ttl = std::chrono::duration_cast<std::chrono::milliseconds> (tX - tA).count();
         Nd4jLong x6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t0).count();
 
         nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n x6: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, (Nd4jLong) x6,  (Nd4jLong) ttl);
