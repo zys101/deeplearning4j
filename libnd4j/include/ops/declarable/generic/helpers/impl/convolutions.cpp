@@ -647,10 +647,10 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
 
             auto t5 = std::chrono::system_clock::now();
 
-            d2 = std::chrono::duration_cast<std::chrono::microseconds> (t2 - t1).count();
-            d3 = std::chrono::duration_cast<std::chrono::microseconds> (t3 - t2).count();
-            d4 = std::chrono::duration_cast<std::chrono::microseconds> (t4 - t3).count();
-            d5 = std::chrono::duration_cast<std::chrono::microseconds> (t2 - t1).count();
+            d2 = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1).count();
+            d3 = std::chrono::duration_cast<std::chrono::milliseconds> (t3 - t2).count();
+            d4 = std::chrono::duration_cast<std::chrono::milliseconds> (t4 - t3).count();
+            d5 = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1).count();
         }
 
         auto t6 = std::chrono::system_clock::now();
@@ -658,12 +658,12 @@ static void conv2d_(nd4j::graph::Context& block, const NDArray* input, const NDA
 
         auto t7 = std::chrono::system_clock::now();
 
-        auto d1 = std::chrono::duration_cast<std::chrono::microseconds> (t1 - t0).count();
-        auto d6 = std::chrono::duration_cast<std::chrono::microseconds> (t6 - t1).count();
-        auto d7 = std::chrono::duration_cast<std::chrono::microseconds> (t7 - t6).count();
-        auto ttl = std::chrono::duration_cast<std::chrono::microseconds> (t7 - t0).count();
+        auto d1 = std::chrono::duration_cast<std::chrono::milliseconds> (t1 - t0).count();
+        auto d6 = std::chrono::duration_cast<std::chrono::milliseconds> (t6 - t1).count();
+        auto d7 = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t6).count();
+        auto ttl = std::chrono::duration_cast<std::chrono::milliseconds> (t7 - t0).count();
 
-        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, ttl);
+        nd4j_printf("Timings:\n t1: [%lld];\n t1: [%lld];\n t2: [%lld];\n t3: [%lld];\n t4: [%lld];\n t5: [%lld];\n t6: [%lld];\n t7: [%lld];\n ttl: [%lld];\n ", d1, d2, d3, d4, d5, d6, d7, (Nd4jLong) ttl);
 
         return;
     }
