@@ -75,8 +75,9 @@ namespace nd4j {
 
             Context(ContextPrototype* prototype, VariableSpace* variableSpace);
 
-            explicit Context(int nodeId, VariableSpace *variableSpace = nullptr);
-            Context(int nodeId, VariableSpace *variableSpace, bool isInplace);
+            explicit Context(int nodeId);
+            explicit Context(int nodeId, VariableSpace *variableSpace);
+            explicit Context(int nodeId, VariableSpace *variableSpace, bool isInplace);
 
             // default destructor
             ~Context();

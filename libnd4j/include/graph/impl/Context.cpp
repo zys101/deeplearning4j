@@ -75,6 +75,16 @@ namespace nd4j {
             _dataType = type;
         }
 
+        Context::Context(int nodeId) {
+            nd4j_printf("Creating new context...\n","");
+            this->_nodeId = nodeId;
+            this->_isInplace = false;
+            this->_workspace = nullptr;
+
+            this->_executionTime.first = 0;
+            this->_executionTime.second = 0;
+        }
+
         Context::Context(int nodeId, VariableSpace *variableSpace) {
             this->_nodeId = nodeId;
             this->_variableSpace = variableSpace;
