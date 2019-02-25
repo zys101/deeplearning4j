@@ -60,6 +60,8 @@ namespace nd4j {
             std::vector<nd4j::DataType> _dataTypes;
 #ifdef HAVE_MKLDNN
             std::vector<nd4j::MKLDNNStream> _mkldnnStreams;
+#else
+            std::vector<Nd4jLong> _placholder;
 #endif
 
             std::vector<NDArray*> _fastpath_in;

@@ -1032,19 +1032,20 @@ TEST_F(JavaInteropTests, Test_Fastpath_3) {
     auto z = NDArrayFactory::create<float>('c', {3, 2});
 
     auto exp = NDArrayFactory::create<float>('c', {3, 2}, {2.f, 4.f, 6.f, 8.f, 10.f, 12.f});
-    Context ctx(1);
+    auto ctx = new Context(1);
 
-    ctx.setInputArray(0, array0.buffer(), array0.shapeInfo(), nullptr, nullptr);
-    ctx.setInputArray(1, array1.buffer(), array1.shapeInfo(), nullptr, nullptr);
-    ctx.setOutputArray(0, z.buffer(), z.shapeInfo(), nullptr, nullptr);
+    ctx->setInputArray(0, array0.buffer(), array0.shapeInfo(), nullptr, nullptr);
+    ctx->setInputArray(1, array1.buffer(), array1.shapeInfo(), nullptr, nullptr);
+    ctx->setOutputArray(0, z.buffer(), z.shapeInfo(), nullptr, nullptr);
 
-    ASSERT_EQ(2, ctx.width());
+    ASSERT_EQ(2, ctx->width());
 
     NativeOps nativeOps;
     nd4j::ops::add op;
-    nativeOps.execCustomOp(nullptr, op.getOpHash(), &ctx);
+    nativeOps.execCustomOp(nullptr, op.getOpHash(), ctx);
 
     ASSERT_EQ(exp, z);
+    delete ctx;
 }
 
 /*
