@@ -478,15 +478,13 @@ public class CustomOpsTests {
     public void testMklDnn() {
         val list = new ArrayList<INDArray>();
         int n = 2;
+        INDArray in = Nd4j.rand(DataType.FLOAT, 8, 32, 64, 64);
+        INDArray w = Nd4j.rand(DataType.FLOAT, 2, 2, 32, 32);
+        INDArray b = Nd4j.rand(DataType.FLOAT, 32);
+
         for(boolean useMklDnn : new boolean[]{false, true}) {
             Nd4jCpu.Environment.getInstance().setUseMKLDNN(useMklDnn);
-            INDArray in = Nd4j.create(DataType.FLOAT, 8, 32, 64, 64);
-            INDArray w = Nd4j.create(DataType.FLOAT, 2, 2, 32, 32);
-            INDArray b = Nd4j.create(DataType.FLOAT, 32);
             INDArray out = in.like();
-            in.assign(1);
-            w.assign(2);
-            b.assign(3);
 
             OpContext c = Nd4j.getExecutioner().buildContext();
             c.setIArguments(2, 2,    //Kernel

@@ -460,7 +460,7 @@ void ConvolutionUtils::getMKLDNNMemoryDescConv2d(
     }
 
     if (weights != nullptr && conv_weights_md != nullptr) {
-        *conv_weights_md = mkldnn::memory::desc({ conv_weights_tz }, type, mkldnn::memory::format::oihw);
+        *conv_weights_md = mkldnn::memory::desc({ conv_weights_tz }, type, mkldnn::memory::format::hwio);
         //conv_weights_md->data.format = mkldnn_blocked; // overrides "formatw = hwio"
         //conv_weights_md->data.layout_desc.blocking.strides[0][0] = weights->stridesOf()[3];
         //conv_weights_md->data.layout_desc.blocking.strides[0][1] = weights->stridesOf()[2];
@@ -469,7 +469,7 @@ void ConvolutionUtils::getMKLDNNMemoryDescConv2d(
     }
 
     if (diff_weights != nullptr && conv_diff_weights_md != nullptr) {
-        *conv_diff_weights_md = mkldnn::memory::desc({ conv_weights_tz }, type, mkldnn::memory::format::oihw);
+        *conv_diff_weights_md = mkldnn::memory::desc({ conv_weights_tz }, type, mkldnn::memory::format::hwio);
         //conv_diff_weights_md->data.format = mkldnn_blocked; // overrides "formatw = hwio"
         //conv_diff_weights_md->data.layout_desc.blocking.strides[0][0] = diff_weights->stridesOf()[3];
         //conv_diff_weights_md->data.layout_desc.blocking.strides[0][1] = diff_weights->stridesOf()[2];
@@ -482,7 +482,7 @@ void ConvolutionUtils::getMKLDNNMemoryDescConv2d(
     }
 
     if (dst != nullptr && conv_dst_md != nullptr) {
-        *conv_dst_md = mkldnn::memory::desc({ conv_dst_tz }, type, format);
+        *conv_dst_md = mkldnn::memory::desc({ conv_dst_tz }, type, mkldnn::memory::format::nchw);
         //conv_dst_md->data.format = mkldnn_blocked; // overrides "format = isNCHW ? nchw : nhwc"
         //conv_dst_md->data.layout_desc.blocking.strides[0][0] = dst->stridesOf()[isNCHW ? 0 : 0];
        // conv_dst_md->data.layout_desc.blocking.strides[0][1] = dst->stridesOf()[isNCHW ? 1 : 3];
