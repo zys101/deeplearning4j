@@ -241,6 +241,49 @@ TEST_F(PlaygroundTests, Test_OpBenchmark_6) {
     helper.runOperationSuit(&db, generator, batch, "parametrized softmax test");
 }
 
+TEST_F(PlaygroundTests, FastScalar) {
+    BenchmarkHelper helper(10, 1000);
+
+    IntPowerParameters length("length", 2, 4, 30, 2);      //2^4 to 2^30 in steps of 2 - 2^4, 2^6, 2^8, ..., 2^30
+    BoolParameters inplace("inplace");
+
+    ParametersBatch batch({&length, &inplace});
+
+    auto generator = PARAMETRIC_XZ() {
+        auto arr = NDArrayFactory::create_<float>('c', {p.getIntParam("length")});
+        arr->assign(1.0);
+        x.push_back(arr);
+        if(p.getIntParam("inplace") == 1){
+            z.push_back(arr);
+        } else {
+            z.push_back(NDArrayFactory::create_<float>('c', {p.getIntParam("length")}));
+        }
+    };
+
+    ScalarBenchmark sbAdd(scalar::Ops::Add, "sAdd");
+    ScalarBenchmark sbSub(scalar::Ops::Subtract, "sSub");
+    ScalarBenchmark sbMul(scalar::Ops::Multiply, "sMul");
+    ScalarBenchmark sbDiv(scalar::Ops::Divide, "sDiv");
+//    ScalarBenchmark sbMax(scalar::Ops::Maximum, "sMax");
+    ScalarBenchmark sbPow(scalar::Ops::Pow, "sPow");
+
+
+    sbAdd.setY(NDArrayFactory::create_<float>(3.14159265359));
+    sbSub.setY(NDArrayFactory::create_<float>(3.14159265359));
+    sbMul.setY(NDArrayFactory::create_<float>(3.14159265359));
+    sbDiv.setY(NDArrayFactory::create_<float>(3.14159265359));
+//    sbMax.setY(NDArrayFactory::create_<float>(3.14159265359));
+    sbPow.setY(NDArrayFactory::create_<float>(3.14159265359));
+
+
+    helper.runOperationSuit(&sbAdd, generator, batch, "Scalar Addition - x.add(3.14159265359)");
+    helper.runOperationSuit(&sbSub, generator, batch, "Scalar Subtraction - x.sub(3.14159265359)");
+    helper.runOperationSuit(&sbMul, generator, batch, "Scalar Multiplication - x.mul(3.14159265359)");
+    helper.runOperationSuit(&sbDiv, generator, batch, "Scalar Division - x.div(3.14159265359)");
+//    helper.runOperationSuit(&sbMax, generator, batch, "Scalar Maximum - x.max(3.14159265359)");
+    helper.runOperationSuit(&sbPow, generator, batch, "Scalar Power - x.pow(3.14159265359)");
+}
+
 /*
 TEST_F(PlaygroundTests, Test_Reduce_Mechanics) {
     auto length = 8192;
