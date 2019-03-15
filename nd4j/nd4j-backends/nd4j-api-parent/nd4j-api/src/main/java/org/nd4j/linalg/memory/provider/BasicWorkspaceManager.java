@@ -18,6 +18,7 @@ package org.nd4j.linalg.memory.provider;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ThreadUtils;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.MemoryWorkspaceManager;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
@@ -26,10 +27,13 @@ import org.nd4j.linalg.api.memory.pointers.PointersPair;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.memory.abstracts.Nd4jWorkspace;
+import org.nd4j.linalg.memory.deallocator.DeallocatorThread;
+import org.nd4j.linalg.memory.deallocator.ReferenceTracking;
 import org.nd4j.linalg.primitives.SynchronizedObject;
 import org.nd4j.util.StringUtils;
 
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +53,8 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
     protected WorkspaceConfiguration defaultConfiguration;
     protected ThreadLocal<Map<String, MemoryWorkspace>> backingMap = new ThreadLocal<>();
     private ReferenceQueue<MemoryWorkspace> queue;
-    private WorkspaceDeallocatorThread thread;
+    //private WorkspaceDeallocatorThread thread;
+    private DeallocatorThread thread;
     private Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap = new ConcurrentHashMap<>();
 
     // default mode is DISABLED, as in: production mode
@@ -65,7 +70,8 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
         this.defaultConfiguration = defaultConfiguration;
         this.queue = new ReferenceQueue<>();
 
-        thread = new WorkspaceDeallocatorThread(this.queue);
+        //thread = new WorkspaceDeallocatorThread(this.queue);
+        thread = new DeallocatorThread(0, queue, new WorkspaceRefTracker());
         thread.start();
     }
 
@@ -274,6 +280,63 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
 
     @Deprecated // For test use within the github.com/deeplearning4j/deeplearning4j repo only.
     public static final String WorkspaceDeallocatorThreadName = "Workspace deallocator thread";
+
+    private class WorkspaceRefTracker<T> implements ReferenceTracking<T> {
+
+        @Override
+        public WeakReference<T> getNextReference() throws InterruptedException {
+            Nd4jWorkspace.GarbageWorkspaceReference reference =
+                    (Nd4jWorkspace.GarbageWorkspaceReference) queue.remove();
+            return (WeakReference<T>) reference;
+        }
+
+        @Override
+        public void handleReference(WeakReference<T> reference) {
+//                      log.info("Releasing reference for Workspace [{}]", reference.getId());
+            PointersPair pair = ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getPointersPair();
+            // purging workspace planes
+            if (pair != null) {
+                if (pair.getDevicePointer() != null) {
+                    //log.info("Deallocating device...");
+                    Nd4j.getMemoryManager().release(pair.getDevicePointer(), MemoryKind.DEVICE);
+                }
+
+
+                if (pair.getHostPointer() != null) {
+                    //                                log.info("Deallocating host...");
+                    Nd4j.getMemoryManager().release(pair.getHostPointer(), MemoryKind.HOST);
+                }
+            }
+
+            // purging all spilled pointers
+            for (PointersPair pair2 : ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getExternalPointers()) {
+                if (pair2 != null) {
+                    if (pair2.getHostPointer() != null)
+                        Nd4j.getMemoryManager().release(pair2.getHostPointer(), MemoryKind.HOST);
+
+                    if (pair2.getDevicePointer() != null)
+                        Nd4j.getMemoryManager().release(pair2.getDevicePointer(), MemoryKind.DEVICE);
+                }
+            }
+
+            // purging all pinned pointers
+            while ((pair = ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getPinnedPointers().poll()) != null) {
+                if (pair.getHostPointer() != null)
+                    Nd4j.getMemoryManager().release(pair.getHostPointer(), MemoryKind.HOST);
+
+                if (pair.getDevicePointer() != null)
+                    Nd4j.getMemoryManager().release(pair.getDevicePointer(), MemoryKind.DEVICE);
+            }
+
+            referenceMap.remove(((Nd4jWorkspace.GarbageWorkspaceReference)reference).getKey());
+        }
+
+        @Override
+        public void handleNullReference() {
+
+        }
+
+    }
 
     protected class WorkspaceDeallocatorThread extends Thread implements Runnable {
         private final ReferenceQueue<MemoryWorkspace> queue;

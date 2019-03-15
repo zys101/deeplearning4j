@@ -1,7 +1,6 @@
-package org.nd4j.deallocator;
+package org.nd4j.linalg.memory.deallocator;
 
 import lombok.NonNull;
-import org.nd4j.rng.deallocator.GarbageStateReference;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -10,10 +9,10 @@ import java.util.Map;
 public class DeallocatorThread<T> extends Thread implements Runnable {
 
     private final ReferenceQueue<T> queue;
-    private final Map<Long, GarbageStateReference> referenceMap;
+    //private final Map<Long, GarbageStateReference> referenceMap;
     private final ReferenceTracking<T> tracker;
 
-    protected DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue,
+    /*protected DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue,
                                 Map<Long, GarbageStateReference> referenceMap) {
 
         this.tracker = ReferenceTrackingFactory.create();
@@ -21,13 +20,13 @@ public class DeallocatorThread<T> extends Thread implements Runnable {
         this.referenceMap = referenceMap;
         this.setName("DeallocatorThread" + threadId);
         this.setDaemon(true);
-    }
+    }*/
 
-    protected DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue, ReferenceTracking<T> tracker) {
+    public DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue, ReferenceTracking<T> tracker) {
 
         this.tracker = tracker;
         this.queue = queue;
-        this.referenceMap = null;
+        //this.referenceMap = null;
         this.setName("DeallocatorThread" + threadId);
         this.setDaemon(true);
     }
@@ -40,9 +39,9 @@ public class DeallocatorThread<T> extends Thread implements Runnable {
                 WeakReference<T> reference = tracker.getNextReference();
 
                 if (reference != null) {
-                    tracker.cleanReferencee(reference);
+                    tracker.handleReference(reference);
                 } else {
-                    tracker.handleNullReferencee();
+                    tracker.handleNullReference();
                 }
             } catch (InterruptedException e) {
                 // do nothing
