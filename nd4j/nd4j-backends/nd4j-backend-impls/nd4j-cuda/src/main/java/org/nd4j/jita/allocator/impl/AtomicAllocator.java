@@ -184,7 +184,8 @@ public class AtomicAllocator implements Allocator {
         for (int i = 0; i < configuration.getNumberOfGcThreads(); i++) {
             ReferenceQueue<BaseDataBuffer> queue = new ReferenceQueue<>();
 
-            UnifiedGarbageCollectorThread uThread = new UnifiedGarbageCollectorThread(i, queue);
+            //UnifiedGarbageCollectorThread uThread = new UnifiedGarbageCollectorThread(i, queue);
+            DeallocatorThread uThread = new DeallocatorThread(i, queue, new CUDAReferenceTracker());
 
             // all GC threads should be attached to default device
             Nd4j.getAffinityManager().attachThreadToDevice(uThread, getDeviceId());
@@ -690,6 +691,79 @@ public class AtomicAllocator implements Allocator {
                         + "]; Relocated: [" + elementsMoved.get() + "]; Survivors: [" + elementsSurvived.get() + "]");
 
         return freeSpace.get();
+    }
+
+    private class CUDAReferenceTracker implements ReferenceTracking {
+
+        private final ReferenceQueue<BaseDataBuffer> queue;
+
+        public CUDAReferenceTracker(@NonNull ReferenceQueue<BaseDataBuffer> queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        WeakReference<T> getNextReference() throws InterruptedException {
+
+            GarbageBufferReference reference = threadId == 0 ? (GarbageBufferReference) queue.poll() :
+                                                               (GarbageBufferReference) queue.remove();
+            return reference;
+        }
+
+        @Override
+        void handleReference(WeakReference<T> holder) {
+            AllocationPoint point = reference.getPoint();
+
+            // skipping any allocation that is coming from workspace
+            if (point.isAttached()) {
+                // TODO: remove allocation point as well?
+                if (!allocationsMap.containsKey(point.getObjectId()))
+                    throw new RuntimeException();
+
+                getFlowController().waitTillReleased(point);
+
+                getFlowController().getEventsProvider().storeEvent(point.getLastWriteEvent());
+                getFlowController().getEventsProvider().storeEvent(point.getLastReadEvent());
+
+                allocationsMap.remove(point.getObjectId());
+
+                continue;
+            }
+
+            if (threadId == 0)
+                stopper.set(System.currentTimeMillis());
+
+            //log.info("Purging {} bytes...", AllocationUtils.getRequiredMemory(point.getShape()));
+
+            if (point.getAllocationStatus() == AllocationStatus.HOST) {
+                purgeZeroObject(point.getBucketId(), point.getObjectId(), point, false);
+            } else if (point.getAllocationStatus() == AllocationStatus.DEVICE) {
+                purgeDeviceObject(0L, point.getDeviceId(), point.getObjectId(), point, false);
+
+                // and we deallocate host memory, since object is dereferenced
+                purgeZeroObject(point.getBucketId(), point.getObjectId(), point, false);
+            }
+        }
+
+        @Override
+        void handleNullReference() {
+            try {
+                if (threadId == 0) {
+                    // we don't call for System.gc if last memory allocation was more then 3 seconds ago
+                    if (Nd4j.getMemoryManager().isPeriodicGcActive()) {
+                        long ct = System.currentTimeMillis();
+                        if (useTracker.get() > ct - 3000 && ct > Nd4j.getMemoryManager().getLastGcTime() + Nd4j.getMemoryManager().getAutoGcWindow()) {
+                            Nd4j.getMemoryManager().invokeGc();
+                        } else {
+                            LockSupport.parkNanos(50000L);
+                        }
+                    } else {
+                        LockSupport.parkNanos(50000L);
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     private class UnifiedGarbageCollectorThread extends Thread implements Runnable {

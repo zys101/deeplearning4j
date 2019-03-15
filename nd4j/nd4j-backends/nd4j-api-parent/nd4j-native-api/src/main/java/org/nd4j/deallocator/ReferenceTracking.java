@@ -1,4 +1,12 @@
 package org.nd4j.deallocator;
 
-public interface ReferenceTracking {
+import java.lang.ref.WeakReference;
+
+public interface ReferenceTracking<T> {
+
+    WeakReference<T> getNextReference() throws InterruptedException;
+
+    void handleReference(WeakReference<T> holder);
+
+    void handleNullReference();
 }
