@@ -71,9 +71,8 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
         this.defaultConfiguration = defaultConfiguration;
         this.queue = new ReferenceQueue<>();
 
+        DeallocationService.getInstance().submit(queue, new WorkspaceRefTracker());
         //thread = new WorkspaceDeallocatorThread(this.queue);
-        thread = new DeallocatorThread(0, queue, new WorkspaceRefTracker());
-        DeallocationService.getInstance().submit(thread);
         //thread.start();
     }
 
