@@ -28,8 +28,9 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.memory.abstracts.Nd4jWorkspace;
 import org.nd4j.linalg.memory.deallocator.DeallocationService;
+import org.nd4j.linalg.memory.deallocator.DeallocatorCallback;
 import org.nd4j.linalg.memory.deallocator.DeallocatorThread;
-import org.nd4j.linalg.memory.deallocator.ReferenceTracking;
+import org.nd4j.linalg.memory.deallocator.DeallocatorCallback;
 import org.nd4j.linalg.primitives.SynchronizedObject;
 import org.nd4j.util.StringUtils;
 
@@ -53,10 +54,10 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
     protected AtomicLong counter = new AtomicLong();
     protected WorkspaceConfiguration defaultConfiguration;
     protected ThreadLocal<Map<String, MemoryWorkspace>> backingMap = new ThreadLocal<>();
-    private ReferenceQueue<MemoryWorkspace> queue;
+    private ReferenceQueue<Object> queue;
     //private WorkspaceDeallocatorThread thread;
     private DeallocatorThread thread;
-    private Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap = new ConcurrentHashMap<>();
+    private Map<String, Nd4jWorkspace.DeallocatableWorkspaceReference> referenceMap = new ConcurrentHashMap<>();
 
     // default mode is DISABLED, as in: production mode
     protected SynchronizedObject<DebugMode> debugMode = new SynchronizedObject<>(DebugMode.DISABLED);
@@ -140,8 +141,8 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
     */
 
     protected void pickReference(MemoryWorkspace workspace) {
-        Nd4jWorkspace.GarbageWorkspaceReference reference =
-                        new Nd4jWorkspace.GarbageWorkspaceReference(workspace, queue);
+        Nd4jWorkspace.DeallocatableWorkspaceReference reference =
+                        new Nd4jWorkspace.DeallocatableWorkspaceReference(workspace, queue);
         referenceMap.put(reference.getKey(), reference);
     }
 
@@ -284,19 +285,19 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
     @Deprecated // For test use within the github.com/deeplearning4j/deeplearning4j repo only.
     public static final String WorkspaceDeallocatorThreadName = "Workspace deallocator thread";
 
-    private class WorkspaceRefTracker<T> implements ReferenceTracking<T> {
+    private class WorkspaceRefTracker implements DeallocatorCallback {
 
         @Override
-        public WeakReference<T> getNextReference() throws InterruptedException {
-            Nd4jWorkspace.GarbageWorkspaceReference reference =
-                    (Nd4jWorkspace.GarbageWorkspaceReference) queue.remove();
-            return (WeakReference<T>) reference;
+        public WeakReference<Object> getNextReference() throws InterruptedException {
+            Nd4jWorkspace.DeallocatableWorkspaceReference reference =
+                    (Nd4jWorkspace.DeallocatableWorkspaceReference) queue.remove();
+            return (WeakReference<Object>) reference;
         }
 
         @Override
-        public void handleReference(WeakReference<T> reference) {
+        public void deallocate(WeakReference<Object> reference) {
 //                      log.info("Releasing reference for Workspace [{}]", reference.getId());
-            PointersPair pair = ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getPointersPair();
+            PointersPair pair = ((Nd4jWorkspace.DeallocatableWorkspaceReference)reference).getPointersPair();
             // purging workspace planes
             if (pair != null) {
                 if (pair.getDevicePointer() != null) {
@@ -311,7 +312,7 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
             }
 
             // purging all spilled pointers
-            for (PointersPair pair2 : ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getExternalPointers()) {
+            for (PointersPair pair2 : ((Nd4jWorkspace.DeallocatableWorkspaceReference)reference).getExternalPointers()) {
                 if (pair2 != null) {
                     if (pair2.getHostPointer() != null)
                         Nd4j.getMemoryManager().release(pair2.getHostPointer(), MemoryKind.HOST);
@@ -322,7 +323,7 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
             }
 
             // purging all pinned pointers
-            while ((pair = ((Nd4jWorkspace.GarbageWorkspaceReference)reference).getPinnedPointers().poll()) != null) {
+            while ((pair = ((Nd4jWorkspace.DeallocatableWorkspaceReference)reference).getPinnedPointers().poll()) != null) {
                 if (pair.getHostPointer() != null)
                     Nd4j.getMemoryManager().release(pair.getHostPointer(), MemoryKind.HOST);
 
@@ -330,7 +331,7 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
                     Nd4j.getMemoryManager().release(pair.getDevicePointer(), MemoryKind.DEVICE);
             }
 
-            referenceMap.remove(((Nd4jWorkspace.GarbageWorkspaceReference)reference).getKey());
+            referenceMap.remove(((Nd4jWorkspace.DeallocatableWorkspaceReference)reference).getKey());
         }
 
         @Override

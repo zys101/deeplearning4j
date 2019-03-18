@@ -11,13 +11,13 @@ import java.util.concurrent.ExecutorService;
 public class DeallocationService {
 
     private static final int THRESHOLD = 4;
-    private Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap = new ConcurrentHashMap<>();
+    private Map<String, Nd4jWorkspace.DeallocatableWorkspaceReference> referenceMap = new ConcurrentHashMap<>();
 
     DeallocationService() {
         for (int i = 0; i < THRESHOLD; ++i) {
 
             ReferenceQueue queue = new ReferenceQueue();
-            DeallocatorThread thread = new DeallocatorThread<>(i, queue, referenceMap);
+            DeallocatorThread thread = new DeallocatorThread(i, queue, referenceMap);
             executorService.submit(thread);
         }
     }
@@ -33,7 +33,7 @@ public class DeallocationService {
 
     private ExecutorService executorService = ExecutorServiceProvider.getExecutorService();
 
-    public void register(Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap) {
+    public void register(Map<String, Nd4jWorkspace.DeallocatableWorkspaceReference> referenceMap) {
         this.referenceMap = referenceMap;
     }
 }

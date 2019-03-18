@@ -7,13 +7,13 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-public class DeallocatorThread<T extends ReferenceTracking> extends Thread implements Runnable {
+public class DeallocatorThread extends Thread implements Runnable {
 
-    private final ReferenceQueue<T> queue;
-    private Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap;
+    private final ReferenceQueue<Object> queue;
+    private Map<String, Nd4jWorkspace.DeallocatableWorkspaceReference> referenceMap;
 
-    public DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue,
-                             Map<String, Nd4jWorkspace.GarbageWorkspaceReference> referenceMap) {
+    public DeallocatorThread(int threadId, @NonNull ReferenceQueue<Object> queue,
+                             Map<String, Nd4jWorkspace.DeallocatableWorkspaceReference> referenceMap) {
 
         this.queue = queue;
         this.referenceMap = referenceMap;
@@ -26,12 +26,12 @@ public class DeallocatorThread<T extends ReferenceTracking> extends Thread imple
 
         while (true) {
             try {
-                WeakReference<T> ref = (WeakReference<T>)queue.remove();
-                Nd4jWorkspace.GarbageWorkspaceReference decoratedRef = referenceMap.get(ref.get());
+                WeakReference ref = (WeakReference) queue.remove();
+                Nd4jWorkspace.DeallocatableWorkspaceReference decoratedRef = referenceMap.get(ref.get());
                 if (decoratedRef != null) {
-                    decoratedRef.deallocatorCallback.handleReference(ref);
+                    decoratedRef.callbackService.deallocate(ref);
                 } else {
-                    decoratedRef.deallocatorCallback.handleNullReference();
+                    decoratedRef.callbackService.handleNullReference();
                 }
             } /*catch (InterruptedException e) {
                 // do nothing
