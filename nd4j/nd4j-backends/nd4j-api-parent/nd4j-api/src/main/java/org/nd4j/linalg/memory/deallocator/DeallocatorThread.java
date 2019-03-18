@@ -2,15 +2,16 @@ package org.nd4j.linalg.memory.deallocator;
 
 import lombok.NonNull;
 
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-public class DeallocatorThread<T> extends Thread implements Runnable {
+public class DeallocatorThread<T extends ReferenceTracking> extends Thread implements Runnable {
 
     private final ReferenceQueue<T> queue;
     //private final Map<Long, GarbageStateReference> referenceMap;
-    private final ReferenceTracking<T> tracker;
+    //private final ReferenceTracking<T> tracker;
 
     /*protected DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue,
                                 Map<Long, GarbageStateReference> referenceMap) {
@@ -22,9 +23,8 @@ public class DeallocatorThread<T> extends Thread implements Runnable {
         this.setDaemon(true);
     }*/
 
-    public DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue, ReferenceTracking<T> tracker) {
+    public DeallocatorThread(int threadId, @NonNull ReferenceQueue<T> queue) {
 
-        this.tracker = tracker;
         this.queue = queue;
         //this.referenceMap = null;
         this.setName("DeallocatorThread" + threadId);
@@ -36,16 +36,19 @@ public class DeallocatorThread<T> extends Thread implements Runnable {
 
         while (true) {
             try {
-                WeakReference<T> reference = tracker.getNextReference();
+                Reference<T> ref = (Reference<T>) queue.remove();
+                if (ref != null) {
+                    T reference = ref.get();
 
-                if (reference != null) {
-                    tracker.handleReference(reference);
-                } else {
-                    tracker.handleNullReference();
+                    if (reference != null) {
+                        reference.handleReference();
+                    } else {
+                        reference.handleNullReference();
+                    }
                 }
-            } catch (InterruptedException e) {
+            } /*catch (InterruptedException e) {
                 // do nothing
-            } catch (Exception e) {
+            }*/ catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
