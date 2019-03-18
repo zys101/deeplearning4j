@@ -6,7 +6,7 @@ public interface ReferenceTracking<T> {
 
     WeakReference<T> getNextReference() throws InterruptedException;
 
-    void handleReference(WeakReference<T> holder);
+    void handleReference(WeakReference<T> reference);
 
     void handleNullReference();
 }

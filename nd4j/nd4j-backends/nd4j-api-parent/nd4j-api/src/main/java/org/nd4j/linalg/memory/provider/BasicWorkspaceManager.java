@@ -71,7 +71,9 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
         this.defaultConfiguration = defaultConfiguration;
         this.queue = new ReferenceQueue<>();
 
-        DeallocationService.getInstance().submit(queue, new WorkspaceRefTracker());
+
+        DeallocationService.getInstance().register(referenceMap);
+
         //thread = new WorkspaceDeallocatorThread(this.queue);
         //thread.start();
     }
@@ -301,7 +303,6 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
                     //log.info("Deallocating device...");
                     Nd4j.getMemoryManager().release(pair.getDevicePointer(), MemoryKind.DEVICE);
                 }
-
 
                 if (pair.getHostPointer() != null) {
                     //                                log.info("Deallocating host...");

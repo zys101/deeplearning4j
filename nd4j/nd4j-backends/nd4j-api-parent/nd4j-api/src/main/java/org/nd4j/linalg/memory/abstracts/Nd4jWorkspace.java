@@ -33,6 +33,7 @@ import org.nd4j.linalg.api.memory.pointers.PointersPair;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.MemoryManager;
+import org.nd4j.linalg.memory.deallocator.ReferenceTracking;
 import org.nd4j.linalg.util.ND4JFileUtils;
 
 import java.io.BufferedOutputStream;
@@ -837,6 +838,8 @@ public abstract class Nd4jWorkspace implements MemoryWorkspace {
         private Queue<PointersPair> pinnedPointers;
         private List<PointersPair> externalPointers;
         private String key;
+
+        public ReferenceTracking deallocatorCallback;
 
         public GarbageWorkspaceReference(MemoryWorkspace referent, ReferenceQueue<? super MemoryWorkspace> queue) {
             super(referent, queue);
