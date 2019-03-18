@@ -27,6 +27,7 @@ import org.nd4j.linalg.api.memory.pointers.PointersPair;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.memory.abstracts.DummyWorkspace;
 import org.nd4j.linalg.memory.abstracts.Nd4jWorkspace;
+import org.nd4j.linalg.memory.deallocator.DeallocationService;
 import org.nd4j.linalg.memory.deallocator.DeallocatorThread;
 import org.nd4j.linalg.memory.deallocator.ReferenceTracking;
 import org.nd4j.linalg.primitives.SynchronizedObject;
@@ -72,7 +73,8 @@ public abstract class BasicWorkspaceManager implements MemoryWorkspaceManager {
 
         //thread = new WorkspaceDeallocatorThread(this.queue);
         thread = new DeallocatorThread(0, queue, new WorkspaceRefTracker());
-        thread.start();
+        DeallocationService.getInstance().submit(thread);
+        //thread.start();
     }
 
     /**
