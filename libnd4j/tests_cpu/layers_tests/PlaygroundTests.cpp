@@ -51,7 +51,7 @@ public:
 TEST_F(PlaygroundTests, ReductionAlongDim) {
     BenchmarkHelper helper;
     int length[] = {1024, 1024*1024, 1024*1024*1024};
-    int pow[] = {10, 30, 40};
+    int pow[] = {10, 20, 30};
     for( int i=0; i<2; i++ ){
         IntPowerParameters rows("rows", 2, 0, pow[i], 1);
         BoolParameters dim("dim");
