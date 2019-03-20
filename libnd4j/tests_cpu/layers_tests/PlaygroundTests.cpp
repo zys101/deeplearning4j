@@ -49,6 +49,7 @@ public:
 };
 
 TEST_F(PlaygroundTests, ReductionAlongDim) {
+    nd4j_printf("ET: %i\n", Environment::getInstance()->elementwiseThreshold());
     BenchmarkHelper helper;
     int length[] = {1024, 1024*1024, 1024*1024*1024};
     int pow[] = {10, 20, 30};

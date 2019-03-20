@@ -29,7 +29,7 @@ namespace nd4j {
 
     nd4j::Environment::Environment() {
         _tadThreshold.store(8);
-        _elementThreshold.store(1024);
+        _elementThreshold.store(2049);
         _verbose.store(false);
         _debug.store(false);
         _profile.store(false);
