@@ -102,7 +102,7 @@ Nd4jLong OmpLaunchHelper::betterSpan(Nd4jLong N) {
         auto totalLength = tadLength * numTads;
 
         // if array is tiny - no need to spawn any threeds
-        if (totalLength < 512 )//Environment::getInstance()->elementwiseThreshold())
+        if (totalLength < Environment::getInstance()->elementwiseThreshold())
             return 1;
 
         // by default we're spawning as many threads we can, but not more than number of TADs
