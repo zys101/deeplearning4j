@@ -48,6 +48,34 @@ public:
     }
 };
 
+TEST_F(PlaygroundTests, ReductionAlongDim) {
+    BenchmarkHelper helper;
+    int length[] = {1024, 1024*1024, 1024*1024*1024};
+    int pow[] = {10, 20, 30};
+    for( int i=0; i<2; i++ ){
+        IntPowerParameters rows("rows", 2, 0, pow[i], 1);
+        BoolParameters dim("dim");
+        ParametersBatch batch({&rows, &dim});
+        auto generator = PARAMETRIC_XYZ() {
+            int rows = p.getIntParam("rows");
+            int cols = length[i] / rows;
+            int dim = p.getIntParam("dim");
+            auto arr = NDArrayFactory::create_<float>('c', {rows, cols});
+            x.push_back(arr);
+            y.push_back(NDArrayFactory::create_<Nd4jLong>(dim));
+            NDArray* result;
+            if(dim == 0){
+                result = NDArrayFactory::create_<float>('c', {cols});
+            } else {
+                result = NDArrayFactory::create_<float>('c', {rows});
+            }
+            z.push_back(result);
+        };
+        ReductionBenchmark rbSum(reduce::SameOps::Sum, "sum");
+        helper.runOperationSuit(&rbSum, (const std::function<void (Parameters &, ResultSet &, ResultSet &, ResultSet &)>)(generator), batch, "Sum Along Dimension");
+    }
+}
+
 /*
 TEST_F(PlaygroundTests, Test_OpBenchmark_1) {
 
