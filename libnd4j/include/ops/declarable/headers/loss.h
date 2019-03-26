@@ -358,6 +358,27 @@ namespace ops {
         DECLARE_CUSTOM_OP(sparse_softmax_cross_entropy_loss_with_logits_grad, 2, 1, false, 0, 0);
         #endif
 
+        //////////////////////////////////////////////////////////////////////////
+    /**
+       * Implementation of noise-contrastive estimation (NCE) loss function 
+       * 
+       * Input arrays: 
+       *    0: input - activations, type float, [bS, dim]
+       *    1: weights - type float, [numClasses, dim]
+       *    2: biases  - type float, [numClasses]
+       *    3: labels  - ground truth vales, expected to be 0 or 1, type int, [bS, numTrue]
+       *  
+       *  Input integer arguments:
+       *    0: numSampled - number of negative classes 
+       *    1: numClasses - number of possible classes
+       *    2: numTrue    - optional (default is 1), number of target classes       
+       *
+       * Output array: 
+       *    0:  NCE values, type float, [bS]
+       */      
+        #if NOT_EXCLUDED(OP_nce_loss)
+        DECLARE_CUSTOM_OP(nce_loss, 4, 1, false, 0, 2);        
+        #endif
 
 }
 }
