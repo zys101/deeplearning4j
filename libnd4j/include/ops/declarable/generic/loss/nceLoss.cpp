@@ -33,18 +33,18 @@ CUSTOM_OP_IMPL(nce_loss, 4, 1, false, 0, 2) {
   	auto input   = INPUT_VARIABLE(0);		// [bS, dim]
     auto weights = INPUT_VARIABLE(1);		// [numClasses, dim]
     auto biases  = INPUT_VARIABLE(2);		// [numClasses]
-    auto lables  = INPUT_VARIABLE(3);		// [bS, numTrue]
+    auto labels  = INPUT_VARIABLE(3);		// [bS, numTrue]
     auto output  = OUTPUT_VARIABLE(0);		// [bS]
 
     const int numSampled = INT_ARG(0);    
     const int numClasses = INT_ARG(1);
-    const int numTrue	 = block->getIArguments()->size() > 1 ? INT_ARG(2) : 1;
+    const int numTrue	 = block.getIArguments()->size() > 1 ? INT_ARG(2) : 1;
 
 	// input validation 
     const Nd4jLong bS  = input->sizeAt(0);
     const Nd4jLong dim = input->sizeAt(1);
            		       
-    REQUIRE_TRUE(weigths->isSameShape({numClasses, dim}), 0, "NCE_LOSS OP: weights array has wrong shape, expected is %s, but got %s instead !", ShapeUtils::shapeAsString({numClasses, dim}).c_str(), ShapeUtils::shapeAsString(weights).c_str());
+    REQUIRE_TRUE(weights->isSameShape({numClasses, dim}), 0, "NCE_LOSS OP: weights array has wrong shape, expected is %s, but got %s instead !", ShapeUtils::shapeAsString({numClasses, dim}).c_str(), ShapeUtils::shapeAsString(weights).c_str());
     REQUIRE_TRUE(biases ->isSameShape({numClasses}),      0, "NCE_LOSS OP: biases array has wrong shape, expected is %s, but got %s instead !", ShapeUtils::shapeAsString({numClasses}).c_str(), ShapeUtils::shapeAsString(biases).c_str());
     REQUIRE_TRUE(labels ->isSameShape({bS, numTrue}),	  0, "NCE_LOSS OP: labels array has wrong shape, expected is %s, but got %s instead !", ShapeUtils::shapeAsString({bS, numTrue}).c_str(), ShapeUtils::shapeAsString(labels).c_str());
     REQUIRE_TRUE(output ->isSameShape({bS}),	  		  0, "NCE_LOSS OP: output array has wrong shape, expected is %s, but got %s instead !", ShapeUtils::shapeAsString({bS}).c_str(), ShapeUtils::shapeAsString(output).c_str());
@@ -53,7 +53,7 @@ CUSTOM_OP_IMPL(nce_loss, 4, 1, false, 0, 2) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-DECLARE_TYPES(softmax_cross_entropy_loss) {
+DECLARE_TYPES(nce_loss) {
 	
 	getOpDescriptor()->setAllowedInputTypes(0, {ALL_FLOATS})
 					->setAllowedInputTypes(1, {ALL_FLOATS})
@@ -70,19 +70,18 @@ DECLARE_SHAPE_FN(nce_loss) {
 	auto biasesShapeInfo  = inputShape->at(2);
     auto labelsShapeInfo  = inputShape->at(3);
 
-
     const int numSampled = INT_ARG(0);    
     const int numClasses = INT_ARG(1);
-    const int numTrue	 = block->getIArguments()->size() > 1 ? INT_ARG(2) : 1;
+    const int numTrue	 = block.getIArguments()->size() > 1 ? INT_ARG(2) : 1;
 	
-    const Nd4jLong bS  = input->sizeAt(0);
-    const Nd4jLong dim = input->sizeAt(1);
+    const Nd4jLong bS  = inputShapeInfo[1];
+    const Nd4jLong dim = inputShapeInfo[2];
 
-    const std::string expectedWeightsShape = ShapeUtils::shapeAsString({numClasses, dim})
+    const std::string expectedWeightsShape = ShapeUtils::shapeAsString({numClasses, dim});
 	REQUIRE_TRUE(ShapeUtils::shapeAsString(weightsShapeInfo) == expectedWeightsShape, 0, "NCE_LOSS OP: weights array has wrong shape, expected is %s, but got %s instead !", expectedWeightsShape.c_str(), ShapeUtils::shapeAsString(weightsShapeInfo).c_str());
-	const std::string expectedBiasesShape = ShapeUtils::shapeAsString({numClasses})
+	const std::string expectedBiasesShape = ShapeUtils::shapeAsString({numClasses});
     REQUIRE_TRUE(ShapeUtils::shapeAsString(biasesShapeInfo) == expectedBiasesShape,   0, "NCE_LOSS OP: biases array has wrong shape, expected is %s, but got %s instead !", expectedBiasesShape.c_str(), ShapeUtils::shapeAsString(biasesShapeInfo).c_str());
-    const std::string expectedLablesShape = ShapeUtils::shapeAsString({bS, numTrue})
+    const std::string expectedLablesShape = ShapeUtils::shapeAsString({bS, numTrue});
     REQUIRE_TRUE(ShapeUtils::shapeAsString(labelsShapeInfo) == expectedLablesShape,	  0, "NCE_LOSS OP: labels array has wrong shape, expected is %s, but got %s instead !", expectedLablesShape.c_str(), ShapeUtils::shapeAsString(labelsShapeInfo).c_str());
 
 	DataType outType = DataTypeUtils::pickFloatingType(ArrayOptions::dataType(weightsShapeInfo));
